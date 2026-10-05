@@ -1,0 +1,20 @@
+{
+  "name": "offer-sdk",
+  "private": true,
+  "packageManager": "pnpm@9.14.2",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "pnpm -r --parallel dev",
+    "dev:app": "pnpm --filter offer-app dev",
+    "dev:web": "pnpm --filter web dev",
+    "dev:site": "pnpm --filter site dev",
+    "dev:api": "docker compose up",
+    "seed:demo": "pnpm --filter offer-app seed:demo",
+    "build": "pnpm -r build",
+    "lint": "pnpm -r lint",
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm -r test"
+  }
+}

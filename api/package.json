@@ -1,0 +1,24 @@
+{
+  "name": "honeypot-api",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "bun --watch src/index.ts",
+    "start": "bun src/index.ts",
+    "migrate": "bun src/db/migrate.ts",
+    "import:redis": "bun scripts/import-redis.ts",
+    "test": "bun test",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@scalar/hono-api-reference": "^0.9.44",
+    "better-auth": "^1.7.7",
+    "hono": "^4.12.0",
+    "pg": "^8.23.1"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@types/pg": "^8.23.1",
+    "typescript": "^5.8.3"
+  }
+}

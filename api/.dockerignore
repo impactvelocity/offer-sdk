@@ -1,0 +1,7 @@
+node_modules
+.env
+.env.*
+test
+scripts
+*.md
+.DS_Store

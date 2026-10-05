@@ -1,0 +1,84 @@
+# Render Blueprint: the Offer API (Docker, Bun), the dashboard (Node, Next.js) and
+# their Postgres database. In Render: New → Blueprint → this repo (render.yaml).
+#
+# Render asks for the `sync: false` values on the first deploy:
+#   honeypot-api  ADMIN_API_KEY   shared secret between the two services (openssl rand -hex 32,
+#                                 or the legacy dashboard's existing key)
+#   honeypot-api  APP_URL         the dashboard's public URL, e.g. https://offer-app.onrender.com
+#   offer-app     OFFER_API_URL   the API's public URL, e.g. https://honeypot-api.onrender.com
+#   offer-app     ANTHROPIC_API_KEY  optional, enables the Agent page
+# Everything else is generated or wired between the services below.
+
+services:
+  - type: web
+    name: honeypot-api
+    runtime: docker
+    plan: starter
+    dockerfilePath: ./api/Dockerfile
+    dockerContext: ./api
+    buildFilter:
+      paths:
+        - api/**
+    healthCheckPath: /health
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: honeypot-db
+          property: connectionString
+      # Full-access key. The dashboard gets the same value (see OFFER_API_ADMIN_KEY).
+      - key: ADMIN_API_KEY
+        sync: false
+      # Signs dashboard sessions; dashboard auth runs in this service.
+      - key: BETTER_AUTH_SECRET
+        generateValue: true
+      # The dashboard's public URL: sessions are issued for it and only its origin is trusted.
+      - key: APP_URL
+        sync: false
+
+  - type: web
+    name: offer-app
+    runtime: node
+    plan: starter
+    buildCommand: corepack enable && pnpm install --frozen-lockfile --filter offer-app... && pnpm --filter offer-app build
+    startCommand: cd offer-app && npm run start
+    buildFilter:
+      paths:
+        - offer-app/**
+        - package.json
+        - pnpm-lock.yaml
+        - pnpm-workspace.yaml
+        - .nvmrc
+    healthCheckPath: /api/health
+    envVars:
+      # Public API URL, shown in snippets and the API reference.
+      - key: OFFER_API_URL
+        sync: false
+      # This server talks to the API over Render's private network instead.
+      - key: OFFER_API_INTERNAL_URL
+        fromService:
+          type: web
+          name: honeypot-api
+          property: hostport
+      - key: OFFER_API_ADMIN_KEY
+        fromService:
+          type: web
+          name: honeypot-api
+          envVarKey: ADMIN_API_KEY
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: CORS_ORIGINS
+        value: "*"
+      # "Explore the demo workspace" on the sign-in page. Seed it after the first deploy:
+      #   APP_URL=https://<this service's URL> pnpm seed:demo
+      - key: DEMO_ENABLED
+        value: "true"
+      # Lets corepack fetch the pnpm version pinned in package.json without prompting.
+      - key: COREPACK_ENABLE_DOWNLOAD_PROMPT
+        value: "0"
+
+databases:
+  - name: honeypot-db
+    plan: basic-256mb
+    databaseName: honeypot
+    postgresMajorVersion: "17"
+    ipAllowList: [] # internal connections only

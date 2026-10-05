@@ -1,0 +1,47 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "offer-app",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": [
+        "--filter",
+        "offer-app",
+        "dev"
+      ],
+      "port": 3001,
+      "autoPort": true
+    },
+    {
+      "name": "web",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": [
+        "--filter",
+        "web",
+        "dev"
+      ],
+      "port": 3000,
+      "autoPort": true
+    },
+    {
+      "name": "site",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": [
+        "--filter",
+        "site",
+        "dev"
+      ],
+      "port": 6769,
+      "autoPort": true
+    },
+    {
+      "name": "api",
+      "runtimeExecutable": "docker",
+      "runtimeArgs": [
+        "compose",
+        "up"
+      ],
+      "port": 6767
+    }
+  ]
+}

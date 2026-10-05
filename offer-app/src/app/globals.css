@@ -1,0 +1,509 @@
+@import "tailwindcss";
+@import "streamdown/styles.css";
+
+/* Streamdown (agent chat Markdown) ships its classes in dist; let Tailwind see them. */
+@source "../../node_modules/streamdown/dist/*.js";
+
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+/*
+ * Design tokens. Attio-inspired pages inside a Dub-style shell: hairline borders, 14px UI
+ * type and a single violet accent (the chart purple), with a violet→pink brand gradient on
+ * primary buttons, charts and progress as the pop of color.
+ * Every color is a token; dark mode swaps them under [data-theme="dark"] (set before
+ * first paint by the inline script in the root layout).
+ */
+:root {
+  color-scheme: light;
+
+  --bg: #ffffff;
+  --bg-subtle: #fbfbfb;
+  --bg-muted: #f6f6f7;
+  --bg-hover: #f2f2f3;
+  --bg-active: #ececee;
+  --bg-inverse: #1b1c1e;
+  /* Dub-style shell: rail on the canvas, the nav panel and page on raised surfaces. */
+  --canvas: #efeff1;
+  --panel: #f7f7f8;
+  /* Floating surfaces: popovers, menus, dialogs, toasts. */
+  --bg-elevated: #ffffff;
+
+  --fg: #1b1c1e;
+  /* Supporting text stays the main text color with a subtle fade, so it reads clearly. */
+  --fg-secondary: rgb(27 28 30 / 0.95);
+  --fg-tertiary: rgb(27 28 30 / 0.9);
+  --fg-placeholder: #8e9096;
+  /* Icons stay a step quieter than text so dense UI doesn't get heavy. */
+  --fg-icon: #6c6e74;
+  --fg-inverse: #ffffff;
+
+  --border: #e0e0e0;
+  --border-strong: #dfdfe2;
+  --border-input: #e3e3e6;
+
+  --accent: #7c4dff;
+  --accent-hover: #6c3cf2;
+  --accent-subtle: #f3effe;
+  --accent-fg: #6a3ad1;
+  --ring: rgb(124 77 255 / 0.28);
+
+  --danger: #e5484d;
+  --danger-hover: #d93d42;
+  --danger-subtle: #fdf0f0;
+  --danger-fg: #ce2c31;
+
+  --success: #2f9e66;
+  --success-subtle: #ebf7f0;
+  --success-fg: #1f7a4c;
+
+  --warning: #f0a020;
+  --warning-subtle: #fdf6e7;
+  --warning-fg: #9a6200;
+
+  /* Pastel tags (badges, soft avatars, record icons). */
+  --tag-gray-bg: #f0f0f2;
+  --tag-gray-fg: #55575d;
+  --tag-blue-bg: #e8f0fe;
+  --tag-blue-fg: #1d5bd1;
+  --tag-green-bg: #e6f6ec;
+  --tag-green-fg: #1b7a47;
+  --tag-yellow-bg: #fdf3d6;
+  --tag-yellow-fg: #8a6100;
+  --tag-orange-bg: #fdebdc;
+  --tag-orange-fg: #b04f0b;
+  --tag-red-bg: #fdeaea;
+  --tag-red-fg: #c42b30;
+  --tag-purple-bg: #f0eafd;
+  --tag-purple-fg: #6a3ad1;
+  --tag-pink-bg: #fce9f3;
+  --tag-pink-fg: #b62a78;
+  --tag-teal-bg: #e2f5f4;
+  --tag-teal-fg: #0f7470;
+
+  /* Code highlighting. */
+  --code-comment: #8a8c92;
+  --code-keyword: #7c4ddb;
+  --code-string: #1b7a47;
+  --code-key: #1d5bd1;
+  --code-number: #b04f0b;
+
+  /* Logo tile (inverts in dark mode). */
+  --logo-tile: #1b1c1e;
+  --logo-mark: #ffffff;
+
+  /* Categorical chart series (validated for colorblind separation on each surface). */
+  --series-1: #7c4dff;
+  --series-2: #eb6834;
+  --series-3: #1baf7a;
+  --series-4: #eda100;
+  --series-5: #e0457b;
+  --series-6: #008300;
+  --series-7: #2a78d6;
+  --series-8: #e34948;
+  --series-other: #b9bbc0;
+
+  /* Brand gradient: used sparingly as a pop of color (primary buttons, charts, progress). */
+  --brand-from: #7c4dff;
+  --brand-to: #e0457b;
+  --brand-gradient: linear-gradient(90deg in oklch, var(--brand-from), var(--brand-to));
+  --brand-glow: rgb(124 77 255 / 0.09);
+  --brand-glow-2: rgb(224 69 123 / 0.07);
+
+  /* Partner brand colors, only for their marks and integration cards. */
+  --zapier: #ff4f00;
+  --zapier-subtle: #fff1ea;
+
+  --backdrop: rgb(16 17 19 / 0.28);
+
+  --shadow-xs: 0 1px 2px rgb(16 17 19 / 0.04);
+  --shadow-sm: 0 1px 2px rgb(16 17 19 / 0.05), 0 0 0 1px rgb(16 17 19 / 0.02);
+  --shadow-md: 0 4px 12px -2px rgb(16 17 19 / 0.08), 0 2px 4px -2px rgb(16 17 19 / 0.04);
+  --shadow-lg: 0 16px 40px -8px rgb(16 17 19 / 0.16), 0 4px 12px -4px rgb(16 17 19 / 0.06);
+  /* A hint of lift for the shell's surfaces (nav panel, page card, rail tiles). */
+  --shadow-soft: 0 12px 32px -12px rgb(16 17 19 / 0.14), 0 2px 6px -2px rgb(16 17 19 / 0.05);
+
+  /* "UI" geometry of Cal Sans reads best at dashboard sizes. */
+  --font-geom-ui: "GEOM" 25;
+  --font-geom-display: "GEOM" 50;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --bg: #18181b;
+  --bg-subtle: #1c1c1f;
+  --bg-muted: #222226;
+  --bg-hover: #27272c;
+  --bg-active: #2e2e34;
+  --bg-inverse: #f1f1f3;
+  --canvas: #0f0f11;
+  --panel: #161618;
+  --bg-elevated: #202024;
+
+  --fg: #ececee;
+  --fg-secondary: rgb(236 236 238 / 0.93);
+  --fg-tertiary: rgb(236 236 238 / 0.86);
+  --fg-placeholder: #6f7178;
+  --fg-icon: #9c9ea5;
+  --fg-inverse: #18181b;
+
+  --border: #2a2a2f;
+  --border-strong: #37373d;
+  --border-input: #323238;
+
+  --accent: #8f6bff;
+  --accent-hover: #a083ff;
+  --accent-subtle: rgb(143 107 255 / 0.18);
+  --accent-fg: #bba6ff;
+  --ring: rgb(143 107 255 / 0.42);
+
+  --danger: #e5484d;
+  --danger-hover: #ec5d61;
+  --danger-subtle: rgb(229 72 77 / 0.15);
+  --danger-fg: #ff8a8d;
+
+  --success: #30a46c;
+  --success-subtle: rgb(48 164 108 / 0.16);
+  --success-fg: #5ed29a;
+
+  --warning: #f0a020;
+  --warning-subtle: rgb(240 160 32 / 0.14);
+  --warning-fg: #ffc35f;
+
+  --tag-gray-bg: rgb(255 255 255 / 0.08);
+  --tag-gray-fg: #c6c7cc;
+  --tag-blue-bg: rgb(59 123 246 / 0.18);
+  --tag-blue-fg: #93b8ff;
+  --tag-green-bg: rgb(48 164 108 / 0.18);
+  --tag-green-fg: #6fd69f;
+  --tag-yellow-bg: rgb(240 180 40 / 0.16);
+  --tag-yellow-fg: #f5c451;
+  --tag-orange-bg: rgb(235 104 52 / 0.18);
+  --tag-orange-fg: #ffa072;
+  --tag-red-bg: rgb(229 72 77 / 0.18);
+  --tag-red-fg: #ff8a8d;
+  --tag-purple-bg: rgb(143 107 255 / 0.2);
+  --tag-purple-fg: #bba6ff;
+  --tag-pink-bg: rgb(224 69 123 / 0.18);
+  --tag-pink-fg: #ff8fba;
+  --tag-teal-bg: rgb(20 163 157 / 0.18);
+  --tag-teal-fg: #62d6cf;
+
+  --code-comment: #7f828a;
+  --code-keyword: #b8a0ff;
+  --code-string: #6fd69f;
+  --code-key: #93b8ff;
+  --code-number: #ffa072;
+
+  --logo-tile: #f1f1f3;
+  --logo-mark: #18181b;
+
+  --series-1: #8f6bff;
+  --series-2: #d95926;
+  --series-3: #199e70;
+  --series-4: #c98500;
+  --series-5: #d55181;
+  --series-6: #008300;
+  --series-7: #3987e5;
+  --series-8: #e34948;
+  --series-other: #5d5f66;
+
+  --brand-from: #8f6bff;
+  --brand-to: #e8558a;
+  --brand-glow: rgb(143 107 255 / 0.14);
+  --brand-glow-2: rgb(232 85 138 / 0.1);
+
+  --zapier: #ff5f1f;
+  --zapier-subtle: rgb(255 79 0 / 0.12);
+
+  --backdrop: rgb(0 0 0 / 0.55);
+
+  --shadow-xs: 0 1px 2px rgb(0 0 0 / 0.35);
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.4), 0 0 0 1px rgb(255 255 255 / 0.02);
+  --shadow-md: 0 6px 16px -4px rgb(0 0 0 / 0.5), 0 2px 4px -2px rgb(0 0 0 / 0.4);
+  --shadow-lg: 0 18px 44px -10px rgb(0 0 0 / 0.7), 0 4px 12px -4px rgb(0 0 0 / 0.5);
+  --shadow-soft: 0 14px 36px -14px rgb(0 0 0 / 0.75), 0 2px 8px -2px rgb(0 0 0 / 0.45);
+}
+
+@theme inline {
+  --font-sans: var(--font-cal-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+
+  /* Type scale: 14px for most UI text. */
+  --text-2xs: 12px;
+  --text-2xs--line-height: 16px;
+  --text-xs: 13px;
+  --text-xs--line-height: 18px;
+  --text-sm: 14px;
+  --text-sm--line-height: 22px;
+  --text-base: 15px;
+  --text-base--line-height: 24px;
+  --text-lg: 17px;
+  --text-lg--line-height: 26px;
+  --text-xl: 22px;
+  --text-xl--line-height: 30px;
+  --text-2xl: 27px;
+  --text-2xl--line-height: 34px;
+  --text-3xl: 33px;
+  --text-3xl--line-height: 40px;
+
+  --color-bg: var(--bg);
+  --color-bg-subtle: var(--bg-subtle);
+  --color-bg-muted: var(--bg-muted);
+  --color-bg-hover: var(--bg-hover);
+  --color-bg-active: var(--bg-active);
+  --color-bg-inverse: var(--bg-inverse);
+  --color-bg-elevated: var(--bg-elevated);
+  --color-canvas: var(--canvas);
+  --color-panel: var(--panel);
+  --color-zapier: var(--zapier);
+  --color-zapier-subtle: var(--zapier-subtle);
+  --color-brand-from: var(--brand-from);
+  --color-brand-to: var(--brand-to);
+  --color-fg: var(--fg);
+  --color-fg-secondary: var(--fg-secondary);
+  --color-fg-tertiary: var(--fg-tertiary);
+  --color-fg-icon: var(--fg-icon);
+  --color-tag-gray-bg: var(--tag-gray-bg);
+  --color-tag-gray-fg: var(--tag-gray-fg);
+  --color-tag-blue-bg: var(--tag-blue-bg);
+  --color-tag-blue-fg: var(--tag-blue-fg);
+  --color-tag-green-bg: var(--tag-green-bg);
+  --color-tag-green-fg: var(--tag-green-fg);
+  --color-tag-yellow-bg: var(--tag-yellow-bg);
+  --color-tag-yellow-fg: var(--tag-yellow-fg);
+  --color-tag-orange-bg: var(--tag-orange-bg);
+  --color-tag-orange-fg: var(--tag-orange-fg);
+  --color-tag-red-bg: var(--tag-red-bg);
+  --color-tag-red-fg: var(--tag-red-fg);
+  --color-tag-purple-bg: var(--tag-purple-bg);
+  --color-tag-purple-fg: var(--tag-purple-fg);
+  --color-tag-pink-bg: var(--tag-pink-bg);
+  --color-tag-pink-fg: var(--tag-pink-fg);
+  --color-tag-teal-bg: var(--tag-teal-bg);
+  --color-tag-teal-fg: var(--tag-teal-fg);
+  --color-code-comment: var(--code-comment);
+  --color-code-keyword: var(--code-keyword);
+  --color-code-string: var(--code-string);
+  --color-code-key: var(--code-key);
+  --color-code-number: var(--code-number);
+  --color-fg-placeholder: var(--fg-placeholder);
+  --color-fg-inverse: var(--fg-inverse);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-border-input: var(--border-input);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-subtle: var(--accent-subtle);
+  --color-accent-fg: var(--accent-fg);
+  --color-ring: var(--ring);
+  --color-danger: var(--danger);
+  --color-danger-hover: var(--danger-hover);
+  --color-danger-subtle: var(--danger-subtle);
+  --color-danger-fg: var(--danger-fg);
+  --color-success: var(--success);
+  --color-success-subtle: var(--success-subtle);
+  --color-success-fg: var(--success-fg);
+  --color-warning: var(--warning);
+  --color-warning-subtle: var(--warning-subtle);
+  --color-warning-fg: var(--warning-fg);
+
+  --shadow-xs: var(--shadow-xs);
+  --shadow-sm: var(--shadow-sm);
+  --shadow-md: var(--shadow-md);
+  --shadow-lg: var(--shadow-lg);
+  --shadow-soft: var(--shadow-soft);
+
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+
+  --animate-pulse-soft: pulse-soft 1.6s ease-in-out infinite;
+  --animate-shimmer: shimmer 2s linear infinite;
+
+  /* shadcn-named aliases used inside Streamdown's code blocks and tables. */
+  --color-foreground: var(--fg);
+  --color-background: var(--bg);
+  --color-muted: var(--bg-muted);
+  --color-muted-foreground: var(--fg-tertiary);
+  --color-primary: var(--accent);
+  --color-primary-foreground: var(--fg-inverse);
+  --color-sidebar: var(--bg-subtle);
+}
+
+@keyframes shimmer {
+  from {
+    background-position: 100% center;
+  }
+  to {
+    background-position: 0% center;
+  }
+}
+
+@keyframes pulse-soft {
+  50% {
+    opacity: 0.55;
+  }
+}
+
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: var(--font-sans);
+    font-size: 14px;
+    line-height: 22px;
+    font-optical-sizing: auto;
+    font-variation-settings: var(--font-geom-ui);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  ::selection {
+    background: var(--ring);
+  }
+
+  input::placeholder,
+  textarea::placeholder {
+    color: var(--fg-placeholder);
+  }
+
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]) {
+    cursor: pointer;
+  }
+
+  code,
+  kbd,
+  pre,
+  samp {
+    font-family: var(--font-mono);
+    font-variation-settings: normal;
+  }
+}
+
+@utility font-display {
+  font-variation-settings: var(--font-geom-display);
+  letter-spacing: -0.01em;
+}
+
+@utility bg-brand {
+  background-image: var(--brand-gradient);
+}
+
+/*
+ * Primary buttons: mostly violet, a lighter violet with a hint of pink at the top easing into
+ * a slightly deeper violet at the bottom, so white text stays readable.
+ */
+@utility bg-brand-vertical {
+  background-image: linear-gradient(
+    180deg in oklch,
+    color-mix(in oklch, color-mix(in oklch, var(--brand-from), var(--brand-to) 18%), black 2%),
+    color-mix(in oklch, var(--brand-from), black 14%)
+  );
+}
+
+/* Faint brand wash for bars and highlights. */
+@utility bg-brand-soft {
+  background-image: linear-gradient(
+    90deg in oklch,
+    color-mix(in oklch, var(--brand-from) 15%, transparent),
+    color-mix(in oklch, var(--brand-to) 15%, transparent)
+  );
+}
+
+/* Faint brand glow behind full-page cards (auth, onboarding). */
+@utility bg-brand-glow {
+  background-image:
+    radial-gradient(60% 45% at 50% 0%, var(--brand-glow), transparent),
+    radial-gradient(40% 35% at 70% 5%, var(--brand-glow-2), transparent);
+}
+
+@utility text-brand {
+  background-image: var(--brand-gradient);
+  background-clip: text;
+  color: transparent;
+}
+
+@utility tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+@utility focus-ring {
+  outline: none;
+  &:focus-visible {
+    box-shadow: 0 0 0 1px var(--accent), 0 0 0 4px var(--ring);
+  }
+}
+
+@utility scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong) transparent;
+}
+
+/* Base UI toast stack (adapted from the Base UI docs demo). */
+.toast {
+  --gap: 0.625rem;
+  --peek: 0.625rem;
+  --scale: calc(max(0, 1 - (var(--toast-index) * 0.08)));
+  --shrink: calc(1 - var(--scale));
+  --height: var(--toast-frontmost-height, var(--toast-height));
+  --offset-y: calc(var(--toast-offset-y) * -1 + (var(--toast-index) * var(--gap) * -1) + var(--toast-swipe-movement-y));
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  box-sizing: border-box;
+  transform-origin: bottom center;
+  z-index: calc(1000 - var(--toast-index));
+  height: var(--height);
+  user-select: none;
+  transition:
+    transform 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.45s,
+    height 0.15s;
+  transform: translateX(var(--toast-swipe-movement-x))
+    translateY(calc(var(--toast-swipe-movement-y) - (var(--toast-index) * var(--peek)) - (var(--shrink) * var(--height))))
+    scale(var(--scale));
+}
+.toast::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  height: calc(var(--gap) + 1px);
+}
+.toast[data-expanded] {
+  height: var(--toast-height);
+  transform: translateX(var(--toast-swipe-movement-x)) translateY(var(--offset-y));
+}
+.toast[data-starting-style],
+.toast[data-ending-style]:not([data-limited]):not([data-swipe-direction]) {
+  transform: translateY(150%);
+}
+.toast[data-ending-style],
+.toast[data-limited] {
+  opacity: 0;
+}
+.toast[data-ending-style][data-swipe-direction="right"] {
+  transform: translateX(calc(var(--toast-swipe-movement-x) + 150%)) translateY(var(--offset-y));
+}
+.toast[data-ending-style][data-swipe-direction="down"] {
+  transform: translateY(calc(var(--toast-swipe-movement-y) + 150%));
+}
+.toast-content {
+  transition: opacity 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.toast-content[data-behind] {
+  opacity: 0;
+}
+.toast-content[data-expanded] {
+  opacity: 1;
+}
