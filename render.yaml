@@ -39,7 +39,7 @@ services:
     name: offer-app
     runtime: node
     plan: starter
-    buildCommand: corepack enable && pnpm install --frozen-lockfile --filter offer-app... && pnpm --filter offer-app build
+    buildCommand: corepack pnpm install --frozen-lockfile --filter offer-app... && corepack pnpm --filter offer-app build
     startCommand: cd offer-app && npm run start
     buildFilter:
       paths:
