@@ -25,7 +25,7 @@ const schema = z.object({
   // "mock" (or unset outside `next dev`) uses the built-in in-memory mock.
   OFFER_API_URL: optional.pipe(z.url().optional()),
   // Optional private address this server uses instead (e.g. Render's private network,
-  // "honeypot-api:10000"). A bare host:port means http.
+  // "offersdk-api:10000"). A bare host:port means http.
   OFFER_API_INTERNAL_URL: optional
     .transform((value) => (value && !/^https?:\/\//.test(value) ? `http://${value}` : value))
     .pipe(z.url().optional()),

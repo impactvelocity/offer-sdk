@@ -2,16 +2,16 @@
 # their Postgres database. In Render: New → Blueprint → this repo (render.yaml).
 #
 # Render asks for the `sync: false` values on the first deploy:
-#   honeypot-api  ADMIN_API_KEY   shared secret between the two services (openssl rand -hex 32,
+#   offersdk-api  ADMIN_API_KEY   shared secret between the two services (openssl rand -hex 32,
 #                                 or the legacy dashboard's existing key)
-#   honeypot-api  APP_URL         the dashboard's public URL, e.g. https://offer-app.onrender.com
-#   offer-app     OFFER_API_URL   the API's public URL, e.g. https://honeypot-api.onrender.com
+#   offersdk-api  APP_URL         the dashboard's public URL, e.g. https://offer-app.onrender.com
+#   offer-app     OFFER_API_URL   the API's public URL, e.g. https://offersdk-api.onrender.com
 #   offer-app     ANTHROPIC_API_KEY  optional, enables the Agent page
 # Everything else is generated or wired between the services below.
 
 services:
   - type: web
-    name: honeypot-api
+    name: offersdk-api
     runtime: docker
     plan: starter
     dockerfilePath: ./api/Dockerfile
@@ -23,7 +23,7 @@ services:
     envVars:
       - key: DATABASE_URL
         fromDatabase:
-          name: honeypot-db
+          name: offersdk-db
           property: connectionString
       # Full-access key. The dashboard gets the same value (see OFFER_API_ADMIN_KEY).
       - key: ADMIN_API_KEY
@@ -57,12 +57,12 @@ services:
       - key: OFFER_API_INTERNAL_URL
         fromService:
           type: web
-          name: honeypot-api
+          name: offersdk-api
           property: hostport
       - key: OFFER_API_ADMIN_KEY
         fromService:
           type: web
-          name: honeypot-api
+          name: offersdk-api
           envVarKey: ADMIN_API_KEY
       - key: ANTHROPIC_API_KEY
         sync: false
@@ -77,8 +77,8 @@ services:
         value: "0"
 
 databases:
-  - name: honeypot-db
+  - name: offersdk-db
     plan: basic-256mb
-    databaseName: honeypot
+    databaseName: offersdk
     postgresMajorVersion: "17"
     ipAllowList: [] # internal connections only

@@ -27,8 +27,8 @@ To run the dashboard without the API, on an in-memory mock with a demo workspace
 
 ```
 browser ──► offer-app ── /api/admin/* (BFF) ──┐  Authorization: Bearer ADMIN_API_KEY
-                      └─ /api/auth/*  (proxy) ─┴─► honeypot-api ──► Postgres
-tenant code / SDK ───────────────────────────────► honeypot-api (app secret or public key)
+                      └─ /api/auth/*  (proxy) ─┴─► offersdk-api ──► Postgres
+tenant code / SDK ───────────────────────────────► offersdk-api (app secret or public key)
 ```
 
 - **Shared key.** `ADMIN_API_KEY` is set once on the API and copied to the dashboard as `OFFER_API_ADMIN_KEY`. The API rejects dashboard calls (`/orgs`, `/api/auth/*`, and any app as admin) without it.
