@@ -1,0 +1,142 @@
+/* Tailwind without preflight: browser-default buttons, tables and headings, like 2010. */
+@layer theme, base, components, utilities;
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities);
+
+/* public/stylesheets/scaffold.css (Rails 3) */
+body {
+  background-color: #fff;
+  color: #333;
+  margin: 8px 33px 40px;
+}
+
+body, p, ol, ul, td {
+  font-family: verdana, arial, helvetica, sans-serif;
+  font-size: 13px;
+  line-height: 18px;
+}
+
+pre {
+  background-color: #eee;
+  padding: 10px;
+  font-size: 11px;
+  overflow-x: auto;
+}
+
+a { color: #000; }
+a:visited { color: #666; }
+a:hover { color: #fff; background-color: #000; }
+
+div.field, div.actions { margin-bottom: 10px; }
+
+#notice { color: green; }
+#alert { color: #c00; }
+
+.field_with_errors {
+  padding: 2px;
+  background-color: red;
+  display: table;
+}
+
+#error_explanation {
+  width: 450px;
+  border: 2px solid red;
+  padding: 7px 7px 0;
+  margin-bottom: 20px;
+  background-color: #f0f0f0;
+}
+
+#error_explanation h2 {
+  text-align: left;
+  font-weight: bold;
+  padding: 5px 5px 5px 15px;
+  font-size: 12px;
+  margin: -7px -7px 0;
+  background-color: #c00;
+  color: #fff;
+}
+
+#error_explanation ul li {
+  font-size: 12px;
+  list-style: square;
+}
+
+/* Scaffold tables had no styling at all; a hairline keeps wide API tables legible. */
+table.data { border-collapse: collapse; }
+table.data th { text-align: left; padding: 2px 10px 2px 0; }
+table.data td { padding: 2px 10px 2px 0; vertical-align: top; }
+table.data tr + tr td { border-top: 1px dotted #ccc; }
+
+/* The nav: a plain line of links, separated by pipes. */
+#nav { margin-bottom: 1em; padding-bottom: 6px; border-bottom: 1px solid #ccc; }
+#nav .sep { color: #999; padding: 0 4px; }
+#nav .who { float: right; color: #666; }
+
+fieldset { margin: 0 0 1.5em; border: 1px solid #ccc; padding: 6px 12px 12px; }
+legend { font-weight: bold; padding: 0 4px; }
+
+form.inline { display: inline; }
+.muted { color: #888; }
+.pass { color: green; }
+.fail { color: #c00; }
+.warn { color: #b60; }
+code { font-size: 12px; }
+
+/* tail -f log/development.log */
+#devlog { margin-top: 3em; font-size: 11px; }
+#devlog pre { background: #222; color: #ddd; line-height: 15px; }
+#devlog .s2 { color: #8f8; }
+#devlog .s4 { color: #fc6; }
+#devlog .s5 { color: #f77; }
+
+@media (max-width: 640px) {
+  body { margin: 8px 16px 40px; }
+  #error_explanation { width: auto; }
+  #nav .who { float: none; display: block; }
+}
+
+/* public/index.html: "Welcome aboard" */
+.welcome { background: #f0f0f0; margin: -8px -33px; padding: 24px 0 40px; font-family: "Lucida Grande", "Lucida Sans Unicode", "Trebuchet MS", sans-serif; }
+.welcome #page { background: #fff; width: 750px; max-width: calc(100% - 32px); margin: 0 auto; padding: 20px 30px 30px; display: flex; gap: 30px; flex-wrap: wrap; }
+.welcome #content { flex: 1 1 420px; min-width: 0; }
+.welcome #sidebar { flex: 0 0 175px; font-size: 13px; }
+.welcome #sidebar h3 { margin: 18px 0 6px; font-size: 14px; }
+.welcome #sidebar ul { margin: 0; padding: 0; list-style: none; }
+.welcome #header h1 { margin: 0; font-size: 28px; color: #333; }
+.welcome #header h2 { margin: 4px 0 20px; font-size: 18px; color: #888; font-weight: normal; }
+.welcome #about h3 { margin: 0; font-size: 14px; }
+.welcome #about table { margin: 8px 0 0; font-size: 11px; border-collapse: collapse; background: #ffffdd; width: 100%; }
+.welcome #about td { padding: 3px 8px; border-top: 1px solid #eee; word-break: break-all; }
+.welcome #about td.name { color: #555; white-space: nowrap; width: 1%; }
+.welcome #getting-started { border-top: 1px solid #ccc; margin-top: 25px; padding-top: 15px; }
+.welcome #getting-started h1 { margin: 0; font-size: 20px; }
+.welcome #getting-started h2 { margin: 0; font-size: 14px; font-weight: normal; color: #333; margin-bottom: 15px; }
+.welcome #getting-started ol { margin-left: 0; padding-left: 0; list-style: none; }
+.welcome #getting-started li { font-size: 18px; color: #888; margin-bottom: 25px; }
+.welcome #getting-started li h2 { margin: 0; font-weight: normal; font-size: 18px; color: #333; }
+.welcome #getting-started li p { color: #555; font-size: 13px; margin: 4px 0; }
+.welcome pre.generator { background: #222; color: #ddd; font-size: 12px; line-height: 16px; }
+.welcome .v-create, .welcome .v-attach, .welcome .v-update, .welcome .v-connect, .welcome .v-publish { color: #8f8; }
+.welcome .v-exist { color: #8cf; }
+.welcome .v-skip { color: #fc6; }
+.welcome .v-error { color: #f77; }
+
+/* The checkout SDK renders plain markup with data-* state; style it 2008-style. */
+.checkout [data-offer-intervals] button[data-selected] { font-weight: bold; }
+.checkout [data-offer-plans] { display: flex; flex-wrap: wrap; gap: 12px; margin: 12px 0; }
+.checkout [data-offer-plan] { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; width: 210px; padding: 10px; text-align: left; background: #fff; border: 1px solid #999; font: inherit; cursor: pointer; }
+.checkout [data-offer-plan][data-selected] { border: 2px solid #000; background: #ffffdd; padding: 9px; }
+.checkout [data-offer-plan] [data-part="name"] { font-weight: bold; font-size: 15px; }
+.checkout [data-offer-plan] [data-part="price"] { font-size: 15px; }
+.checkout [data-offer-plan] [data-part="renewal"], .checkout [data-offer-plan] [data-part="description"] { color: #666; font-size: 11px; }
+.checkout [data-offer-plan] ul { margin: 4px 0 0; padding-left: 18px; }
+.checkout [data-offer-plan][data-featured] [data-part="name"]::after { content: " ★"; color: #c00; }
+.checkout [data-offer-bumps] label { display: block; margin: 4px 0; }
+.checkout [data-offer-bumps] [data-part="description"] { color: #666; margin-left: 6px; }
+.checkout [data-offer-summary] { display: grid; grid-template-columns: max-content max-content; gap: 2px 20px; margin: 12px 0; padding: 8px 12px; background: #eee; width: max-content; }
+.checkout [data-offer-summary] dd { margin: 0; text-align: right; }
+.checkout [data-offer-summary] [data-part="total"] { font-weight: bold; border-top: 1px solid #999; padding-top: 2px; }
+.checkout [data-offer-summary] dd[data-part="renewal"] { grid-column: 1 / -1; text-align: left; color: #666; font-size: 11px; }
+.checkout [data-offer-status] { color: #b60; }
+.checkout [data-offer-checkout] { max-width: 320px; }
+.checkout [data-offer-checkout] [data-error] { color: #c00; }

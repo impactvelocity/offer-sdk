@@ -37,7 +37,7 @@ export const primitives: { title: string; body: string; tone: MarkerTone; Diagra
   },
   {
     title: "Offers",
-    body: "A plan, its bumps and an incentive packaged behind one link that checks out with PayPal.",
+    body: "One or more plans with their prices, order bumps and extra entitlements, behind one link that checks out with PayPal.",
     tone: "blue",
     Diagram: OffersDiagram,
   },

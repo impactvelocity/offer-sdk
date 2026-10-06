@@ -5,7 +5,7 @@
 export const isLocalDev = process.env.NODE_ENV !== "production" && process.env.NODE_ENV !== "test";
 
 if (isLocalDev) {
-  process.env.DATABASE_URL ||= "postgres://postgres:postgres@localhost:5432/honey";
+  process.env.DATABASE_URL ||= "postgres://postgres:postgres@localhost:5432/offersdk";
   // The dashboard's default OFFER_API_ADMIN_KEY in development.
   process.env.ADMIN_API_KEY ||= "dev-admin-key";
   process.env.PORT ||= "6767";

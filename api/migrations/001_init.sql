@@ -1,4 +1,4 @@
--- Honeypot API schema.
+-- Offer API schema.
 --
 -- Resources are stored as JSONB documents (`data`) so PATCH keeps the legacy
 -- shallow-merge semantics ({ ...current, ...payload }) and arbitrary fields

@@ -4,10 +4,12 @@ import { buttonVariants } from "@/components/ui/button-variants";
 import { APP_URL } from "@/lib/env";
 
 const nav = [
-  { href: "#platform", label: "Platform" },
-  { href: "#features", label: "Features" },
-  { href: "#how-it-works", label: "How it works" },
-  { href: "#developers", label: "Developers" },
+  { href: "/#product", label: "Product" },
+  { href: "/#use-cases", label: "Use cases" },
+  { href: "/#platform", label: "Platform" },
+  { href: "/story", label: "Story" },
+  { href: "/#developers", label: "Developers" },
+  { href: "/demo", label: "Demo" },
 ];
 
 export function SiteHeader() {
@@ -19,9 +21,9 @@ export function SiteHeader() {
         </Link>
         <div className="hidden items-center gap-1 md:flex">
           {nav.map((item) => (
-            <a key={item.href} href={item.href} className={buttonVariants({ variant: "ghost", size: "sm" })}>
+            <Link key={item.href} href={item.href} className={buttonVariants({ variant: "ghost", size: "sm" })}>
               {item.label}
-            </a>
+            </Link>
           ))}
         </div>
         <div className="ml-auto flex items-center gap-2">

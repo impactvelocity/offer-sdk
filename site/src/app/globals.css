@@ -102,6 +102,10 @@
   --marker-pink: #ec5f95;
   --marker-blue: #5aa8f5;
 
+  /* Partner brand colors, only for their buttons and marks. */
+  --paypal: #ffc439;
+  --paypal-fg: #142c8e;
+
   --backdrop: rgb(0 0 0 / 0.55);
 
   --shadow-xs: 0 1px 2px rgb(0 0 0 / 0.35);
@@ -504,4 +508,142 @@
 
 .group:hover .diagram path.diagram-unlock-line {
   stroke-dashoffset: 0;
+}
+
+/* Feature tabs (src/components/feature-tabs). */
+@keyframes tab-progress {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes feature-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+
+/* Fills under the active tab while it auto-advances; paused off screen or while hovered. */
+@media (prefers-reduced-motion: no-preference) {
+  .tab-progress {
+    animation: tab-progress 8s linear forwards;
+  }
+}
+
+.tab-progress[data-paused="true"],
+.group\/tabs:hover .tab-progress {
+  animation-play-state: paused;
+}
+
+/* The visual for each tab sits in a framed panel lit in the tab's tone. */
+.feature-frame {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-2xl);
+  background: var(--panel);
+  padding: 20px;
+}
+
+.feature-frame::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(60% 50% at 80% 0%, color-mix(in oklch, var(--tone) 16%, transparent), transparent),
+    radial-gradient(circle, color-mix(in oklch, var(--tone) 22%, transparent) 1px, transparent 1.5px) 0 0 / 18px 18px;
+  mask-image: linear-gradient(to bottom, black, transparent 70%);
+}
+
+@media (min-width: 640px) {
+  .feature-frame {
+    padding: 28px;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .feature-in {
+    animation: feature-in 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .feature-in .stagger > * {
+    animation: feature-in 0.55s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+  }
+
+  .feature-in .stagger > :nth-child(2) {
+    animation-delay: 0.08s;
+  }
+
+  .feature-in .stagger > :nth-child(3) {
+    animation-delay: 0.16s;
+  }
+
+  .feature-in .stagger > :nth-child(4) {
+    animation-delay: 0.24s;
+  }
+
+  .feature-in .stagger > :nth-child(5) {
+    animation-delay: 0.32s;
+  }
+
+  .feature-in .stagger > :nth-child(n + 6) {
+    animation-delay: 0.4s;
+  }
+}
+
+/* Story page (src/components/story). */
+@keyframes story-line-in {
+  from {
+    opacity: 0;
+    transform: translateX(-8px);
+    background-color: color-mix(in oklch, var(--warning) 35%, transparent);
+  }
+}
+
+@keyframes story-bar {
+  from {
+    width: 0;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .story-line-new {
+    animation: story-line-in 0.6s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+  }
+
+  .story-bar {
+    animation: story-bar 1s cubic-bezier(0.22, 1, 0.36, 1) 0.2s backwards;
+  }
+}
+
+/* Demo page (src/components/demo): values flash when the simulated SDK changes them. */
+@keyframes demo-flash {
+  from {
+    background-color: var(--accent-subtle);
+    box-shadow: 0 0 0 3px var(--accent-subtle);
+  }
+}
+
+@keyframes demo-grow {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .demo-flash {
+    animation: demo-flash 0.9s ease-out;
+  }
+
+  /* Usage bars fill from empty when a new customer loads. */
+  .demo-grow {
+    transform-origin: left;
+    animation: demo-grow 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+  }
 }

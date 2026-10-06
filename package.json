@@ -10,6 +10,7 @@
     "dev:app": "pnpm --filter offer-app dev",
     "dev:web": "pnpm --filter web dev",
     "dev:site": "pnpm --filter site dev",
+    "dev:blog": "pnpm --filter blog dev",
     "dev:api": "docker compose up",
     "seed:demo": "pnpm --filter offer-app seed:demo",
     "build": "pnpm -r build",

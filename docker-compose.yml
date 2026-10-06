@@ -6,7 +6,7 @@ services:
     image: postgres:17-alpine
     environment:
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: honey
+      POSTGRES_DB: offersdk
     ports:
       - "5432:5432"
     volumes:
@@ -21,7 +21,7 @@ services:
     working_dir: /app
     command: sh -c "bun install && bun --watch src/index.ts"
     environment:
-      DATABASE_URL: postgres://postgres:postgres@postgres:5432/honey
+      DATABASE_URL: postgres://postgres:postgres@postgres:5432/offersdk
     ports:
       - "6767:6767"
     volumes:

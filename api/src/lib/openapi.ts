@@ -1,7 +1,7 @@
 const spec = {
   openapi: "3.1.0",
   info: {
-    title: "Honeypot API",
+    title: "Offer API",
     version: "1.0.0",
     description:
       "Entitlement, usage, and plan management API. Per-app routes require a Bearer app API key. Org routes require the admin Bearer key.",

@@ -1,5 +1,5 @@
 {
-  "name": "honeypot-api",
+  "name": "offersdk-api",
   "private": true,
   "type": "module",
   "scripts": {

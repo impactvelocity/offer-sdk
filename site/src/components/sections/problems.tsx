@@ -1,0 +1,102 @@
+import { ArrowRight } from "lucide-react";
+import type { ReactNode } from "react";
+import { SectionHeading } from "@/components/section-heading";
+import { CodeBlock } from "@/components/ui/code-block";
+import { cn } from "@/lib/utils";
+
+const before = `if (user.plan === "pro" || user.plan === "team") {
+  enableExports();
+}
+if (user.id === "acme_corp") {
+  // custom deal, ask Dave
+  seats = 50;
+  enableSso();
+}
+if (promo === "BF24" && Date.now() < BF_END) {
+  price = 199;
+}
+// TODO: affiliate bundles???`;
+
+const after = `const exports = useEntitlement("exports");
+const seats = useEntitlement("seats");
+
+// Plans, custom deals, promos and partner
+// bundles all live in the dashboard.`;
+
+const requests: { ask: string; fix: string }[] = [
+  { ask: "A customer asks for a longer trial.", fix: "Give that account a trial incentive." },
+  { ask: "Acme wants 50 seats and SSO on Team.", fix: "Make Acme a custom plan." },
+  { ask: "An influencer wants a deal for their audience.", fix: "Create an offer with its own link." },
+  { ask: "Nobody knows who uses the features you gate.", fix: "See usage per feature and per account." },
+];
+
+/** The problem: hardcoded plan checks vs. a flexible offer, then four everyday requests and what each takes. */
+export function ProblemsSection() {
+  return (
+    <section id="problem" className="mx-auto max-w-6xl scroll-mt-20 px-4 py-20 sm:px-6">
+      <SectionHeading
+        title="Every deal you say yes to ends up in your code"
+        lead="Then the next customer asks for something slightly different, and you’re back in billing.ts."
+      />
+
+      <div className="mt-12 grid items-stretch gap-4 lg:grid-cols-2">
+        <Verdict tone="danger" quote="“Sorry, I can't do that.”" caption="Plans hardcoded in your app">
+          <CodeBlock title="billing.ts" code={before} className="flex-1 shadow-none" />
+        </Verdict>
+        <Verdict tone="success" quote="“Sold.”" caption="Plans and deals stored in Offer SDK">
+          <CodeBlock title="billing.ts" code={after} className="flex-1 shadow-none" />
+          <div className="grid grid-cols-3 gap-2 text-center text-xs">
+            {["Custom plan for Acme", "BF24 promo, ends Sunday", "Bundle for @sarahbuilds"].map((d) => (
+              <span key={d} className="rounded-lg border border-border bg-bg px-2 py-2 text-fg-secondary">
+                {d}
+              </span>
+            ))}
+          </div>
+        </Verdict>
+      </div>
+
+      <ul className="mt-4 grid gap-px overflow-hidden rounded-2xl border border-border bg-border sm:grid-cols-2 lg:grid-cols-4">
+        {requests.map((r) => (
+          <li key={r.ask} className="flex flex-col bg-panel p-6">
+            <p className="text-fg">{r.ask}</p>
+            <p className="mt-auto flex items-start gap-1.5 pt-4 text-sm text-success-fg">
+              <ArrowRight className="mt-[3px] size-3.5 shrink-0" />
+              {r.fix}
+            </p>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+function Verdict({
+  tone,
+  quote,
+  caption,
+  children,
+}: {
+  tone: "danger" | "success";
+  quote: string;
+  caption: string;
+  children: ReactNode;
+}) {
+  return (
+    <div
+      className={cn(
+        "flex min-w-0 flex-col rounded-2xl border p-4 sm:p-5",
+        tone === "danger" ? "border-danger/25 bg-danger-subtle/40" : "border-success/25 bg-success-subtle/40",
+      )}
+    >
+      <div className="mb-4 flex flex-wrap items-baseline justify-between gap-2">
+        <span
+          className={cn("font-display text-xl font-semibold", tone === "danger" ? "text-danger-fg" : "text-success-fg")}
+        >
+          {quote}
+        </span>
+        <span className="text-xs text-fg-muted">{caption}</span>
+      </div>
+      <div className="flex flex-1 flex-col gap-3">{children}</div>
+    </div>
+  );
+}

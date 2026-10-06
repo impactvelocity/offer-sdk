@@ -66,7 +66,7 @@ afterAll(async () => {
 
 describe("public routes", () => {
   test("root, health, openapi", async () => {
-    expect((await call("GET", "/", { key: null })).json).toBe("Honey API.");
+    expect((await call("GET", "/", { key: null })).json).toBe("Offer API.");
     expect((await call("GET", "/health", { key: null })).json).toEqual({ ok: true });
     expect((await call("GET", "/openapi.json", { key: null })).json.openapi).toBe("3.1.0");
   });

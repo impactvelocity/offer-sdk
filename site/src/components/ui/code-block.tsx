@@ -4,8 +4,8 @@ import { cn } from "@/lib/utils";
 const KEYWORDS = /\b(import|from|export|const|let|function|return|await|async|new|true|false|null|default)\b/;
 const STRING = /"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'|`(?:[^`\\]|\\.)*`/;
 
-// Tiny tokenizer (strings, comments, numbers, keywords), same colors as offer-app's CodeBlock.
-function highlight(code: string): ReactNode[] {
+// Tiny tokenizer (strings, object keys, comments, numbers, keywords), same colors as offer-app's CodeBlock.
+export function highlight(code: string): ReactNode[] {
   const pattern = new RegExp(`((?<!:)\\/\\/[^\\n]*)|(${STRING.source})|(\\b\\d+(?:\\.\\d+)?\\b)|([A-Za-z_]+)`, "gm");
   const out: ReactNode[] = [];
   let last = 0;
@@ -17,7 +17,9 @@ function highlight(code: string): ReactNode[] {
     const cls = comment
       ? "text-code-comment italic"
       : str
-        ? "text-code-string"
+        ? code[m.index + text.length] === ":"
+          ? "text-code-key"
+          : "text-code-string"
         : num
           ? "text-code-number"
           : word && KEYWORDS.test(word)

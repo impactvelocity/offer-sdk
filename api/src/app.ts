@@ -31,7 +31,7 @@ const app = new Hono();
 
 app.use("*", cors());
 
-app.get("/", (c) => c.text("Honey API."));
+app.get("/", (c) => c.text("Offer API."));
 
 // Render health check: confirms the database is reachable.
 app.get("/health", async (c) => {
@@ -41,7 +41,7 @@ app.get("/health", async (c) => {
 
 app.get("/openapi.json", (c) => c.json(spec));
 
-app.get("/docs", apiReference({ pageTitle: "Honeypot API", url: "/openapi.json" }));
+app.get("/docs", apiReference({ pageTitle: "Offer API", url: "/openapi.json" }));
 
 // Webhook event catalog, public so docs and dashboards can show it.
 app.route("/event-types", eventTypes);

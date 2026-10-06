@@ -40,6 +40,12 @@ export function AppNav({ appId, className }: { appId: string; className?: string
           <NavItem href={`${base}/agent`} icon={<Sparkles />} active={is("/agent")}>
             Agent
           </NavItem>
+          {/* Hidden on API versions without offers (the in-memory mock). */}
+          {offers.data !== null ? (
+            <NavItem href={`${base}/offers`} icon={<BadgePercent />} active={is("/offers")} count={offers.data?.length}>
+              Offers
+            </NavItem>
+          ) : null}
         </div>
 
         <NavGroup label="Catalog">
@@ -56,15 +62,6 @@ export function AppNav({ appId, className }: { appId: string; className?: string
             Incentives
           </NavItem>
         </NavGroup>
-
-        {/* Hidden on API versions without offers (the in-memory mock). */}
-        {offers.data !== null ? (
-          <NavGroup label="Sell">
-            <NavItem href={`${base}/offers`} icon={<BadgePercent />} active={is("/offers")} count={offers.data?.length}>
-              Offers
-            </NavItem>
-          </NavGroup>
-        ) : null}
 
         <NavGroup label="Customers">
           <NavItem href={`${base}/accounts`} icon={<Users />} active={is("/accounts")} count={accounts.data?.count}>

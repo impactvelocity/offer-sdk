@@ -42,6 +42,28 @@
         "up"
       ],
       "port": 6767
+    },
+    {
+      "name": "blog",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": [
+        "--filter",
+        "blog",
+        "dev"
+      ],
+      "port": 6770
+    },
+    {
+      "name": "blog-postgres",
+      "runtimeExecutable": "env",
+      "runtimeArgs": [
+        "DATABASE_URL=postgres://postgres:postgres@localhost:5434/blog",
+        "pnpm",
+        "--filter",
+        "blog",
+        "dev"
+      ],
+      "port": 6770
     }
   ]
 }

@@ -1,4 +1,4 @@
-# Honeypot API
+# Offer API
 
 Headless Hono + Bun rebuild of the legacy Honeypot API (`honeyapi/api`). It keeps the same routes, auth rules, request bodies and response shapes. It also handles sign-in for the dashboard ([`../offer-app`](../offer-app)). The only backing service is **Postgres**, which replaces all three legacy services:
 
@@ -23,12 +23,12 @@ bun install
 bun run dev                 # http://localhost:6767, docs at /docs
 ```
 
-Outside production and tests, `src/dev-env.ts` fills in defaults, so no `.env` is needed: `DATABASE_URL=postgres://postgres:postgres@localhost:5432/honey`, `ADMIN_API_KEY=dev-admin-key` (the dashboard's development default), `PORT=6767` and `WEBHOOKS_ALLOW_PRIVATE_URLS=true`. Dashboard origins on any localhost port are trusted. Use `.env` (see `.env.example`) to override them.
+Outside production and tests, `src/dev-env.ts` fills in defaults, so no `.env` is needed: `DATABASE_URL=postgres://postgres:postgres@localhost:5432/offersdk`, `ADMIN_API_KEY=dev-admin-key` (the dashboard's development default), `PORT=6767` and `WEBHOOKS_ALLOW_PRIVATE_URLS=true`. Dashboard origins on any localhost port are trusted. Use `.env` (see `.env.example`) to override them.
 
 Pending migrations in `migrations/*.sql` run on boot. An advisory lock makes this safe across several instances. Set `MIGRATE_ON_BOOT=false` to run `bun run migrate` yourself instead.
 
 ```bash
-DATABASE_URL=postgres://…/honey_test bun test   # end-to-end, truncates every table
+DATABASE_URL=postgres://…/offersdk_test bun test   # end-to-end, truncates every table
 bun run typecheck
 ```
 

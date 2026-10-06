@@ -3,7 +3,7 @@
   "configVersion": 1,
   "workspaces": {
     "": {
-      "name": "honeypot-api",
+      "name": "offersdk-api",
       "dependencies": {
         "@scalar/hono-api-reference": "^0.9.44",
         "better-auth": "^1.7.7",

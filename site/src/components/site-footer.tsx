@@ -1,5 +1,6 @@
 import { ArrowRight } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import footerBg from "@/assets/footer-bg.webp";
 import { LogoMark } from "@/components/brand/logo";
 import { buttonVariants } from "@/components/ui/button-variants";
@@ -19,9 +20,9 @@ export function SiteFooter() {
         {/* Translucent so the artwork shows through the card. */}
         <div className="relative isolate mx-auto max-w-6xl overflow-hidden rounded-2xl border border-border bg-panel/60 px-6 py-16 text-center backdrop-blur-sm">
           <div className="absolute inset-0 -z-10 bg-brand-glow" aria-hidden />
-          <h2 className="font-display text-3xl font-semibold text-balance sm:text-4xl">Ship your next offer today</h2>
+          <h2 className="font-display text-3xl font-semibold text-balance sm:text-4xl">Create your first offer</h2>
           <p className="mx-auto mt-4 max-w-xl text-fg-muted">
-            Create a workspace, connect PayPal and send your first offer link.
+            Make a workspace, connect your PayPal account and share an offer link.
           </p>
           <a href={`${APP_URL}/sign-up`} className={buttonVariants({ variant: "primary", size: "xl", className: "mt-8" })}>
             Get started free
@@ -34,12 +35,12 @@ export function SiteFooter() {
           <LogoMark className="size-5" />© {new Date().getFullYear()} Offer SDK
         </span>
         <div className="flex gap-5">
-          <a href="#features" className="hover:text-fg">
-            Features
-          </a>
-          <a href="#developers" className="hover:text-fg">
+          <Link href="/#use-cases" className="hover:text-fg">
+            Use cases
+          </Link>
+          <Link href="/#developers" className="hover:text-fg">
             Developers
-          </a>
+          </Link>
         </div>
       </div>
     </footer>

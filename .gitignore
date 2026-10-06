@@ -8,3 +8,6 @@ coverage
 .env*.local
 .DS_Store
 *.log
+
+# Copywriting working notes (local only)
+copywriting/

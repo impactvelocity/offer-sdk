@@ -17,7 +17,7 @@ const server = Bun.serve({
 // to leave delivery to other instances.
 const stopWebhookWorker = process.env.WEBHOOKS_WORKER !== "false" ? startWebhookWorker() : null;
 
-console.log(`Honey API listening on ${server.url}`);
+console.log(`Offer API listening on ${server.url}`);
 
 // Render sends SIGTERM on deploys; finish in-flight requests and webhook
 // attempts, then close the pools.

@@ -1,12 +1,13 @@
 # offer-sdk
 
-pnpm monorepo with three Next.js apps, plus a standalone Bun API:
+pnpm monorepo with four Next.js apps, plus a standalone Bun API:
 
 | App | Path | Port | What |
 | --- | --- | --- | --- |
 | `offer-app` | [`offer-app/`](offer-app) | 6768 | **The dashboard**: talks to the API through its BFF, plus the React SDK source (`src/sdk`) |
 | `web` | [`web/`](web) | 3000 | Marketing / sales site |
 | `site` | [`site/`](site) | 6769 | Landing page, using the dashboard's dark design system |
+| `blog` | [`blog/`](blog) | 6770 | **Test bed**: a Rails-tutorial-style blog that uses the API and SDK in every way, with a `rake test` page |
 | `api` | [`api/`](api) | 6767 | Offer API (Hono + Bun + Postgres): all data plus dashboard sign-in. Not part of the pnpm workspace; see [`api/README.md`](api/README.md) |
 
 ## Getting started
@@ -14,7 +15,7 @@ pnpm monorepo with three Next.js apps, plus a standalone Bun API:
 ```bash
 pnpm install
 pnpm dev:api      # Postgres + the API on :6767, in Docker
-pnpm dev          # the dashboard (:6768), web (:3000) and site (:6769)
+pnpm dev          # the dashboard (:6768), web (:3000), site (:6769) and blog (:6770)
 ```
 
 `pnpm seed:demo` adds the demo login (`demo@offersdk.dev` / `demo-password`) with two sample apps and six months of usage. Local defaults line up with no `.env` files. The API uses `localhost` Postgres and the admin key `dev-admin-key`, and trusts dashboard origins on any localhost port. The dashboard calls `http://localhost:6767` with that key. Copy the `.env.example` files only to override something, such as adding `ANTHROPIC_API_KEY`.
@@ -45,5 +46,5 @@ tenant code / SDK ────────────────────�
 ## Scripts
 
 - `pnpm dev`: run both apps
-- `pnpm dev:app` / `pnpm dev:web` / `pnpm dev:site`: run one app
+- `pnpm dev:app` / `pnpm dev:web` / `pnpm dev:site` / `pnpm dev:blog`: run one app
 - `pnpm build`, `pnpm typecheck`, `pnpm lint`, `pnpm test`: run across all apps
