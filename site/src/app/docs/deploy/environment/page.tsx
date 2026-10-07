@@ -174,7 +174,7 @@ export default function EnvironmentPage() {
             "NEXT_PUBLIC_APP_URL",
             <>
               The dashboard&apos;s URL, used by the site&apos;s sign-in and demo links. Defaults to{" "}
-              <code>http://localhost:6768</code>.
+              <code>https://app.offersdk.com</code> in production builds and <code>http://localhost:6768</code> in dev.
             </>,
           ],
         ]}

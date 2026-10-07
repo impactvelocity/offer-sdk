@@ -1,5 +1,6 @@
-/** URL of the deployed offer-app (the dashboard). */
-export const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:6768";
+/** URL of the deployed offer-app (the dashboard): the hosted one in production builds, the local one in dev. */
+export const APP_URL =
+  process.env.NEXT_PUBLIC_APP_URL ?? (process.env.NODE_ENV === "production" ? "https://app.offersdk.com" : "http://localhost:6768");
 
 /** The open-source repo. */
 export const GITHUB_URL = "https://github.com/impactvelocity/offer-sdk";
