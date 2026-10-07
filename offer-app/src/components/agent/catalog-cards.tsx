@@ -107,7 +107,7 @@ function PlanCard({ appId, plan, accounts, lookup }: { appId: string; plan: Plan
       badges={
         <>
           {plan.isFree ? <Badge color="green">Free</Badge> : null}
-          {card?.featured ? <Badge color="purple">Featured</Badge> : null}
+          {card?.featured ? <Badge color="brand">Featured</Badge> : null}
         </>
       }
       lead={

@@ -1,0 +1,624 @@
+<template>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<style>
+/* ==========================================================================
+   Offer SDK app kit — the offer-app dashboard (dark theme), rebuilt for video.
+   Values are copied from offer-app/src/app/globals.css (data-theme="dark") and
+   measured from the real screens in capture/assets/app/*.png.
+
+   HOW TO USE IN A FRAME
+   1. Paste this whole file inside the style block that lives inside your frame template.
+      (Template transport: styles must live inside the frame template.)
+   2. Build the window from shell.html. Author it at its LOGICAL size
+      (.ak-window is 1366×800 — a real laptop viewport, real 14px UI text) and
+      scale the wrapper with GSAP (scale ≈ 1.08–1.12 to fill the top 83%;
+      punch in to 1.5–1.9 on the region the VO is talking about).
+   3. Copy icons from icons.html (Lucide, the icon set the app uses).
+   All classes are prefixed ak- so they never collide with frame-local names.
+   ========================================================================== */
+
+@font-face { font-family: "Cal Sans"; src: url("assets/fonts/CalSansVF.woff2") format("woff2"); font-weight: 400 700; font-display: block; }
+@font-face { font-family: "Geist Mono"; src: url("assets/fonts/geist-mono-latin.woff2") format("woff2"); font-weight: 400 600; font-display: block; }
+
+.ak {
+  --canvas: #0f0f11; --panel: #161618; --bg: #18181b; --bg-subtle: #1c1c1f; --bg-muted: #222226;
+  --bg-hover: #27272c; --bg-active: #2e2e34; --bg-elevated: #202024; --bg-inverse: #f1f1f3;
+  --fg: #ececee; --fg-secondary: rgb(236 236 238 / .93); --fg-tertiary: rgb(236 236 238 / .86);
+  --fg-muted: rgb(236 236 238 / .68); --fg-placeholder: #6f7178; --fg-icon: #9c9ea5;
+  --border: #2a2a2f; --border-strong: #37373d; --border-input: #323238;
+  --accent: #34d599; --accent-hover: #5ce0b0; --accent-subtle: rgb(52 213 153 / .13); --accent-fg: #5fe3b1; --accent-contrast: #03140c; --ring: rgb(52 213 153 / .4);
+  --btn-neon-bg: rgb(52 213 153 / .08); --shadow-brand: inset 0 0 0 1px rgb(52 213 153 / .85), inset 0 0 14px -6px rgb(52 213 153 / .35), 0 0 16px -6px rgb(52 213 153 / .4);
+  --brand-vertical: linear-gradient(180deg, #4fe0b0, #2fc48c);
+  --success: #30a46c; --success-subtle: rgb(48 164 108 / .16); --success-fg: #5ed29a;
+  --danger: #e5484d; --danger-subtle: rgb(229 72 77 / .15); --danger-fg: #ff8a8d;
+  --warning: #f0a020; --warning-subtle: rgb(240 160 32 / .14); --warning-fg: #ffc35f;
+  --brand-from: #34d599; --brand-to: #2cc0de; --brand-gradient: linear-gradient(90deg, #34d599, #2cc0de);
+  --code-comment: #7f828a; --code-keyword: #5fe3b1; --code-string: #6fd69f; --code-key: #93b8ff; --code-number: #ffa072;
+  --zapier: #ff5f1f; --paypal: #0070e0;
+  --shadow-soft: 0 14px 36px -14px rgb(0 0 0 / .75), 0 2px 8px -2px rgb(0 0 0 / .45);
+  --shadow-lg: 0 18px 44px -10px rgb(0 0 0 / .7), 0 4px 12px -4px rgb(0 0 0 / .5);
+  font-family: "Cal Sans", ui-sans-serif, system-ui, sans-serif;
+  font-variation-settings: "GEOM" 25;           /* the app's UI geometry */
+  color: var(--fg); -webkit-font-smoothing: antialiased; font-size: 14px; line-height: 1.4;
+}
+.ak * { box-sizing: border-box; }
+.ak .ak-display { font-variation-settings: "GEOM" 50; letter-spacing: -0.01em; }
+/* Neon-style eyebrow: small mono caps (site + app section kickers). */
+.ak .ak-eyebrow { font-family: "Geist Mono", monospace; font-variation-settings: normal; font-size: 11px; line-height: 16px; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; color: var(--fg-muted); }
+.ak .ak-mono, .ak code { font-family: "Geist Mono", ui-monospace, monospace; font-variation-settings: normal; }
+.ak svg { display: block; flex-shrink: 0; }
+
+/* ---------- window + shell ---------- */
+.ak-window { position: absolute; width: 1366px; height: 800px; background: var(--canvas); border-radius: 18px;
+  border: 1px solid var(--border); box-shadow: 0 40px 120px -30px rgb(0 0 0 / .9), 0 0 0 1px rgb(255 255 255 / .03);
+  overflow: hidden; display: flex; padding: 6px 6px 6px 0; transform-origin: 50% 50%; }
+.ak-rail { width: 52px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; gap: 10px; padding-top: 8px; }
+.ak-rail .ak-rail-logo { width: 30px; height: 30px; border-radius: 8px; display: grid; place-items: center; color: var(--fg); }
+.ak-rail .ak-rail-logo svg { width: 18px; height: 18px; }
+.ak-rail .ak-rail-sep { width: 22px; height: 1px; background: var(--border); }
+.ak-rail .ak-app-tile { width: 28px; height: 28px; border-radius: 7px; display: grid; place-items: center; font-size: 11px; font-weight: 600; color: var(--accent-contrast);
+  background: var(--brand-vertical); }
+.ak-rail .ak-app-tile.is-active { box-shadow: 0 0 0 2px var(--canvas), 0 0 0 3.5px var(--accent); }
+.ak-rail .ak-app-tile.alt { opacity: .8; }
+.ak-rail .ak-rail-plus { color: var(--fg-icon); width: 16px; height: 16px; }
+.ak-rail .ak-rail-foot { margin-top: auto; padding-bottom: 6px; display: flex; flex-direction: column; align-items: center; gap: 14px; color: var(--fg-icon); }
+.ak-rail .ak-rail-foot svg { width: 15px; height: 15px; }
+.ak-rail .ak-avatar { width: 26px; height: 26px; border-radius: 50%; background: var(--bg-muted); color: var(--fg-secondary); font-size: 10px; display: grid; place-items: center; }
+
+.ak-nav { width: 222px; flex-shrink: 0; background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
+  margin-right: 6px; display: flex; flex-direction: column; padding: 12px 10px; box-shadow: var(--shadow-soft); }
+.ak-nav-title { font-size: 15px; font-weight: 600; padding: 2px 6px 10px; font-variation-settings: "GEOM" 50; }
+.ak-quick { height: 30px; border: 1px solid var(--border-input); border-radius: 8px; display: flex; align-items: center; gap: 8px; padding: 0 8px;
+  color: var(--fg-muted); font-size: 13px; margin-bottom: 10px; }
+.ak-quick svg { width: 14px; height: 14px; color: var(--fg-icon); }
+.ak-quick .ak-kbd { margin-left: auto; font-size: 10.5px; border: 1px solid var(--border); border-radius: 4px; padding: 0 4px; color: var(--fg-placeholder); }
+.ak-nav-group { display: flex; flex-direction: column; gap: 1px; padding: 6px 0; border-top: 1px solid var(--border); }
+.ak-nav-group:first-of-type { border-top: 0; padding-top: 0; }
+.ak-nav-item { height: 31px; border-radius: 7px; display: flex; align-items: center; gap: 10px; padding: 0 8px; font-size: 13.5px; color: var(--fg-secondary); }
+.ak-nav-item svg { width: 15px; height: 15px; color: var(--fg-icon); }
+.ak-nav-item .ak-count { margin-left: auto; font-size: 12px; color: var(--fg-muted); font-variant-numeric: tabular-nums; }
+.ak-nav-item.is-active { background: var(--accent-subtle); color: var(--accent-fg); }
+.ak-nav-item.is-active svg { color: var(--accent-fg); }
+.ak-nav-foot { margin-top: auto; }
+
+.ak-main { flex: 1; min-width: 0; background: var(--bg); border: 1px solid var(--border); border-radius: 12px; display: flex; flex-direction: column;
+  overflow: hidden; box-shadow: var(--shadow-soft); position: relative; }
+.ak-header { height: 50px; flex-shrink: 0; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; padding: 0 12px 0 16px; }
+.ak-header .ak-crumb { display: flex; align-items: center; gap: 9px; font-size: 14px; font-weight: 500; }
+.ak-header .ak-crumb svg { width: 15px; height: 15px; color: var(--fg-icon); }
+.ak-header .ak-crumb .ak-sep { color: var(--fg-placeholder); }
+.ak-header .ak-actions { margin-left: auto; display: flex; align-items: center; gap: 4px; }
+.ak-toolbar { height: 50px; flex-shrink: 0; display: flex; align-items: center; gap: 10px; padding: 0 16px; border-bottom: 1px solid var(--border); }
+.ak-body { flex: 1; min-height: 0; position: relative; overflow: hidden; }
+.ak-page { padding: 28px 40px; }
+.ak-page-title { font-size: 22px; font-weight: 600; font-variation-settings: "GEOM" 50; letter-spacing: -0.01em; }
+.ak-page-sub { color: var(--fg-muted); font-size: 13.5px; margin-top: 4px; }
+
+/* ---------- controls ---------- */
+.ak-btn { height: 30px; border-radius: 8px; display: inline-flex; align-items: center; gap: 7px; padding: 0 10px; font-size: 13.5px; color: var(--fg-secondary);
+  border: 1px solid transparent; white-space: nowrap; }
+.ak-btn svg { width: 14px; height: 14px; }
+.ak-btn.is-outline { border-color: var(--border-strong); background: var(--bg-subtle); }
+/* Primary = the app's neon button: hairline neon border, faint green wash, green ink. */
+.ak-btn.is-primary { background: var(--btn-neon-bg); color: var(--accent-fg); font-weight: 500; box-shadow: var(--shadow-brand); }
+.ak-btn.is-gradient { background: var(--btn-neon-bg); color: var(--accent-fg); font-weight: 500; box-shadow: var(--shadow-brand), 0 0 32px -8px rgb(52 213 153 / .55); }
+.ak-btn.is-solid { background: var(--brand-vertical); color: var(--accent-contrast); font-weight: 600; }
+.ak-btn.is-paypal { background: #ffc439; color: #111; font-weight: 600; }
+.ak-btn.is-lg { height: 40px; padding: 0 16px; font-size: 15px; border-radius: 10px; }
+.ak-input { height: 32px; border: 1px solid var(--border-input); background: var(--bg-subtle); border-radius: 8px; display: flex; align-items: center; gap: 8px;
+  padding: 0 10px; font-size: 13.5px; color: var(--fg); }
+.ak-input.is-placeholder { color: var(--fg-placeholder); }
+.ak-input.is-focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--ring); }
+.ak-input svg { width: 14px; height: 14px; color: var(--fg-icon); }
+.ak-label { font-size: 13px; color: var(--fg-secondary); font-weight: 500; margin-bottom: 6px; }
+.ak-seg { display: inline-flex; background: var(--bg-muted); border-radius: 8px; padding: 2px; gap: 2px; }
+.ak-seg > span { height: 26px; padding: 0 10px; border-radius: 6px; display: inline-flex; align-items: center; font-size: 13px; color: var(--fg-muted); }
+.ak-seg > span.is-on { background: var(--bg-active); color: var(--fg); }
+.ak-switch { width: 30px; height: 18px; border-radius: 9px; background: var(--bg-active); position: relative; flex-shrink: 0; }
+.ak-switch::after { content: ""; position: absolute; top: 2px; left: 2px; width: 14px; height: 14px; border-radius: 50%; background: #fff; }
+.ak-switch.is-on { background: var(--accent); }
+.ak-switch.is-on::after { background: var(--accent-contrast); }
+.ak-switch.is-on::after { left: 14px; }
+.ak-check { width: 16px; height: 16px; border-radius: 4px; border: 1px solid var(--border-strong); display: grid; place-items: center; }
+.ak-check.is-on { background: var(--accent); border-color: var(--accent); color: var(--accent-contrast); }
+.ak-check svg { width: 11px; height: 11px; }
+
+/* ---------- table (Plans / Entitlements / Add-ons / Incentives / Accounts) ---------- */
+.ak-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+.ak-table th { height: 42px; text-align: left; font-weight: 400; color: var(--fg-muted); padding: 0 14px; border-bottom: 1px solid var(--border); border-right: 1px solid var(--border); white-space: nowrap; }
+.ak-table th:last-child, .ak-table td:last-child { border-right: 0; }
+.ak-table th .ak-th { display: inline-flex; align-items: center; gap: 7px; }
+.ak-table th svg { width: 13px; height: 13px; color: var(--fg-icon); }
+.ak-table td { height: 46px; padding: 0 14px; border-bottom: 1px solid var(--border); border-right: 1px solid var(--border); white-space: nowrap; color: var(--fg-secondary); }
+.ak-table td.is-num { text-align: right; font-variant-numeric: tabular-nums; }
+.ak-table .ak-row-name { display: flex; align-items: center; gap: 9px; color: var(--fg); }
+.ak-table .ak-row-icon { width: 22px; height: 22px; border-radius: 6px; background: rgb(59 123 246 / .18); color: #93b8ff; display: grid; place-items: center; }
+.ak-table .ak-row-icon svg { width: 13px; height: 13px; }
+.ak-table tr.is-hl td { background: rgb(52 213 153 / .07); }
+.ak-table-foot { padding: 12px 16px; color: var(--fg-muted); font-size: 13px; }
+
+/* ---------- chips + tags ---------- */
+.ak-id { font-family: "Geist Mono", monospace; font-variation-settings: normal; font-size: 12px; background: var(--bg-muted); color: var(--fg-secondary);
+  border-radius: 5px; padding: 2px 6px; }
+.ak-tag { display: inline-flex; align-items: center; gap: 5px; height: 21px; padding: 0 7px; border-radius: 5px; font-size: 12px; white-space: nowrap;
+  background: rgb(255 255 255 / .08); color: #c6c7cc; }
+.ak-tag svg { width: 11px; height: 11px; }
+.ak-tag.blue { background: rgb(59 123 246 / .18); color: #93b8ff; }
+.ak-tag.green { background: rgb(48 164 108 / .18); color: #6fd69f; }
+.ak-tag.yellow { background: rgb(240 180 40 / .16); color: #f5c451; }
+.ak-tag.orange { background: rgb(235 104 52 / .18); color: #ffa072; }
+.ak-tag.red { background: rgb(229 72 77 / .18); color: #ff8a8d; }
+.ak-tag.purple { background: rgb(143 107 255 / .2); color: #bba6ff; }
+.ak-tag.brand { background: rgb(52 213 153 / .14); color: #5fe3b1; }
+.ak-tag.pink { background: rgb(224 69 123 / .18); color: #ff8fba; }
+.ak-tag.teal { background: rgb(20 163 157 / .18); color: #62d6cf; }
+.ak-more { color: var(--fg-muted); font-size: 12px; }
+
+/* ---------- cards, stats, meters ---------- */
+.ak-card { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; }
+.ak-card-head { height: 46px; display: flex; align-items: center; padding: 0 16px; border-bottom: 1px solid var(--border); font-weight: 500; font-size: 14px; }
+.ak-card-body { padding: 16px; }
+.ak-elevated { background: var(--bg-elevated); border: 1px solid var(--border-strong); border-radius: 12px; box-shadow: var(--shadow-lg); }
+.ak-stat-strip { display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+.ak-stat { padding: 16px 18px; border-right: 1px solid var(--border); }
+.ak-stat:last-child { border-right: 0; }
+.ak-stat-label { display: flex; align-items: center; gap: 7px; font-size: 13px; color: var(--fg-secondary); }
+.ak-stat-label svg { width: 13px; height: 13px; color: var(--fg-icon); }
+.ak-stat-value { font-size: 26px; font-weight: 600; margin-top: 8px; font-variant-numeric: tabular-nums; font-variation-settings: "GEOM" 50; }
+.ak-stat-sub { font-size: 12px; color: var(--fg-muted); margin-top: 4px; }
+.ak-meter { height: 8px; border-radius: 4px; background: var(--bg-active); overflow: hidden; }
+.ak-meter > i { display: block; height: 100%; width: 0; border-radius: 4px; background: var(--brand-gradient); }
+.ak-meter.is-warn > i { background: linear-gradient(90deg, #f0a020, #e5484d); }
+.ak-bar-row { position: relative; height: 30px; border-radius: 6px; display: flex; align-items: center; padding: 0 10px; font-size: 13.5px; }
+.ak-bar-row > b { position: absolute; inset: 0 auto 0 0; border-radius: 6px; background: linear-gradient(90deg, rgb(52 213 153 / .32), rgb(44 192 222 / .22)); font-weight: 400; }
+.ak-bar-row > span { position: relative; }
+.ak-bar-row > .ak-bar-val { margin-left: auto; color: var(--fg-secondary); font-variant-numeric: tabular-nums; }
+
+/* ---------- code block (site CodeBlock look) ---------- */
+.ak-code { background: #131315; border: 1px solid var(--border); border-radius: 14px; overflow: hidden; box-shadow: var(--shadow-lg); }
+.ak-code-bar { height: 40px; display: flex; align-items: center; gap: 8px; padding: 0 14px; border-bottom: 1px solid var(--border); color: var(--fg-muted); font-size: 13px; }
+.ak-code-bar .ak-dots { display: flex; gap: 6px; margin-right: 6px; }
+.ak-code-bar .ak-dots i { width: 10px; height: 10px; border-radius: 50%; background: var(--bg-active); }
+.ak-code pre { margin: 0; padding: 18px 20px; font-family: "Geist Mono", monospace; font-variation-settings: normal; font-size: 15px; line-height: 1.65; color: var(--fg-secondary); white-space: pre; }
+.ak-code .k { color: var(--code-keyword); } .ak-code .s { color: var(--code-string); } .ak-code .p { color: var(--code-key); }
+.ak-code .n { color: var(--code-number); } .ak-code .c { color: var(--code-comment); } .ak-code .f { color: #ececee; }
+.ak-code .del { background: rgb(229 72 77 / .14); } .ak-code .add { background: rgb(48 164 108 / .14); }
+
+/* ---------- feedback ---------- */
+.ak-toast { position: absolute; display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 10px; background: var(--bg-elevated);
+  border: 1px solid var(--border-strong); box-shadow: var(--shadow-lg); font-size: 13.5px; white-space: nowrap; }
+.ak-toast svg { width: 15px; height: 15px; }
+.ak-toast.is-ok svg { color: var(--success-fg); }
+.ak-toast.is-warn svg { color: var(--warning-fg); }
+.ak-toast.is-bad svg { color: var(--danger-fg); }
+.ak-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--success); display: inline-block; }
+.ak-dot.is-warn { background: var(--warning); } .ak-dot.is-bad { background: var(--danger); }
+.ak-cursor { position: absolute; width: 22px; height: 22px; z-index: 50; pointer-events: none; filter: drop-shadow(0 2px 4px rgb(0 0 0 / .6)); }
+.ak-ripple { position: absolute; width: 36px; height: 36px; margin: -18px 0 0 -18px; border-radius: 50%; border: 2px solid var(--accent-fg); z-index: 49; opacity: 0; }
+
+/* ---------- avatars + misc ---------- */
+.ak-av { width: 22px; height: 22px; border-radius: 6px; display: grid; place-items: center; font-size: 9.5px; font-weight: 600; background: rgb(52 213 153 / .14); color: #5fe3b1; }
+.ak-av.round { border-radius: 50%; }
+.ak-kv { display: flex; justify-content: space-between; font-size: 13px; padding: 7px 0; border-bottom: 1px solid var(--border); color: var(--fg-muted); }
+.ak-kv b { font-weight: 400; color: var(--fg); }
+.ak-divider { height: 1px; background: var(--border); }
+
+
+/* ===================== frame 15-offers ===================== */
+#root { position: absolute; inset: 0; width: 1920px; height: 1080px; overflow: hidden; }
+.f15-bg { position: absolute; inset: 0; background: #0f0f11; }
+.f15-stage { position: absolute; inset: 0; overflow: hidden; }
+.f15-cam, .f15-pan { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; }
+
+/* header */
+.f15-header { position: relative; }
+.f15-header .ak-crumb .f15-muted { color: var(--fg-muted); font-weight: 400; }
+.f15-header .ak-crumb .f15-chev { width: 13px; height: 13px; color: var(--fg-placeholder); }
+.f15-actions { position: absolute; right: 12px; top: 10px; width: 420px; height: 30px; }
+.f15-actgroup { position: absolute; right: 0; top: 0; display: flex; gap: 6px; z-index: 3; }
+.f15-cancel { width: 68px; justify-content: center; }
+.f15-create { width: 124px; justify-content: center; }
+.f15-gen { position: absolute; right: 0; top: 0; width: 214px; justify-content: center; z-index: 2; overflow: hidden; }
+.f15-gen > svg, .f15-gen > em { position: relative; z-index: 1; font-style: normal; }
+.f15-sweep { position: absolute; top: -6px; bottom: -6px; left: 0; width: 70px; z-index: 0;
+  background: linear-gradient(100deg, rgba(95, 227, 177, 0), rgba(95, 227, 177, 0.55) 50%, rgba(95, 227, 177, 0)); }
+.f15-glow { position: absolute; right: -88px; top: -30px; width: 390px; height: 90px; z-index: 1; border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(52, 213, 153, 0.55), rgba(52, 213, 153, 0)); }
+
+/* body + form */
+.f15-body { position: relative; }
+.f15-a { position: absolute; }
+.f15-h { font-size: 14px; font-weight: 500; color: var(--fg); line-height: 20px; }
+.f15-lbl { font-size: 13px; font-weight: 500; color: var(--fg-secondary); line-height: 18px; }
+.f15-rule { position: absolute; left: 40px; width: 590px; height: 1px; background: var(--border); }
+.f15-input { position: absolute; gap: 0; box-shadow: 0 0 0 0px rgba(52, 213, 153, 0); }
+.f15-input .f15-ph { position: absolute; left: 11px; top: 0; height: 100%; display: flex; align-items: center; color: var(--fg-placeholder); }
+.f15-caret { display: inline-block; width: 1.5px; height: 16px; background: var(--accent-fg); margin-left: 1px; }
+.f15-input .f15-suffix { margin-left: auto; color: var(--fg-placeholder); }
+.f15-chips { position: absolute; left: 40px; top: 174px; display: flex; gap: 8px; }
+.f15-chip { position: relative; height: 28px; border: 1px solid var(--border-strong); border-radius: 7px; background: var(--bg-subtle);
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px; font-size: 13px; color: var(--fg-secondary); }
+.f15-chip > em { font-style: normal; position: relative; z-index: 1; }
+.f15-chip-on { position: absolute; inset: -1px; border-radius: 7px; background: var(--btn-neon-bg); box-shadow: var(--shadow-brand); }
+.f15-chip .f15-chip-ck { position: relative; z-index: 1; width: 12px; height: 12px; color: var(--accent-fg); }
+.f15-seg { position: absolute; left: 40px; top: 268px; width: 590px; }
+.f15-seg > span { position: relative; justify-content: center; white-space: nowrap; }
+.f15-seg > span > em { position: relative; z-index: 1; font-style: normal; }
+.f15-seg-on { position: absolute; inset: 0; border-radius: 6px; background: var(--bg-active); }
+.f15-fields { position: absolute; left: 40px; top: 314px; width: 590px; height: 54px; }
+.f15-checks { position: absolute; left: 40px; top: 412px; display: flex; gap: 18px; }
+.f15-cb { height: 18px; display: flex; align-items: center; gap: 8px; font-size: 13.5px; color: var(--fg-secondary); }
+.f15-cb .ak-check { position: relative; }
+.f15-fill { position: absolute; inset: -1px; border-radius: 4px; background: var(--accent); color: var(--accent-contrast); display: grid; place-items: center; }
+.f15-sm-btn { position: absolute; left: 494px; width: 136px; height: 26px; font-size: 12.5px; justify-content: center; gap: 6px; }
+.f15-sm-btn svg { width: 13px; height: 13px; color: var(--fg-icon); }
+.f15-empty { font-size: 13px; color: var(--fg-placeholder); }
+.f15-inc { height: 26px; font-size: 13px; padding: 0 9px; gap: 6px; }
+.f15-inc svg { width: 13px; height: 13px; }
+.f15-bump { position: absolute; left: 40px; top: 590px; width: 590px; height: 44px; border: 1px solid var(--border); border-radius: 10px;
+  background: var(--bg-subtle); display: flex; align-items: center; gap: 10px; padding: 0 12px 0 8px; }
+.f15-bump-ic { width: 28px; height: 28px; border-radius: 7px; background: rgb(235 104 52 / .18); color: #ffa072; display: grid; place-items: center; }
+.f15-bump-ic svg { width: 15px; height: 15px; }
+.f15-bump-t { font-size: 13.5px; color: var(--fg); }
+.f15-bump b { margin-left: auto; font-weight: 500; font-size: 13.5px; color: var(--fg); font-variant-numeric: tabular-nums; }
+
+/* checkout preview */
+.f15-pv-empty { position: absolute; left: 670px; top: 54px; width: 368px; height: 104px; border: 1px dashed var(--border-strong); border-radius: 12px;
+  display: grid; place-items: center; font-size: 13.5px; color: var(--fg-secondary); }
+.f15-pv-card { position: absolute; left: 670px; top: 54px; width: 368px; height: 436px; background: var(--bg-subtle);
+  border: 1px solid var(--border-strong); border-radius: 14px; box-shadow: var(--shadow-soft); }
+.f15-pv-card > * { position: absolute; left: 18px; }
+.f15-pv-brand { top: 18px; display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--fg-muted); height: 22px; }
+.f15-pv-logo { width: 20px; height: 20px; border-radius: 5px; display: grid; place-items: center; font-size: 8.5px; font-weight: 600; color: var(--accent-contrast);
+  background: var(--brand-vertical); }
+.f15-pv-name { top: 48px; font-size: 19px; font-weight: 600; font-variation-settings: "GEOM" 50; letter-spacing: -0.01em; color: var(--fg); line-height: 26px; }
+.f15-pv-plan { top: 80px; display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--fg-muted); height: 21px; }
+.f15-pv-seg { top: 112px; }
+.f15-pv-seg > span { width: 74px; justify-content: center; }
+.f15-pv-price { top: 152px; width: 332px; height: 42px; }
+.f15-pA, .f15-pB { position: absolute; left: 0; bottom: 0; display: flex; align-items: baseline; gap: 3px; white-space: nowrap; }
+.f15-pnum { position: relative; display: inline-block; font-size: 34px; line-height: 40px; font-weight: 600; font-variation-settings: "GEOM" 50;
+  letter-spacing: -0.01em; color: var(--fg); font-variant-numeric: tabular-nums; }
+.f15-pnum-b { width: 112px; }
+.f15-pper { font-size: 14px; color: var(--fg-muted); }
+.f15-strike { position: absolute; left: -3px; right: -3px; top: 53%; height: 3px; border-radius: 2px; background: var(--fg-muted); }
+.f15-pv-note { top: 198px; font-size: 12.5px; color: var(--accent-fg); }
+.f15-pv-rule { top: 228px; width: 332px; height: 1px; background: var(--border); }
+.f15-pv-list { top: 240px; width: 332px; }
+.f15-pv-li { height: 24px; display: flex; align-items: center; gap: 9px; font-size: 13px; color: var(--fg-secondary); }
+.f15-pv-li svg { width: 14px; height: 14px; color: var(--success-fg); }
+.f15-pv-bonus { color: var(--fg); }
+.f15-pv-bonus svg { color: var(--accent-fg); }
+.f15-pv-bump { top: 322px; width: 332px; height: 44px; border: 1px dashed var(--border-strong); border-radius: 10px; display: flex; align-items: center;
+  gap: 10px; padding: 0 12px; font-size: 13px; color: var(--fg); }
+.f15-pv-bump .ak-check { position: relative; }
+.f15-pv-bump b { margin-left: auto; font-weight: 500; color: var(--fg); font-variant-numeric: tabular-nums; }
+.f15-pv-pay { top: 380px; width: 332px; height: 38px; border-radius: 9px; background: #ffc439; color: #111; display: flex; align-items: center;
+  justify-content: center; gap: 5px; font-size: 14px; font-weight: 500; }
+.f15-pv-pay b { color: #003087; font-weight: 700; font-style: italic; letter-spacing: -0.01em; }
+
+/* toast */
+.f15-toast { right: 20px; bottom: 40px; z-index: 40; }
+.f15-toast .f15-dotsep { color: var(--fg-placeholder); }
+.f15-toast svg.f15-linkic { color: var(--accent-fg); width: 14px; height: 14px; }
+.f15-toast .f15-url { font-family: "Geist Mono", monospace; font-variation-settings: normal; font-size: 12.5px; color: var(--fg-secondary); }
+</style>
+
+<div id="root" data-composition-id="15-offers" data-width="1920" data-height="1080" data-duration="9.2">
+  <div class="clip f15-bg" data-start="0" data-duration="9.2" data-track-index="0"></div>
+  <div class="clip f15-stage" data-start="0" data-duration="9.2" data-track-index="1">
+    <div class="f15-cam" id="f15-cam">
+      <div class="f15-pan" id="f15-pan">
+        <div class="ak ak-window" id="f15-window" style="left:277px;top:70px">
+  <aside class="ak-rail">
+    <div class="ak-rail-logo"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 13.74a2 2 0 0 1-2 0L2.5 8.87a1 1 0 0 1 0-1.74L11 2.26a2 2 0 0 1 2 0l8.5 4.87a1 1 0 0 1 0 1.74z"/><path d="m20 14.285 1.5.845a1 1 0 0 1 0 1.74L13 21.74a2 2 0 0 1-2 0l-8.5-4.87a1 1 0 0 1 0-1.74l1.5-.845"/></svg></div>
+    <div class="ak-rail-sep"></div>
+    <div class="ak-app-tile is-active">AA</div>
+    <div class="ak-app-tile alt">CH</div>
+    <div class="ak-rail-plus"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg></div>
+    <div class="ak-rail-foot"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"/><circle cx="12" cy="12" r="3"/></svg><div class="ak-avatar">DA</div></div>
+  </aside>
+  <nav class="ak-nav">
+    <div class="ak-nav-title">AmazingApp AI</div>
+    <div class="ak-quick"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg><span>Quick actions</span><span class="ak-kbd">⌘K</span></div>
+    <div class="ak-nav-group">
+      <div class="ak-nav-item" data-nav="overview"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Overview</div>
+      <div class="ak-nav-item" data-nav="analytics"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>Analytics</div>
+      <div class="ak-nav-item" data-nav="agent"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z"/><path d="M20 2v4"/><path d="M22 4h-4"/><circle cx="4" cy="20" r="2"/></svg>Agent</div>
+      <div class="ak-nav-item is-active" data-nav="offers"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z"/><path d="m15 9-6 6"/><path d="M9 9h.01"/><path d="M15 15h.01"/></svg>Offers</div>
+      <div class="ak-nav-item" data-nav="cancel-flow"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 21H2"/><path d="M10 3H7a2 2 0 00-2 2v16"/><path d="M14 12h.01"/><path d="M19 21V5a2 2 0 00-1.675-1.974l-6.163-1.013A1 1 0 0010 3v18a1 1 0 001.124.992z"/><path d="M22 21h-3"/></svg>Cancel flow</div>
+    </div>
+    <div class="ak-nav-group">
+      <div class="ak-nav-item" data-nav="plans"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83z"/><path d="M2 12a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 12"/><path d="M2 17a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 17"/></svg>Plans<span class="ak-count">5</span></div>
+      <div class="ak-nav-item" data-nav="entitlements"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z"/><circle cx="16.5" cy="7.5" r=".5" fill="currentColor"/></svg>Entitlements<span class="ak-count">9</span></div>
+      <div class="ak-nav-item" data-nav="addons"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15.39 4.39a1 1 0 0 0 1.68-.474 2.5 2.5 0 1 1 3.014 3.015 1 1 0 0 0-.474 1.68l1.683 1.682a2.414 2.414 0 0 1 0 3.414L19.61 15.39a1 1 0 0 1-1.68-.474 2.5 2.5 0 1 0-3.014 3.015 1 1 0 0 1 .474 1.68l-1.683 1.682a2.414 2.414 0 0 1-3.414 0L8.61 19.61a1 1 0 0 0-1.68.474 2.5 2.5 0 1 1-3.014-3.015 1 1 0 0 0 .474-1.68l-1.683-1.682a2.414 2.414 0 0 1 0-3.414L4.39 8.61a1 1 0 0 1 1.68.474 2.5 2.5 0 1 0 3.014-3.015 1 1 0 0 1-.474-1.68l1.683-1.682a2.414 2.414 0 0 1 3.414 0z"/></svg>Add-ons<span class="ak-count">3</span></div>
+      <div class="ak-nav-item" data-nav="incentives"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 7v14"/><path d="M20 11v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-8"/><path d="M7.5 7a1 1 0 0 1 0-5A4.8 8 0 0 1 12 7a4.8 8 0 0 1 4.5-5 1 1 0 0 1 0 5"/><rect x="3" y="7" width="18" height="4" rx="1"/></svg>Incentives<span class="ak-count">4</span></div>
+    </div>
+    <div class="ak-nav-group">
+      <div class="ak-nav-item" data-nav="accounts"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><path d="M16 3.128a4 4 0 0 1 0 7.744"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><circle cx="9" cy="7" r="4"/></svg>Accounts<span class="ak-count">64</span></div>
+    </div>
+    <div class="ak-nav-group">
+      <div class="ak-nav-item" data-nav="integration"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 18 6-6-6-6"/><path d="m8 6-6 6 6 6"/></svg>Integration</div>
+      <div class="ak-nav-item" data-nav="api"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H7a2 2 0 0 0-2 2v5a2 2 0 0 1-2 2 2 2 0 0 1 2 2v5c0 1.1.9 2 2 2h1"/><path d="M16 21h1a2 2 0 0 0 2-2v-5c0-1.1.9-2 2-2a2 2 0 0 1-2-2V5a2 2 0 0 0-2-2h-1"/></svg>API reference</div>
+      <div class="ak-nav-item" data-nav="mcp"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22v-5"/><path d="M15 8V2"/><path d="M17 8a1 1 0 0 1 1 1v4a4 4 0 0 1-4 4h-4a4 4 0 0 1-4-4V9a1 1 0 0 1 1-1z"/><path d="M9 8V2"/></svg>MCP server</div>
+      <div class="ak-nav-item" data-nav="keys"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m2 21 9.6-9.6"/><path d="m7.5 15.5 2.3 2.3a1 1 0 0 1 0 1.4l-2.1 2.1a1 1 0 0 1-1.4 0L4 19"/><circle cx="15.5" cy="7.5" r="5.5"/></svg>API keys</div>
+      <div class="ak-nav-item" data-nav="webhooks"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 16.98h-5.99c-1.1 0-1.95.94-2.48 1.9A4 4 0 0 1 2 17c.01-.7.2-1.4.57-2"/><path d="m6 17 3.13-5.78c.53-.97.1-2.18-.5-3.1a4 4 0 1 1 6.89-4.06"/><path d="m12 6 3.13 5.73C15.66 12.7 16.9 13 18 13a4 4 0 0 1 0 8"/></svg>Webhooks</div>
+    </div>
+    <div class="ak-nav-foot"><div class="ak-nav-item"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"/><circle cx="12" cy="12" r="3"/></svg>App settings</div></div>
+  </nav>
+          <main class="ak-main">
+            <header class="ak-header f15-header">
+              <div class="ak-crumb">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z"/><path d="m15 9-6 6"/><path d="M9 9h.01"/><path d="M15 15h.01"/></svg>
+                <span class="f15-muted">Offers</span>
+                <svg class="f15-chev" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+                <span>New offer</span>
+              </div>
+              <div class="f15-actions">
+                <div class="f15-glow" id="f15-glow"></div>
+                <span class="ak-btn is-gradient f15-gen" id="f15-gen"><i class="f15-sweep" id="f15-sweep"></i><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z"/><path d="M20 2v4"/><path d="M22 4h-4"/><circle cx="4" cy="20" r="2"/></svg><em>Generate with Offer Agent</em></span>
+                <div class="f15-actgroup" id="f15-actgroup">
+                  <span class="ak-btn is-outline f15-cancel">Cancel</span>
+                  <span class="ak-btn is-primary f15-create" id="f15-create"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Create offer</span>
+                </div>
+              </div>
+            </header>
+
+            <div class="ak-body f15-body">
+              <!-- Details -->
+              <div class="f15-a f15-h" style="left:40px;top:26px">Details</div>
+              <div class="f15-a f15-lbl" style="left:40px;top:54px">Name</div>
+              <div class="ak-input f15-input" id="f15-name" style="left:40px;top:76px;width:590px">
+                <span class="f15-ph" id="f15-name-ph">Black Friday</span><span id="f15-name-val"></span><i class="f15-caret" id="f15-name-caret"></i>
+              </div>
+              <div class="f15-rule" style="top:128px"></div>
+
+              <!-- Plans -->
+              <div class="f15-a f15-h" style="left:40px;top:146px">Plans</div>
+              <div class="f15-chips">
+                <span class="f15-chip" style="width:54px"><em>Free</em></span>
+                <span class="f15-chip" style="width:72px"><em>Starter</em></span>
+                <span class="f15-chip" style="width:74px"><i class="f15-chip-on" id="f15-pro-on"></i><svg class="f15-chip-ck" id="f15-pro-ck" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg><em id="f15-pro-txt">Pro</em></span>
+                <span class="f15-chip" style="width:92px"><em>Enterprise</em></span>
+                <span class="f15-chip" style="width:106px"><em>Lifetime deal</em></span>
+              </div>
+              <div class="f15-rule" style="top:222px"></div>
+
+              <!-- Pricing -->
+              <div class="f15-a f15-h" style="left:40px;top:240px">Pricing</div>
+              <div class="ak-seg f15-seg">
+                <span style="width:96px"><i class="f15-seg-on" id="f15-seg-pct-on"></i><em id="f15-seg-pct">Percent off</em></span>
+                <span style="width:100px"><em>Amount off</em></span>
+                <span style="width:104px"><i class="f15-seg-on" id="f15-seg-no-on"></i><em id="f15-seg-no" style="color:var(--fg)">No discount</em></span>
+              </div>
+              <div class="f15-fields" id="f15-fields">
+                <div class="f15-a f15-lbl" style="left:0;top:0">Percent off</div>
+                <div class="f15-a f15-lbl" style="left:303px;top:0">For how many payments</div>
+                <div class="ak-input f15-input" id="f15-pct" style="left:0;top:22px;width:287px">
+                  <span class="f15-ph" id="f15-pct-ph">0</span><span id="f15-pct-val"></span><i class="f15-caret" id="f15-pct-caret"></i><span class="f15-suffix">%</span>
+                </div>
+                <div class="ak-input f15-input" style="left:303px;top:22px;width:287px">3</div>
+              </div>
+              <div class="f15-a f15-lbl" style="left:40px;top:388px">Billing options</div>
+              <div class="f15-checks">
+                <div class="f15-cb" style="width:90px"><span class="ak-check is-on"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Monthly</div>
+                <div class="f15-cb" style="width:80px"><span class="ak-check"><i class="f15-fill" id="f15-yearly-fill"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></i></span>Yearly</div>
+                <div class="f15-cb" style="width:90px"><span class="ak-check"></span>Lifetime</div>
+              </div>
+              <div class="f15-rule" style="top:448px"></div>
+
+              <!-- Incentives -->
+              <div class="f15-a f15-h" style="left:40px;top:468px">Incentives</div>
+              <span class="ak-btn is-outline f15-sm-btn" style="top:465px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>Add incentive</span>
+              <div class="f15-a f15-empty" id="f15-inc-empty" style="left:40px;top:502px">No incentives attached</div>
+              <span class="f15-a ak-tag brand f15-inc" id="f15-inc" style="left:40px;top:498px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 7v14"/><path d="M20 11v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-8"/><path d="M7.5 7a1 1 0 0 1 0-5A4.8 8 0 0 1 12 7a4.8 8 0 0 1 4.5-5 1 1 0 0 1 0 5"/><rect x="3" y="7" width="18" height="4" rx="1"/></svg>+500 AI credits</span>
+              <div class="f15-rule" style="top:540px"></div>
+
+              <!-- Order bumps -->
+              <div class="f15-a f15-h" style="left:40px;top:560px">Order bumps</div>
+              <span class="ak-btn is-outline f15-sm-btn" style="top:557px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>Add order bump</span>
+              <div class="f15-a f15-empty" id="f15-bump-empty" style="left:40px;top:596px">No order bumps</div>
+              <div class="f15-bump" id="f15-bump">
+                <span class="f15-bump-ic"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 21.73a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73z"/><path d="M12 22V12"/><polyline points="3.29 7 12 12 20.71 7"/><path d="m7.5 4.27 9 5.15"/></svg></span>
+                <span class="f15-bump-t">Template pack</span>
+                <b>+$19</b>
+              </div>
+
+              <!-- Checkout preview -->
+              <div class="f15-a f15-h" style="left:670px;top:26px">Checkout preview</div>
+              <div class="f15-pv-empty" id="f15-pv-empty">Add a plan to see the checkout.</div>
+              <div class="f15-pv-card" id="f15-pv-card">
+                <div class="f15-pv-brand f15-pv-in"><span class="f15-pv-logo">AA</span>AmazingApp AI</div>
+                <div class="f15-pv-name f15-pv-in">Spring launch</div>
+                <div class="f15-pv-plan f15-pv-in">Pro plan <span class="ak-tag brand">Featured</span></div>
+                <div class="ak-seg f15-pv-seg" id="f15-pv-seg"><span class="is-on">Monthly</span><span>Yearly</span></div>
+                <div class="f15-pv-price f15-pv-in">
+                  <div class="f15-pA" id="f15-pA"><span class="f15-pnum">$29<i class="f15-strike" id="f15-pA-strike"></i></span><span class="f15-pper" id="f15-pA-per">/mo</span></div>
+                  <div class="f15-pB" id="f15-pB"><span class="f15-pnum f15-pnum-b" id="f15-pB-num">$29.00</span><span class="f15-pper">/mo</span></div>
+                </div>
+                <div class="f15-pv-note" id="f15-pv-note">20% off · 3 payments</div>
+                <div class="f15-pv-rule f15-pv-in"></div>
+                <div class="f15-pv-list">
+                  <div class="f15-pv-li f15-pv-in"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Unlimited projects</div>
+                  <div class="f15-pv-li f15-pv-in"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>2,500 AI credits</div>
+                  <div class="f15-pv-li f15-pv-bonus" id="f15-pv-bonus"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 7v14"/><path d="M20 11v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-8"/><path d="M7.5 7a1 1 0 0 1 0-5A4.8 8 0 0 1 12 7a4.8 8 0 0 1 4.5-5 1 1 0 0 1 0 5"/><rect x="3" y="7" width="18" height="4" rx="1"/></svg>+500 AI credits</div>
+                </div>
+                <div class="f15-pv-bump" id="f15-pv-bump"><span class="ak-check"><i class="f15-fill" id="f15-pvb-fill"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></i></span><span>Template pack</span><b>+$19</b></div>
+                <div class="f15-pv-pay f15-pv-in">Pay with <b>PayPal</b></div>
+              </div>
+            </div>
+
+            <div class="ak-toast is-ok f15-toast" id="f15-toast"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m16 9-5.5 5.5L8 12"/></svg><span>Offer created</span><span class="f15-dotsep">·</span><svg class="f15-linkic" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg><span class="f15-url">offer.to/spring</span></div>
+          </main>
+
+          <!-- click ripples (window-local, centered by margin) -->
+          <div class="ak-ripple" id="f15-r2" style="left:501px;top:246px"></div>
+          <div class="ak-ripple" id="f15-r3" style="left:372px;top:341px"></div>
+          <div class="ak-ripple" id="f15-r5" style="left:438px;top:479px"></div>
+          <div class="ak-ripple" id="f15-r6" style="left:844px;top:536px"></div>
+          <div class="ak-ripple" id="f15-r7" style="left:844px;top:628px"></div>
+          <div class="ak-ripple" id="f15-r8" style="left:1284px;top:33px"></div>
+          <svg class="ak-cursor" id="f15-cursor" viewBox="0 0 24 24" style="left:0;top:0"><path d="M4 2.5 L4 19 L8.6 14.8 L11.6 21.5 L14.4 20.3 L11.5 13.7 L17.8 13.4 Z" fill="#fff" stroke="#111" stroke-width="1.3" stroke-linejoin="round"/></svg>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById("f15-" + id); };
+  var tl = gsap.timeline({ paused: true });
+
+  var cam = $("cam"), pan = $("pan"), win = $("window"), cur = $("cursor");
+
+  // ---- static initial states (camera at rest: window centre 960,470 · scale 1.1) ----
+  gsap.set(cam, { scale: 1.1, transformOrigin: "960px 470px" });
+  gsap.set(pan, { x: 0, y: 0 });
+  gsap.set(cur, { x: 640, y: 205, transformOrigin: "0% 0%" });
+  gsap.set([$("pA"), $("pB")], { transformOrigin: "0% 100%" });
+  gsap.set($("pA-strike"), { transformOrigin: "0% 50%" });
+  gsap.set([$("inc"), $("pv-seg"), $("pv-bonus")], { transformOrigin: "0% 50%" });
+  gsap.set([$("gen"), $("glow"), $("pv-bump"), $("bump"), $("pro-on")], { transformOrigin: "50% 50%" });
+
+  // ---- helpers ----
+  function move(t, x, y, d) { tl.to(cur, { x: x, y: y, duration: d, ease: "power3.inOut" }, t); }
+  function click(t, rid) {
+    tl.to(cur, { scale: 0.86, duration: 0.06, ease: "power3.out" }, t);
+    tl.to(cur, { scale: 1, duration: 0.16, ease: "power3.out" }, t + 0.06);
+    tl.fromTo($(rid), { opacity: 0, scale: 0.3 }, { opacity: 0.95, scale: 0.35, duration: 0.03, ease: "none" }, t);
+    tl.to($(rid), { opacity: 0, scale: 1.6, duration: 0.42, ease: "expo.out" }, t + 0.03);
+  }
+  function press(el, t) {
+    tl.to(el, { scale: 0.96, duration: 0.06, ease: "power3.out" }, t);
+    tl.to(el, { scale: 1, duration: 0.2, ease: "power3.out" }, t + 0.06);
+  }
+  // discrete text states via tl.set (seek-safe, no callbacks)
+  function typeInto(el, str, t, d) {
+    var step = d / str.length;
+    for (var i = 1; i <= str.length; i++) tl.set(el, { textContent: str.slice(0, i) }, t + (i - 1) * step);
+  }
+  // neon glow flash: outer glow swells then relaxes back to the element's own resting shadow
+  var G0 = "0 0 0px 0px rgba(52,213,153,0)", G1 = "0 0 22px 3px rgba(52,213,153,0.6)";
+  function flash(el, t, base, rest) {
+    base = base || ""; rest = rest || G0;
+    tl.fromTo(el, { boxShadow: base + rest }, { boxShadow: base + G1, duration: 0.12, ease: "power2.out" }, t);
+    tl.to(el, { boxShadow: base + rest, duration: 0.5, ease: "power2.out" }, t + 0.12);
+  }
+  // chip pop 0.85 -> 1 (no overshoot)
+  function pop(el, t, extraFrom, extraTo) {
+    tl.fromTo(el, Object.assign({ opacity: 0, scale: 0.85 }, extraFrom || {}),
+      Object.assign({ opacity: 1, scale: 1, duration: 0.42, ease: "expo.out" }, extraTo || {}), t);
+  }
+  var FOCUS = { borderColor: "#34d599", boxShadow: "0 0 0 3px rgba(52,213,153,0.4)" };
+  var BLUR = { borderColor: "#323238", boxShadow: "0 0 0 0px rgba(52,213,153,0)" };
+  function focus(el, t) { tl.to(el, Object.assign({ duration: 0.15, ease: "power3.out" }, FOCUS), t); }
+  function blur(el, t) { tl.to(el, Object.assign({ duration: 0.2, ease: "power3.out" }, BLUR), t); }
+
+  // ===== "Offers sit on top of a plan." (0.0–1.2) =====
+  tl.fromTo(win, { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.4, ease: "expo.out" }, 0);
+  focus($("name"), 0.02);
+  tl.fromTo($("name-caret"), { opacity: 0 }, { opacity: 1, duration: 0.04 }, 0.02);
+  tl.fromTo($("name-ph"), { opacity: 1 }, { opacity: 0, duration: 0.04 }, 0.08);
+  typeInto($("name-val"), "Spring launch", 0.08, 0.42);
+  tl.fromTo(cur, { opacity: 0 }, { opacity: 1, duration: 0.2, ease: "power3.out" }, 0.1);
+
+  // Pro plan chip lands on "top" (0.74)
+  move(0.3, 501, 246, 0.32);
+  click(0.64, "r2");
+  blur($("name"), 0.64);
+  tl.to($("name-caret"), { opacity: 0, duration: 0.04 }, 0.64);
+  pop($("pro-on"), 0.66);
+  flash($("pro-on"), 0.66, "inset 0 0 0 1px rgba(52,213,153,0.85), inset 0 0 14px -6px rgba(52,213,153,0.35), ", "0 0 16px -6px rgba(52,213,153,0.4)");
+  tl.fromTo($("pro-ck"), { opacity: 0, scale: 0 }, { opacity: 1, scale: 1, duration: 0.35, ease: "expo.out" }, 0.68);
+  tl.to($("pro-txt"), { color: "#5fe3b1", duration: 0.2 }, 0.66);
+
+  // live sync: the checkout preview builds for Pro ($29/mo by "plan.")
+  tl.fromTo($("pv-empty"), { opacity: 1 }, { opacity: 0, duration: 0.18, ease: "power3.out" }, 0.68);
+  tl.fromTo($("pv-card"), { opacity: 0, y: 10, scale: 0.97 }, { opacity: 1, y: 0, scale: 1, duration: 0.45, ease: "expo.out" }, 0.7);
+  tl.fromTo(gsap.utils.toArray(".f15-pv-in"), { opacity: 0, y: 6 },
+    { opacity: 1, y: 0, duration: 0.4, ease: "expo.out", stagger: 0.045 }, 0.74);
+
+  // ===== punch-in: form + preview framed before "better deal" (2.43) =====
+  // nested wrappers: screen = O + S*(P + T - O), O = (960,470); content centre P=(1097,471) -> (~932,450)
+  // (nudged 27px left so the nav footer stays out of the caption band)
+  tl.to(cam, { scale: 1.44, duration: 1.0, ease: "power3.inOut" }, 1.2);
+  tl.to(pan, { x: -164, y: -14.7, duration: 1.0, ease: "power3.inOut" }, 1.2);
+  tl.to(cam, { scale: 1.48, duration: 3.4, ease: "sine.inOut" }, 2.2);   // slow creep while edits land
+
+  // "better deal" — Percent off, 20, price counts $29 -> $23.20
+  move(1.55, 371, 340, 0.58);
+  click(2.17, "r3");
+  tl.to($("seg-no-on"), { opacity: 0, duration: 0.12 }, 2.19);
+  tl.fromTo($("seg-pct-on"), { opacity: 0, scale: 0.9 }, { opacity: 1, scale: 1, duration: 0.3, ease: "expo.out" }, 2.19);
+  tl.to($("seg-no"), { color: "rgba(236,236,238,0.68)", duration: 0.12 }, 2.19);
+  tl.to($("seg-pct"), { color: "#ececee", duration: 0.12 }, 2.19);
+  tl.fromTo($("fields"), { opacity: 0.4 }, { opacity: 1, duration: 0.25, ease: "power3.out" }, 2.2);
+  focus($("pct"), 2.22);
+  tl.fromTo($("pct-caret"), { opacity: 0 }, { opacity: 1, duration: 0.04 }, 2.22);
+  tl.fromTo($("pct-ph"), { opacity: 1 }, { opacity: 0, duration: 0.04 }, 2.3);
+  typeInto($("pct-val"), "20", 2.3, 0.12);
+
+  var COUNT_AT = 2.42, COUNT_DUR = 0.85;
+  tl.to($("pA-per"), { opacity: 0, duration: 0.18, ease: "power3.out" }, COUNT_AT);
+  tl.to($("pA"), { x: 150, scale: 0.46, opacity: 0.62, duration: 0.55, ease: "power4.out" }, COUNT_AT);
+  tl.fromTo($("pA-strike"), { scaleX: 0 }, { scaleX: 1, duration: 0.28, ease: "power3.out" }, 2.8);
+  tl.fromTo($("pB"), { opacity: 0, scale: 0.7 }, { opacity: 1, scale: 1, duration: COUNT_DUR, ease: "power3.out" }, COUNT_AT);
+  tl.fromTo($("pB-num"), { color: "#5fe3b1" }, { color: "#ececee", duration: 0.5, ease: "power2.out" }, COUNT_AT + COUNT_DUR);
+  // $29.00 -> $23.20 (20% off), stepped at 30fps along power3.out — same ease as the scale growth
+  var priceEl = $("pB-num"), STEPS = Math.round(COUNT_DUR * 30);
+  for (var k = 1; k <= STEPS; k++) {
+    var pr = k / STEPS, eased = 1 - Math.pow(1 - pr, 3);
+    tl.set(priceEl, { textContent: "$" + (29 - 5.8 * eased).toFixed(2) }, COUNT_AT + pr * COUNT_DUR);
+  }
+  tl.fromTo($("pv-note"), { opacity: 0, y: 4 }, { opacity: 1, y: 0, duration: 0.4, ease: "expo.out" }, 2.86);
+
+  // "change the price" (3.04) — Yearly ticks, preview gains the Monthly / Yearly toggle
+  move(2.55, 437, 478, 0.37);
+  click(2.95, "r5");
+  blur($("pct"), 2.95);
+  tl.to($("pct-caret"), { opacity: 0, duration: 0.04 }, 2.95);
+  pop($("yearly-fill"), 2.97, { scale: 0.6 });
+  flash($("yearly-fill"), 2.97);
+  pop($("pv-seg"), 3.04, { y: -4 }, { y: 0 });
+  flash($("pv-seg"), 3.04);
+
+  // "attach incentives" (3.96) — +500 AI credits chip, mirrored in the preview's included list
+  move(3.35, 843, 535, 0.42);
+  click(3.8, "r6");
+  tl.fromTo($("inc-empty"), { opacity: 1 }, { opacity: 0, duration: 0.1 }, 3.82);
+  pop($("inc"), 3.84, { x: -6 }, { x: 0 });
+  flash($("inc"), 3.84);
+  tl.fromTo($("pv-bonus"), { opacity: 0, x: -10 }, { opacity: 1, x: 0, duration: 0.42, ease: "expo.out" }, 3.94);
+
+  // "add order bumps" (5.21) — Template pack +$19 row, preview bump row (ticks on "bumps")
+  move(4.58, 843, 627, 0.4);
+  click(5.0, "r7");
+  tl.fromTo($("bump-empty"), { opacity: 1 }, { opacity: 0, duration: 0.1 }, 5.02);
+  pop($("bump"), 5.04, { y: -8, scale: 0.96 }, { y: 0 });
+  flash($("bump"), 5.04);
+  pop($("pv-bump"), 5.14, { scale: 0.92 });
+  flash($("pv-bump"), 5.14);
+  pop($("pvb-fill"), 5.42, { scale: 0.6 });
+
+  // ===== "You can build offers yourself" — pull back, Create offer + toast =====
+  tl.to(cam, { scale: 1.1, duration: 0.6, ease: "power3.inOut" }, 5.6);
+  tl.to(pan, { x: 0, y: 0, duration: 0.6, ease: "power3.inOut" }, 5.6);
+  move(5.62, 1285, 32, 0.52);
+  click(6.18, "r8");
+  press($("create"), 6.18);
+  tl.fromTo($("toast"), { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.45, ease: "expo.out" }, 6.34);
+
+  // ===== "or let the Offer Agent create them" — neon agent button pops + glow sweep =====
+  tl.to($("actgroup"), { x: -220, duration: 0.45, ease: "expo.out" }, 7.3);
+  pop($("gen"), 7.4);
+  tl.fromTo($("glow"), { opacity: 0, scale: 0.7 }, { opacity: 0.85, scale: 1.05, duration: 0.35, ease: "power2.out" }, 7.42);
+  tl.to($("glow"), { opacity: 0.4, scale: 1, duration: 0.55, ease: "power2.inOut" }, 7.8);
+  tl.fromTo($("sweep"), { x: -80 }, { x: 230, duration: 0.6, ease: "power2.inOut" }, 7.55);
+  move(7.48, 1336, 40, 0.5);
+
+  window.__timelines = window.__timelines || {};
+  window.__timelines["15-offers"] = tl;
+})();
+</script>
+</template>

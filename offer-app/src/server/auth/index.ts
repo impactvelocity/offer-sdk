@@ -12,7 +12,7 @@ import { proxyAuthRequest, remoteAuthCall } from "./remote";
 
 export { DEMO_USER, ensureDemoData };
 
-/** The mock always seeds the demo account; with the hosted API, `pnpm seed:demo` does (its password is public). */
+/** The mock always has the demo workspace; with the hosted API, it's built on first use (see @/server/demo). Its password is public. */
 export const demoEnabled = offerApiMode === "mock" || env.DEMO_ENABLED;
 
 export interface Session {

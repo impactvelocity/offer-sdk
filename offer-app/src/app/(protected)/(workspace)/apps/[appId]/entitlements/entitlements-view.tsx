@@ -180,7 +180,7 @@ export function EntitlementsView() {
                         <TD>
                           <IdTag>{e.id}</IdTag>
                         </TD>
-                        <TD>{e.type === "usage" ? <Badge color="blue">Usage</Badge> : <Badge color="purple">Feature flag</Badge>}</TD>
+                        <TD>{e.type === "usage" ? <Badge color="blue">Usage</Badge> : <Badge color="brand">Feature flag</Badge>}</TD>
                         <TD className="max-w-md">
                           {e.description ? <span className="line-clamp-1 text-fg-secondary">{e.description}</span> : <EmptyCell />}
                         </TD>

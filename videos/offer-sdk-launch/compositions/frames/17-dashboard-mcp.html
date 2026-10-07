@@ -1,0 +1,905 @@
+<template>
+  <style>
+    /* ==========================================================================
+       Offer SDK app kit — the offer-app dashboard (dark theme), rebuilt for video.
+       Values are copied from offer-app/src/app/globals.css (data-theme="dark") and
+       measured from the real screens in capture/assets/app/*.png.
+
+       HOW TO USE IN A FRAME
+       1. Paste this whole file inside the style block that lives inside your frame template.
+          (Template transport: styles must live inside the frame template.)
+       2. Build the window from shell.html. Author it at its LOGICAL size
+          (.ak-window is 1366×800 — a real laptop viewport, real 14px UI text) and
+          scale the wrapper with GSAP (scale ≈ 1.08–1.12 to fill the top 83%;
+          punch in to 1.5–1.9 on the region the VO is talking about).
+       3. Copy icons from icons.html (Lucide, the icon set the app uses).
+       All classes are prefixed ak- so they never collide with frame-local names.
+       ========================================================================== */
+
+    @font-face { font-family: "Cal Sans"; src: url("assets/fonts/CalSansVF.woff2") format("woff2"); font-weight: 400 700; font-display: block; }
+    @font-face { font-family: "Geist Mono"; src: url("assets/fonts/geist-mono-latin.woff2") format("woff2"); font-weight: 400 600; font-display: block; }
+
+    .ak {
+      --canvas: #0f0f11; --panel: #161618; --bg: #18181b; --bg-subtle: #1c1c1f; --bg-muted: #222226;
+      --bg-hover: #27272c; --bg-active: #2e2e34; --bg-elevated: #202024; --bg-inverse: #f1f1f3;
+      --fg: #ececee; --fg-secondary: rgb(236 236 238 / .93); --fg-tertiary: rgb(236 236 238 / .86);
+      --fg-muted: rgb(236 236 238 / .68); --fg-placeholder: #6f7178; --fg-icon: #9c9ea5;
+      --border: #2a2a2f; --border-strong: #37373d; --border-input: #323238;
+      --accent: #34d599; --accent-hover: #5ce0b0; --accent-subtle: rgb(52 213 153 / .13); --accent-fg: #5fe3b1; --accent-contrast: #03140c; --ring: rgb(52 213 153 / .4);
+      --btn-neon-bg: rgb(52 213 153 / .08); --shadow-brand: inset 0 0 0 1px rgb(52 213 153 / .85), inset 0 0 14px -6px rgb(52 213 153 / .35), 0 0 16px -6px rgb(52 213 153 / .4);
+      --brand-vertical: linear-gradient(180deg, #4fe0b0, #2fc48c);
+      --success: #30a46c; --success-subtle: rgb(48 164 108 / .16); --success-fg: #5ed29a;
+      --danger: #e5484d; --danger-subtle: rgb(229 72 77 / .15); --danger-fg: #ff8a8d;
+      --warning: #f0a020; --warning-subtle: rgb(240 160 32 / .14); --warning-fg: #ffc35f;
+      --brand-from: #34d599; --brand-to: #2cc0de; --brand-gradient: linear-gradient(90deg, #34d599, #2cc0de);
+      --code-comment: #7f828a; --code-keyword: #5fe3b1; --code-string: #6fd69f; --code-key: #93b8ff; --code-number: #ffa072;
+      --zapier: #ff5f1f; --paypal: #0070e0;
+      --shadow-soft: 0 14px 36px -14px rgb(0 0 0 / .75), 0 2px 8px -2px rgb(0 0 0 / .45);
+      --shadow-lg: 0 18px 44px -10px rgb(0 0 0 / .7), 0 4px 12px -4px rgb(0 0 0 / .5);
+      font-family: "Cal Sans", ui-sans-serif, system-ui, sans-serif;
+      font-variation-settings: "GEOM" 25;           /* the app's UI geometry */
+      color: var(--fg); -webkit-font-smoothing: antialiased; font-size: 14px; line-height: 1.4;
+    }
+    .ak * { box-sizing: border-box; }
+    .ak .ak-display { font-variation-settings: "GEOM" 50; letter-spacing: -0.01em; }
+    /* Neon-style eyebrow: small mono caps (site + app section kickers). */
+    .ak .ak-eyebrow { font-family: "Geist Mono", monospace; font-variation-settings: normal; font-size: 11px; line-height: 16px; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; color: var(--fg-muted); }
+    .ak .ak-mono, .ak code { font-family: "Geist Mono", ui-monospace, monospace; font-variation-settings: normal; }
+    .ak svg { display: block; flex-shrink: 0; }
+
+    /* ---------- window + shell ---------- */
+    .ak-window { position: absolute; width: 1366px; height: 800px; background: var(--canvas); border-radius: 18px;
+      border: 1px solid var(--border); box-shadow: 0 40px 120px -30px rgb(0 0 0 / .9), 0 0 0 1px rgb(255 255 255 / .03);
+      overflow: hidden; display: flex; padding: 6px 6px 6px 0; transform-origin: 50% 50%; }
+    .ak-rail { width: 52px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; gap: 10px; padding-top: 8px; }
+    .ak-rail .ak-rail-logo { width: 30px; height: 30px; border-radius: 8px; display: grid; place-items: center; color: var(--fg); }
+    .ak-rail .ak-rail-logo svg { width: 18px; height: 18px; }
+    .ak-rail .ak-rail-sep { width: 22px; height: 1px; background: var(--border); }
+    .ak-rail .ak-app-tile { width: 28px; height: 28px; border-radius: 7px; display: grid; place-items: center; font-size: 11px; font-weight: 600; color: var(--accent-contrast);
+      background: var(--brand-vertical); }
+    .ak-rail .ak-app-tile.is-active { box-shadow: 0 0 0 2px var(--canvas), 0 0 0 3.5px var(--accent); }
+    .ak-rail .ak-app-tile.alt { opacity: .8; }
+    .ak-rail .ak-rail-plus { color: var(--fg-icon); width: 16px; height: 16px; }
+    .ak-rail .ak-rail-foot { margin-top: auto; padding-bottom: 6px; display: flex; flex-direction: column; align-items: center; gap: 14px; color: var(--fg-icon); }
+    .ak-rail .ak-rail-foot svg { width: 15px; height: 15px; }
+    .ak-rail .ak-avatar { width: 26px; height: 26px; border-radius: 50%; background: var(--bg-muted); color: var(--fg-secondary); font-size: 10px; display: grid; place-items: center; }
+
+    .ak-nav { width: 222px; flex-shrink: 0; background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
+      margin-right: 6px; display: flex; flex-direction: column; padding: 12px 10px; box-shadow: var(--shadow-soft); }
+    .ak-nav-title { font-size: 15px; font-weight: 600; padding: 2px 6px 10px; font-variation-settings: "GEOM" 50; }
+    .ak-quick { height: 30px; border: 1px solid var(--border-input); border-radius: 8px; display: flex; align-items: center; gap: 8px; padding: 0 8px;
+      color: var(--fg-muted); font-size: 13px; margin-bottom: 10px; }
+    .ak-quick svg { width: 14px; height: 14px; color: var(--fg-icon); }
+    .ak-quick .ak-kbd { margin-left: auto; font-size: 10.5px; border: 1px solid var(--border); border-radius: 4px; padding: 0 4px; color: var(--fg-placeholder); }
+    .ak-nav-group { display: flex; flex-direction: column; gap: 1px; padding: 6px 0; border-top: 1px solid var(--border); }
+    .ak-nav-group:first-of-type { border-top: 0; padding-top: 0; }
+    .ak-nav-item { height: 31px; border-radius: 7px; display: flex; align-items: center; gap: 10px; padding: 0 8px; font-size: 13.5px; color: var(--fg-secondary); }
+    .ak-nav-item svg { width: 15px; height: 15px; color: var(--fg-icon); }
+    .ak-nav-item .ak-count { margin-left: auto; font-size: 12px; color: var(--fg-muted); font-variant-numeric: tabular-nums; }
+    .ak-nav-item.is-active { background: var(--accent-subtle); color: var(--accent-fg); }
+    .ak-nav-item.is-active svg { color: var(--accent-fg); }
+    .ak-nav-foot { margin-top: auto; }
+
+    .ak-main { flex: 1; min-width: 0; background: var(--bg); border: 1px solid var(--border); border-radius: 12px; display: flex; flex-direction: column;
+      overflow: hidden; box-shadow: var(--shadow-soft); position: relative; }
+    .ak-header { height: 50px; flex-shrink: 0; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; padding: 0 12px 0 16px; }
+    .ak-header .ak-crumb { display: flex; align-items: center; gap: 9px; font-size: 14px; font-weight: 500; }
+    .ak-header .ak-crumb svg { width: 15px; height: 15px; color: var(--fg-icon); }
+    .ak-header .ak-crumb .ak-sep { color: var(--fg-placeholder); }
+    .ak-header .ak-actions { margin-left: auto; display: flex; align-items: center; gap: 4px; }
+    .ak-toolbar { height: 50px; flex-shrink: 0; display: flex; align-items: center; gap: 10px; padding: 0 16px; border-bottom: 1px solid var(--border); }
+    .ak-body { flex: 1; min-height: 0; position: relative; overflow: hidden; }
+    .ak-page { padding: 28px 40px; }
+    .ak-page-title { font-size: 22px; font-weight: 600; font-variation-settings: "GEOM" 50; letter-spacing: -0.01em; }
+    .ak-page-sub { color: var(--fg-muted); font-size: 13.5px; margin-top: 4px; }
+
+    /* ---------- controls ---------- */
+    .ak-btn { height: 30px; border-radius: 8px; display: inline-flex; align-items: center; gap: 7px; padding: 0 10px; font-size: 13.5px; color: var(--fg-secondary);
+      border: 1px solid transparent; white-space: nowrap; }
+    .ak-btn svg { width: 14px; height: 14px; }
+    .ak-btn.is-outline { border-color: var(--border-strong); background: var(--bg-subtle); }
+    /* Primary = the app's neon button: hairline neon border, faint green wash, green ink. */
+    .ak-btn.is-primary { background: var(--btn-neon-bg); color: var(--accent-fg); font-weight: 500; box-shadow: var(--shadow-brand); }
+    .ak-btn.is-gradient { background: var(--btn-neon-bg); color: var(--accent-fg); font-weight: 500; box-shadow: var(--shadow-brand), 0 0 32px -8px rgb(52 213 153 / .55); }
+    .ak-btn.is-solid { background: var(--brand-vertical); color: var(--accent-contrast); font-weight: 600; }
+    .ak-btn.is-paypal { background: #ffc439; color: #111; font-weight: 600; }
+    .ak-btn.is-lg { height: 40px; padding: 0 16px; font-size: 15px; border-radius: 10px; }
+    .ak-input { height: 32px; border: 1px solid var(--border-input); background: var(--bg-subtle); border-radius: 8px; display: flex; align-items: center; gap: 8px;
+      padding: 0 10px; font-size: 13.5px; color: var(--fg); }
+    .ak-input.is-placeholder { color: var(--fg-placeholder); }
+    .ak-input.is-focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--ring); }
+    .ak-input svg { width: 14px; height: 14px; color: var(--fg-icon); }
+    .ak-label { font-size: 13px; color: var(--fg-secondary); font-weight: 500; margin-bottom: 6px; }
+    .ak-seg { display: inline-flex; background: var(--bg-muted); border-radius: 8px; padding: 2px; gap: 2px; }
+    .ak-seg > span { height: 26px; padding: 0 10px; border-radius: 6px; display: inline-flex; align-items: center; font-size: 13px; color: var(--fg-muted); }
+    .ak-seg > span.is-on { background: var(--bg-active); color: var(--fg); }
+    .ak-switch { width: 30px; height: 18px; border-radius: 9px; background: var(--bg-active); position: relative; flex-shrink: 0; }
+    .ak-switch::after { content: ""; position: absolute; top: 2px; left: 2px; width: 14px; height: 14px; border-radius: 50%; background: #fff; }
+    .ak-switch.is-on { background: var(--accent); }
+    .ak-switch.is-on::after { background: var(--accent-contrast); }
+    .ak-switch.is-on::after { left: 14px; }
+    .ak-check { width: 16px; height: 16px; border-radius: 4px; border: 1px solid var(--border-strong); display: grid; place-items: center; }
+    .ak-check.is-on { background: var(--accent); border-color: var(--accent); color: var(--accent-contrast); }
+    .ak-check svg { width: 11px; height: 11px; }
+
+    /* ---------- table (Plans / Entitlements / Add-ons / Incentives / Accounts) ---------- */
+    .ak-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+    .ak-table th { height: 42px; text-align: left; font-weight: 400; color: var(--fg-muted); padding: 0 14px; border-bottom: 1px solid var(--border); border-right: 1px solid var(--border); white-space: nowrap; }
+    .ak-table th:last-child, .ak-table td:last-child { border-right: 0; }
+    .ak-table th .ak-th { display: inline-flex; align-items: center; gap: 7px; }
+    .ak-table th svg { width: 13px; height: 13px; color: var(--fg-icon); }
+    .ak-table td { height: 46px; padding: 0 14px; border-bottom: 1px solid var(--border); border-right: 1px solid var(--border); white-space: nowrap; color: var(--fg-secondary); }
+    .ak-table td.is-num { text-align: right; font-variant-numeric: tabular-nums; }
+    .ak-table .ak-row-name { display: flex; align-items: center; gap: 9px; color: var(--fg); }
+    .ak-table .ak-row-icon { width: 22px; height: 22px; border-radius: 6px; background: rgb(59 123 246 / .18); color: #93b8ff; display: grid; place-items: center; }
+    .ak-table .ak-row-icon svg { width: 13px; height: 13px; }
+    .ak-table tr.is-hl td { background: rgb(52 213 153 / .07); }
+    .ak-table-foot { padding: 12px 16px; color: var(--fg-muted); font-size: 13px; }
+
+    /* ---------- chips + tags ---------- */
+    .ak-id { font-family: "Geist Mono", monospace; font-variation-settings: normal; font-size: 12px; background: var(--bg-muted); color: var(--fg-secondary);
+      border-radius: 5px; padding: 2px 6px; }
+    .ak-tag { display: inline-flex; align-items: center; gap: 5px; height: 21px; padding: 0 7px; border-radius: 5px; font-size: 12px; white-space: nowrap;
+      background: rgb(255 255 255 / .08); color: #c6c7cc; }
+    .ak-tag svg { width: 11px; height: 11px; }
+    .ak-tag.blue { background: rgb(59 123 246 / .18); color: #93b8ff; }
+    .ak-tag.green { background: rgb(48 164 108 / .18); color: #6fd69f; }
+    .ak-tag.yellow { background: rgb(240 180 40 / .16); color: #f5c451; }
+    .ak-tag.orange { background: rgb(235 104 52 / .18); color: #ffa072; }
+    .ak-tag.red { background: rgb(229 72 77 / .18); color: #ff8a8d; }
+    .ak-tag.purple { background: rgb(143 107 255 / .2); color: #bba6ff; }
+    .ak-tag.brand { background: rgb(52 213 153 / .14); color: #5fe3b1; }
+    .ak-tag.pink { background: rgb(224 69 123 / .18); color: #ff8fba; }
+    .ak-tag.teal { background: rgb(20 163 157 / .18); color: #62d6cf; }
+    .ak-more { color: var(--fg-muted); font-size: 12px; }
+
+    /* ---------- cards, stats, meters ---------- */
+    .ak-card { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; }
+    .ak-card-head { height: 46px; display: flex; align-items: center; padding: 0 16px; border-bottom: 1px solid var(--border); font-weight: 500; font-size: 14px; }
+    .ak-card-body { padding: 16px; }
+    .ak-elevated { background: var(--bg-elevated); border: 1px solid var(--border-strong); border-radius: 12px; box-shadow: var(--shadow-lg); }
+    .ak-stat-strip { display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+    .ak-stat { padding: 16px 18px; border-right: 1px solid var(--border); }
+    .ak-stat:last-child { border-right: 0; }
+    .ak-stat-label { display: flex; align-items: center; gap: 7px; font-size: 13px; color: var(--fg-secondary); }
+    .ak-stat-label svg { width: 13px; height: 13px; color: var(--fg-icon); }
+    .ak-stat-value { font-size: 26px; font-weight: 600; margin-top: 8px; font-variant-numeric: tabular-nums; font-variation-settings: "GEOM" 50; }
+    .ak-stat-sub { font-size: 12px; color: var(--fg-muted); margin-top: 4px; }
+    .ak-meter { height: 8px; border-radius: 4px; background: var(--bg-active); overflow: hidden; }
+    .ak-meter > i { display: block; height: 100%; width: 0; border-radius: 4px; background: var(--brand-gradient); }
+    .ak-meter.is-warn > i { background: linear-gradient(90deg, #f0a020, #e5484d); }
+    .ak-bar-row { position: relative; height: 30px; border-radius: 6px; display: flex; align-items: center; padding: 0 10px; font-size: 13.5px; }
+    .ak-bar-row > b { position: absolute; inset: 0 auto 0 0; border-radius: 6px; background: linear-gradient(90deg, rgb(52 213 153 / .32), rgb(44 192 222 / .22)); font-weight: 400; }
+    .ak-bar-row > span { position: relative; }
+    .ak-bar-row > .ak-bar-val { margin-left: auto; color: var(--fg-secondary); font-variant-numeric: tabular-nums; }
+
+    /* ---------- code block (site CodeBlock look) ---------- */
+    .ak-code { background: #131315; border: 1px solid var(--border); border-radius: 14px; overflow: hidden; box-shadow: var(--shadow-lg); }
+    .ak-code-bar { height: 40px; display: flex; align-items: center; gap: 8px; padding: 0 14px; border-bottom: 1px solid var(--border); color: var(--fg-muted); font-size: 13px; }
+    .ak-code-bar .ak-dots { display: flex; gap: 6px; margin-right: 6px; }
+    .ak-code-bar .ak-dots i { width: 10px; height: 10px; border-radius: 50%; background: var(--bg-active); }
+    .ak-code pre { margin: 0; padding: 18px 20px; font-family: "Geist Mono", monospace; font-variation-settings: normal; font-size: 15px; line-height: 1.65; color: var(--fg-secondary); white-space: pre; }
+    .ak-code .k { color: var(--code-keyword); } .ak-code .s { color: var(--code-string); } .ak-code .p { color: var(--code-key); }
+    .ak-code .n { color: var(--code-number); } .ak-code .c { color: var(--code-comment); } .ak-code .f { color: #ececee; }
+    .ak-code .del { background: rgb(229 72 77 / .14); } .ak-code .add { background: rgb(48 164 108 / .14); }
+
+    /* ---------- feedback ---------- */
+    .ak-toast { position: absolute; display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 10px; background: var(--bg-elevated);
+      border: 1px solid var(--border-strong); box-shadow: var(--shadow-lg); font-size: 13.5px; white-space: nowrap; }
+    .ak-toast svg { width: 15px; height: 15px; }
+    .ak-toast.is-ok svg { color: var(--success-fg); }
+    .ak-toast.is-warn svg { color: var(--warning-fg); }
+    .ak-toast.is-bad svg { color: var(--danger-fg); }
+    .ak-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--success); display: inline-block; }
+    .ak-dot.is-warn { background: var(--warning); } .ak-dot.is-bad { background: var(--danger); }
+    .ak-cursor { position: absolute; width: 22px; height: 22px; z-index: 50; pointer-events: none; filter: drop-shadow(0 2px 4px rgb(0 0 0 / .6)); }
+    .ak-ripple { position: absolute; width: 36px; height: 36px; margin: -18px 0 0 -18px; border-radius: 50%; border: 2px solid var(--accent-fg); z-index: 49; opacity: 0; }
+
+    /* ---------- avatars + misc ---------- */
+    .ak-av { width: 22px; height: 22px; border-radius: 6px; display: grid; place-items: center; font-size: 9.5px; font-weight: 600; background: rgb(52 213 153 / .14); color: #5fe3b1; }
+    .ak-av.round { border-radius: 50%; }
+    .ak-kv { display: flex; justify-content: space-between; font-size: 13px; padding: 7px 0; border-bottom: 1px solid var(--border); color: var(--fg-muted); }
+    .ak-kv b { font-weight: 400; color: var(--fg); }
+    .ak-divider { height: 1px; background: var(--border); }
+
+    /* ===================== frame 17 — dashboard + MCP ===================== */
+    #root {
+      position: absolute;
+      inset: 0;
+      width: 1920px;
+      height: 1080px;
+      overflow: hidden;
+      color: #ececee;
+      font-family: "Cal Sans", sans-serif;
+    }
+    .mcp17-bg {
+      position: absolute;
+      inset: 0;
+      width: 1920px;
+      height: 1080px;
+      background: #0f0f11;
+    }
+    .mcp17-glow {
+      position: absolute;
+      left: 260px;
+      top: 40px;
+      width: 1400px;
+      height: 860px;
+      background: radial-gradient(closest-side, rgba(52, 213, 153, 0.2), transparent);
+      opacity: 0.55;
+    }
+    .mcp17-stage {
+      position: absolute;
+      inset: 0;
+      width: 1920px;
+      height: 1080px;
+    }
+    .mcp17-cam {
+      position: absolute;
+      inset: 0;
+      width: 1920px;
+      height: 1080px;
+      transform-origin: 960px 470px;
+    }
+
+    /* window wrapper: logical 1366x800, center (960,470); GSAP owns its transform */
+    .mcp17-winwrap {
+      position: absolute;
+      left: 277px;
+      top: 70px;
+      width: 1366px;
+      height: 800px;
+      transform-origin: 50% 50%;
+    }
+    .mcp17-winwrap .ak-window { left: 0; top: 0; }
+
+    /* ---------- Overview page ---------- */
+    .mcp17-page { padding: 20px 28px 0; }
+    .mcp17-title { font-size: 20px; font-weight: 600; font-variation-settings: "GEOM" 50; letter-spacing: -0.01em; line-height: 1.2; }
+    .mcp17-sub { color: rgb(236 236 238 / .68); font-size: 13px; margin-top: 4px; }
+    .mcp17-strip { margin-top: 14px; }
+    .mcp17-strip .ak-stat { padding: 13px 16px; position: relative; }
+    .mcp17-strip .ak-stat-value { margin-top: 6px; }
+    .mcp17-spark { position: absolute; right: 14px; top: 40px; width: 112px; height: 32px; overflow: visible; }
+    .mcp17-spark path { fill: none; stroke: url(#mcp17-brand-h); stroke-width: 1.6; stroke-linecap: round; }
+    .mcp17-grid { display: grid; grid-template-columns: 1.5fr 1fr; gap: 14px; margin-top: 14px; }
+    .mcp17-row2 { height: 278px; }
+    .mcp17-row3 { height: 262px; }
+    .mcp17-grid .ak-card { overflow: hidden; position: relative; }
+    .mcp17-head { height: 46px; display: flex; align-items: center; padding: 0 16px; border-bottom: 1px solid #2a2a2f; }
+    .mcp17-head.is-tall { height: 60px; }
+    .mcp17-head-title { font-size: 14px; font-weight: 500; }
+    .mcp17-head-sub { font-size: 12.5px; color: rgb(236 236 238 / .68); margin-top: 3px; }
+    .mcp17-head-link { margin-left: auto; display: flex; align-items: center; gap: 5px; font-size: 12.5px; color: rgb(236 236 238 / .86); }
+    .mcp17-head-link svg { width: 12px; height: 12px; }
+    .mcp17-chart { display: block; width: 602px; height: 212px; overflow: visible; }
+    .mcp17-chart .mcp17-grid-line { stroke: #2a2a2f; stroke-width: 1; }
+    .mcp17-chart text { font-family: "Cal Sans", sans-serif; font-size: 11px; fill: #9c9ea5; }
+    .mcp17-chart-line { fill: none; stroke: url(#mcp17-brand-h); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round;
+      filter: drop-shadow(0 0 5px rgba(52, 213, 153, 0.55)); }
+    .mcp17-chart-area { fill: url(#mcp17-brand-h); fill-opacity: 0.32; }
+    .mcp17-bars { padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; }
+    .mcp17-bars .ak-bar-row > b { transform-origin: 0 50%; }
+    .mcp17-bar-val { margin-left: auto; position: relative; display: flex; gap: 12px; font-variant-numeric: tabular-nums; color: rgb(236 236 238 / .93); }
+    .mcp17-bar-val em { font-style: normal; width: 30px; text-align: right; }
+    .mcp17-bars .ak-tag { margin-left: 8px; height: 19px; font-size: 11.5px; }
+    .mcp17-bars .ak-av { position: relative; margin-right: 9px; width: 20px; height: 20px; font-size: 8.5px; }
+
+    /* recent activity */
+    .mcp17-recent { position: relative; padding: 6px 16px 0; }
+    .mcp17-act { height: 52px; display: flex; align-items: center; gap: 12px; }
+    .mcp17-act-ic { width: 22px; height: 22px; border-radius: 50%; border: 1px solid #37373d; display: grid; place-items: center; color: #5ed29a; }
+    .mcp17-act-ic svg { width: 12px; height: 12px; }
+    .mcp17-act-main { font-size: 13.5px; color: rgb(236 236 238 / .86); }
+    .mcp17-act-main b { font-weight: 500; color: #ececee; }
+    .mcp17-act-meta { font-size: 12px; color: rgb(236 236 238 / .68); margin-top: 3px; }
+    .mcp17-act-new { position: absolute; left: 8px; right: 8px; top: 6px; height: 52px; padding: 0 8px; border-radius: 8px;
+      background: rgb(52 213 153 / .08);
+      box-shadow: inset 0 0 0 1px rgb(52 213 153 / .7), inset 0 0 14px -6px rgb(52 213 153 / .35), 0 0 16px -6px rgb(52 213 153 / .4); }
+    .mcp17-act-new .mcp17-act-ic { border: 0; border-radius: 6px; background: rgb(52 213 153 / .16); color: #5fe3b1; }
+    .mcp17-act-new .ak-tag { margin-left: 8px; height: 19px; font-size: 11.5px; }
+
+    /* Offers nav count roll 0 -> 1 */
+    .mcp17-roll-box { display: inline-block; height: 17px; overflow: hidden; line-height: 17px; vertical-align: middle; }
+    .mcp17-roll { display: flex; flex-direction: column; }
+    .mcp17-roll i { font-style: normal; height: 17px; line-height: 17px; text-align: right; }
+    .mcp17-navflash { position: absolute; inset: 0; border-radius: 7px; background: rgb(52 213 153 / .14);
+      box-shadow: inset 0 0 0 1px rgb(52 213 153 / .55); opacity: 0; }
+    .ak-nav-item[data-nav="offers"] { position: relative; }
+    .ak-nav-item[data-nav="offers"] > svg, .ak-nav-item[data-nav="offers"] > .ak-count, .mcp17-navtxt { position: relative; }
+
+    /* ---------- chat panel (canvas px) ---------- */
+    .mcp17-chat {
+      position: absolute;
+      left: 1260px;
+      top: 130px;
+      width: 600px;
+      height: 680px;
+      background: #161618;
+      border: 1px solid #2a2a2f;
+      border-radius: 18px;
+      box-shadow: 0 40px 120px -30px rgb(0 0 0 / .9), 0 0 0 1px rgb(255 255 255 / .03);
+      overflow: hidden;
+      font-family: "Cal Sans", sans-serif;
+      font-variation-settings: "GEOM" 25;
+      color: #ececee;
+      -webkit-font-smoothing: antialiased;
+    }
+    .mcp17-chat-head { height: 66px; display: flex; align-items: center; padding: 0 22px; border-bottom: 1px solid #2a2a2f; }
+    .mcp17-wordmark { font-size: 25px; font-weight: 600; font-variation-settings: "GEOM" 50; letter-spacing: -0.01em; }
+    .mcp17-server { margin-left: auto; display: inline-flex; align-items: center; gap: 8px; height: 32px; padding: 0 12px; border-radius: 8px;
+      background: rgb(52 213 153 / .08); font-size: 15px; color: #5fe3b1; white-space: nowrap;
+      box-shadow: inset 0 0 0 1px rgb(52 213 153 / .85), inset 0 0 14px -6px rgb(52 213 153 / .35), 0 0 16px -6px rgb(52 213 153 / .4); }
+    .mcp17-server svg { width: 15px; height: 15px; color: #5fe3b1; }
+    .mcp17-server .mcp17-live { display: inline-flex; align-items: center; gap: 6px; color: #5fe3b1; }
+    .mcp17-server .mcp17-live i { width: 8px; height: 8px; border-radius: 50%; background: #34d599; box-shadow: 0 0 0 3px rgb(52 213 153 / .2), 0 0 8px rgb(52 213 153 / .8); }
+    .mcp17-server .mcp17-dotsep { color: rgb(95 227 177 / .55); }
+
+    .mcp17-msgs { position: absolute; left: 22px; right: 22px; top: 88px; }
+    .mcp17-bubble { margin-left: auto; width: fit-content; max-width: 556px; white-space: nowrap; padding: 13px 17px; border-radius: 14px 14px 4px 14px; background: #27272c; border: 1px solid #37373d;
+      font-size: 19px; line-height: 1.42; color: #ececee; }
+    .mcp17-chat .mcp17-arrow { display: inline-block; width: 18px; height: 18px; vertical-align: -3px; margin: 0 2px; color: #5fe3b1; }
+    .mcp17-chips { display: flex; gap: 10px; margin-top: 16px; }
+    .mcp17-chip { display: inline-flex; align-items: center; gap: 9px; height: 36px; padding: 0 12px; border-radius: 8px; background: #202024; border: 1px solid #37373d;
+      font-family: "Geist Mono", monospace; font-variation-settings: normal; font-size: 15px; color: rgb(236 236 238 / .93); white-space: nowrap; }
+    .mcp17-chip > svg { width: 14px; height: 14px; color: #9c9ea5; }
+    .mcp17-chip-state { position: relative; width: 16px; height: 16px; }
+    .mcp17-chip-state svg { position: absolute; left: 0; top: 0; width: 16px; height: 16px; }
+    .mcp17-spin { color: #5fe3b1; }
+    .mcp17-ok { color: #5fe3b1; }
+    .mcp17-result { margin-top: 12px; background: #18181b; border: 1px solid #2a2a2f; border-radius: 12px; padding: 4px 14px; }
+    .mcp17-res-row { height: 40px; display: flex; align-items: center; gap: 11px; border-top: 1px solid #2a2a2f; font-size: 17px; }
+    .mcp17-res-row:first-child { border-top: 0; }
+    .mcp17-res-row .ak-av { width: 24px; height: 24px; font-size: 10px; }
+    .mcp17-res-row .ak-meter { margin-left: auto; width: 150px; height: 6px; }
+    .mcp17-res-row .ak-meter > i { width: 100%; }
+    .mcp17-res-num { width: 46px; text-align: right; font-family: "Geist Mono", monospace; font-variation-settings: normal; font-size: 14px; color: #ffc35f; }
+    .mcp17-create { margin-top: 12px; }
+    .mcp17-create .mcp17-chip { border-color: rgb(52 213 153 / .5); background: rgb(52 213 153 / .08); }
+    .mcp17-done { margin-top: 16px; display: flex; align-items: center; gap: 10px; font-size: 20px; color: #ececee; }
+    .mcp17-done svg { width: 22px; height: 22px; color: #5fe3b1; }
+
+    .mcp17-composer { position: absolute; left: 22px; right: 22px; bottom: 20px; height: 136px; background: #202024; border: 1px solid #37373d; border-radius: 14px; }
+    .mcp17-comp-ring { position: absolute; inset: -1px; border-radius: 14px; opacity: 0;
+      box-shadow: inset 0 0 0 1px rgb(52 213 153 / .6), 0 0 18px -8px rgb(52 213 153 / .5); }
+    .mcp17-input { position: absolute; left: 16px; right: 16px; top: 13px; height: 76px; font-size: 18px; line-height: 1.45; color: #ececee; }
+    .mcp17-placeholder { position: absolute; left: 0; top: 0; color: #6f7178; }
+    .mcp17-chat .mcp17-typed .mcp17-arrow { width: 17px; height: 17px; }
+    .mcp17-caret { display: inline-block; width: 2px; height: 21px; margin-left: 1px; vertical-align: -4px; background: #5fe3b1; }
+    .mcp17-comp-foot { position: absolute; left: 12px; right: 12px; bottom: 10px; height: 34px; display: flex; align-items: center; }
+    .mcp17-tool-pill { display: inline-flex; align-items: center; gap: 7px; height: 28px; padding: 0 10px; border-radius: 7px; border: 1px solid #2a2a2f;
+      font-size: 13.5px; color: rgb(236 236 238 / .68); }
+    .mcp17-tool-pill svg { width: 13px; height: 13px; color: #9c9ea5; }
+    .mcp17-send { position: relative; margin-left: auto; width: 34px; height: 34px; }
+    .mcp17-send-base, .mcp17-send-neon { position: absolute; inset: 0; border-radius: 50%; display: grid; place-items: center; }
+    .mcp17-send-base { background: #2e2e34; color: #6f7178; }
+    .mcp17-send-neon { background: rgb(52 213 153 / .1); color: #5fe3b1; opacity: 0;
+      box-shadow: inset 0 0 0 1px rgb(52 213 153 / .9), inset 0 0 12px -5px rgb(52 213 153 / .45), 0 0 18px -4px rgb(52 213 153 / .6); }
+    .mcp17-send svg { width: 17px; height: 17px; }
+    .mcp17-ripple { position: absolute; left: 50%; top: 50%; width: 34px; height: 34px; margin: -17px 0 0 -17px; border-radius: 50%;
+      border: 2px solid #5fe3b1; opacity: 0; }
+  </style>
+
+  <div id="root" data-composition-id="17-dashboard-mcp" data-width="1920" data-height="1080" data-duration="10.26">
+    <!-- Ground: flat canvas + one soft green glow, full duration -->
+    <div class="clip mcp17-bg" id="mcp17-bg" data-start="0" data-duration="10.26" data-track-index="0">
+      <div class="mcp17-glow"></div>
+    </div>
+
+    <div class="clip mcp17-stage" id="mcp17-stage" data-start="0" data-duration="10.26" data-track-index="1">
+     <div class="mcp17-cam" id="mcp17-cam">
+      <!-- shared SVG gradient defs -->
+      <svg width="0" height="0" style="position:absolute">
+        <defs>
+          <linearGradient id="mcp17-brand-h" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0" stop-color="#34d599" />
+            <stop offset="1" stop-color="#2cc0de" />
+          </linearGradient>
+          <linearGradient id="mcp17-fade-v" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#fff" stop-opacity="1" />
+            <stop offset="1" stop-color="#fff" stop-opacity="0.05" />
+          </linearGradient>
+        </defs>
+      </svg>
+
+      <!-- ===== The dashboard window (app kit shell, Overview active) ===== -->
+      <div class="mcp17-winwrap" id="mcp17-winwrap">
+        <div class="ak ak-window" id="mcp17-window">
+  <aside class="ak-rail">
+    <div class="ak-rail-logo"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 13.74a2 2 0 0 1-2 0L2.5 8.87a1 1 0 0 1 0-1.74L11 2.26a2 2 0 0 1 2 0l8.5 4.87a1 1 0 0 1 0 1.74z"/><path d="m20 14.285 1.5.845a1 1 0 0 1 0 1.74L13 21.74a2 2 0 0 1-2 0l-8.5-4.87a1 1 0 0 1 0-1.74l1.5-.845"/></svg></div>
+    <div class="ak-rail-sep"></div>
+    <div class="ak-app-tile is-active">AA</div>
+    <div class="ak-app-tile alt">CH</div>
+    <div class="ak-rail-plus"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg></div>
+    <div class="ak-rail-foot"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"/><circle cx="12" cy="12" r="3"/></svg><div class="ak-avatar">DA</div></div>
+  </aside>
+
+  <nav class="ak-nav">
+    <div class="ak-nav-title">AmazingApp AI</div>
+    <div class="ak-quick"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg><span>Quick actions</span><span class="ak-kbd">⌘K</span></div>
+    <div class="ak-nav-group">
+      <div class="ak-nav-item is-active" data-nav="overview"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Overview</div>
+      <div class="ak-nav-item" data-nav="analytics"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>Analytics</div>
+      <div class="ak-nav-item" data-nav="agent"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z"/><path d="M20 2v4"/><path d="M22 4h-4"/><circle cx="4" cy="20" r="2"/></svg>Agent</div>
+      <div class="ak-nav-item" data-nav="offers"><span class="mcp17-navflash" id="mcp17-navflash"></span><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z"/><path d="m15 9-6 6"/><path d="M9 9h.01"/><path d="M15 15h.01"/></svg><span class="mcp17-navtxt">Offers</span><span class="ak-count" id="mcp17-offcount"><span class="mcp17-roll-box"><span class="mcp17-roll" id="mcp17-roll"><i>0</i><i>1</i></span></span></span></div>
+      <div class="ak-nav-item" data-nav="cancel-flow"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 21H2"/><path d="M10 3H7a2 2 0 00-2 2v16"/><path d="M14 12h.01"/><path d="M19 21V5a2 2 0 00-1.675-1.974l-6.163-1.013A1 1 0 0010 3v18a1 1 0 001.124.992z"/><path d="M22 21h-3"/></svg>Cancel flow</div>
+    </div>
+    <div class="ak-nav-group">
+      <div class="ak-nav-item" data-nav="plans"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83z"/><path d="M2 12a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 12"/><path d="M2 17a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 17"/></svg>Plans<span class="ak-count">5</span></div>
+      <div class="ak-nav-item" data-nav="entitlements"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z"/><circle cx="16.5" cy="7.5" r=".5" fill="currentColor"/></svg>Entitlements<span class="ak-count">9</span></div>
+      <div class="ak-nav-item" data-nav="addons"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15.39 4.39a1 1 0 0 0 1.68-.474 2.5 2.5 0 1 1 3.014 3.015 1 1 0 0 0-.474 1.68l1.683 1.682a2.414 2.414 0 0 1 0 3.414L19.61 15.39a1 1 0 0 1-1.68-.474 2.5 2.5 0 1 0-3.014 3.015 1 1 0 0 1 .474 1.68l-1.683 1.682a2.414 2.414 0 0 1-3.414 0L8.61 19.61a1 1 0 0 0-1.68.474 2.5 2.5 0 1 1-3.014-3.015 1 1 0 0 0 .474-1.68l-1.683-1.682a2.414 2.414 0 0 1 0-3.414L4.39 8.61a1 1 0 0 1 1.68.474 2.5 2.5 0 1 0 3.014-3.015 1 1 0 0 1-.474-1.68l1.683-1.682a2.414 2.414 0 0 1 3.414 0z"/></svg>Add-ons<span class="ak-count">3</span></div>
+      <div class="ak-nav-item" data-nav="incentives"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 7v14"/><path d="M20 11v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-8"/><path d="M7.5 7a1 1 0 0 1 0-5A4.8 8 0 0 1 12 7a4.8 8 0 0 1 4.5-5 1 1 0 0 1 0 5"/><rect x="3" y="7" width="18" height="4" rx="1"/></svg>Incentives<span class="ak-count">4</span></div>
+    </div>
+    <div class="ak-nav-group">
+      <div class="ak-nav-item" data-nav="accounts"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><path d="M16 3.128a4 4 0 0 1 0 7.744"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><circle cx="9" cy="7" r="4"/></svg>Accounts<span class="ak-count">64</span></div>
+    </div>
+    <div class="ak-nav-group">
+      <div class="ak-nav-item" data-nav="integration"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 18 6-6-6-6"/><path d="m8 6-6 6 6 6"/></svg>Integration</div>
+      <div class="ak-nav-item" data-nav="api"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H7a2 2 0 0 0-2 2v5a2 2 0 0 1-2 2 2 2 0 0 1 2 2v5c0 1.1.9 2 2 2h1"/><path d="M16 21h1a2 2 0 0 0 2-2v-5c0-1.1.9-2 2-2a2 2 0 0 1-2-2V5a2 2 0 0 0-2-2h-1"/></svg>API reference</div>
+      <div class="ak-nav-item" data-nav="mcp"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22v-5"/><path d="M15 8V2"/><path d="M17 8a1 1 0 0 1 1 1v4a4 4 0 0 1-4 4h-4a4 4 0 0 1-4-4V9a1 1 0 0 1 1-1z"/><path d="M9 8V2"/></svg>MCP server</div>
+      <div class="ak-nav-item" data-nav="keys"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m2 21 9.6-9.6"/><path d="m7.5 15.5 2.3 2.3a1 1 0 0 1 0 1.4l-2.1 2.1a1 1 0 0 1-1.4 0L4 19"/><circle cx="15.5" cy="7.5" r="5.5"/></svg>API keys</div>
+      <div class="ak-nav-item" data-nav="webhooks"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 16.98h-5.99c-1.1 0-1.95.94-2.48 1.9A4 4 0 0 1 2 17c.01-.7.2-1.4.57-2"/><path d="m6 17 3.13-5.78c.53-.97.1-2.18-.5-3.1a4 4 0 1 1 6.89-4.06"/><path d="m12 6 3.13 5.73C15.66 12.7 16.9 13 18 13a4 4 0 0 1 0 8"/></svg>Webhooks</div>
+    </div>
+    <div class="ak-nav-foot"><div class="ak-nav-item"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"/><circle cx="12" cy="12" r="3"/></svg>App settings</div></div>
+  </nav>
+
+          <main class="ak-main">
+            <header class="ak-header">
+              <div class="ak-crumb"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Overview</div>
+              <div class="ak-actions">
+                <span class="ak-btn is-outline"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v16"/><path d="M20.001 19A2 2 0 0022 17V5a2 2 0 00-1.999-2L16 3.002A5 5 0 0012 5a5 5 0 00-4-2H4a2 2 0 00-2 2v12a2 2 0 001.999 2H8a5 5 0 014 2 5 5 0 014-2z"/></svg>Integration guide</span>
+              </div>
+            </header>
+            <div class="ak-body">
+              <div class="mcp17-page">
+                <div class="mcp17-title">AmazingApp AI</div>
+                <div class="mcp17-sub">Change what every account can access — plans, limits, feature flags and offers — without redeploying your app.</div>
+
+                <div class="ak-stat-strip mcp17-strip" id="mcp17-strip">
+                  <div class="ak-stat mcp17-stat">
+                    <div class="ak-stat-label"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><path d="M16 3.128a4 4 0 0 1 0 7.744"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><circle cx="9" cy="7" r="4"/></svg>Accounts</div>
+                    <div class="ak-stat-value mcp17-count" id="mcp17-n-accounts" data-to="64">0</div>
+                    <div class="ak-stat-sub">On 5 plans</div>
+                  </div>
+                  <div class="ak-stat mcp17-stat">
+                    <div class="ak-stat-label"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83z"/><path d="M2 12a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 12"/><path d="M2 17a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 17"/></svg>Plans</div>
+                    <div class="ak-stat-value mcp17-count" id="mcp17-n-plans" data-to="5">0</div>
+                    <div class="ak-stat-sub">1 free</div>
+                  </div>
+                  <div class="ak-stat mcp17-stat">
+                    <div class="ak-stat-label"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 7v14"/><path d="M20 11v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-8"/><path d="M7.5 7a1 1 0 0 1 0-5A4.8 8 0 0 1 12 7a4.8 8 0 0 1 4.5-5 1 1 0 0 1 0 5"/><rect x="3" y="7" width="18" height="4" rx="1"/></svg>Accounts with an incentive</div>
+                    <div class="ak-stat-value mcp17-count" id="mcp17-n-incent" data-to="8">0</div>
+                    <div class="ak-stat-sub">13% of accounts</div>
+                  </div>
+                  <div class="ak-stat mcp17-stat">
+                    <div class="ak-stat-label"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"/></svg>Usage events · 30d</div>
+                    <div class="ak-stat-value mcp17-count" id="mcp17-n-usage" data-to="8146">0</div>
+                    <div class="ak-stat-sub">18,793 total usage</div>
+                    <svg class="mcp17-spark" viewBox="0 -3 110 33"><path id="mcp17-spark-path" d="M0.0 23.9 C0.6 23.8 2.5 23.3 3.8 23.2 C5.1 23.2 6.3 23.6 7.6 23.6 C8.9 23.5 10.1 23.0 11.4 22.9 C12.6 22.9 13.9 23.3 15.2 23.2 C16.4 23.2 17.7 22.7 19.0 22.6 C20.2 22.5 21.5 22.8 22.8 22.8 C24.0 22.7 25.3 22.5 26.6 22.5 C27.8 22.4 29.1 22.6 30.3 22.6 C31.6 22.6 32.9 22.3 34.1 22.3 C35.4 22.3 36.7 22.5 37.9 22.5 C39.2 22.4 40.5 22.2 41.7 22.1 C43.0 22.0 44.3 21.9 45.5 21.8 C46.8 21.7 48.0 21.6 49.3 21.7 C50.6 21.7 51.8 22.0 53.1 22.0 C54.4 21.9 55.6 21.5 56.9 21.3 C58.2 21.2 59.4 21.2 60.7 21.2 C62.0 21.2 63.2 21.7 64.5 21.5 C65.7 21.3 67.0 20.2 68.3 20.1 C69.5 19.9 70.8 20.7 72.1 20.7 C73.3 20.8 74.6 20.7 75.9 20.4 C77.1 20.1 78.4 19.4 79.7 19.1 C80.9 18.8 82.2 18.6 83.4 18.5 C84.7 18.4 86.0 18.8 87.2 18.6 C88.5 18.5 89.8 17.9 91.0 17.5 C92.3 17.2 93.6 17.8 94.8 16.6 C96.1 15.4 97.4 12.3 98.6 10.2 C99.9 8.2 101.1 5.8 102.4 4.5 C103.7 3.3 104.9 -1.1 106.2 2.6 C107.5 6.3 109.4 22.7 110.0 26.7" /></svg>
+                  </div>
+                </div>
+
+                <div class="mcp17-grid mcp17-row2">
+                  <div class="ak-card" id="mcp17-chart-card">
+                    <div class="mcp17-head is-tall">
+                      <div>
+                        <div class="mcp17-head-title">Usage · last 30 days</div>
+                        <div class="mcp17-head-sub">Usage events per day</div>
+                      </div>
+                      <div class="mcp17-head-link">Analytics<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></div>
+                    </div>
+                    <svg class="mcp17-chart" viewBox="0 0 602 212">
+                      <defs>
+                        <clipPath id="mcp17-area-clip"><rect id="mcp17-area-rect" x="44" y="0" width="0" height="212" /></clipPath>
+                        <mask id="mcp17-area-mask"><rect x="0" y="0" width="602" height="181" fill="url(#mcp17-fade-v)" /></mask>
+                      </defs>
+                      <g>
+                        <line class="mcp17-grid-line" x1="44" x2="586" y1="23.8" y2="23.8" />
+                        <line class="mcp17-grid-line" x1="44" x2="586" y1="62.8" y2="62.8" />
+                        <line class="mcp17-grid-line" x1="44" x2="586" y1="101.9" y2="101.9" />
+                        <line class="mcp17-grid-line" x1="44" x2="586" y1="140.9" y2="140.9" />
+                        <line class="mcp17-grid-line" x1="44" x2="586" y1="180" y2="180" />
+                      </g>
+                      <g text-anchor="end">
+                        <text x="34" y="27.8">800</text>
+                        <text x="34" y="66.8">600</text>
+                        <text x="34" y="105.9">400</text>
+                        <text x="34" y="144.9">200</text>
+                        <text x="34" y="184">0</text>
+                      </g>
+                      <g text-anchor="middle">
+                        <text x="52" y="201">Sep 7</text>
+                        <text x="118.8" y="201">Sep 11</text>
+                        <text x="193.5" y="201">Sep 15</text>
+                        <text x="268.3" y="201">Sep 19</text>
+                        <text x="343" y="201">Sep 23</text>
+                        <text x="417.8" y="201">Sep 27</text>
+                        <text x="492.6" y="201">Oct 1</text>
+                        <text x="574" y="201">Oct 6</text>
+                      </g>
+                      <g clip-path="url(#mcp17-area-clip)">
+                        <path class="mcp17-chart-area" mask="url(#mcp17-area-mask)" d="M44.0 154.6 C47.1 154.0 56.5 151.0 62.7 150.7 C68.9 150.4 75.1 153.0 81.4 152.7 C87.6 152.3 93.8 149.1 100.1 148.8 C106.3 148.4 112.5 151.0 118.8 150.7 C125.0 150.4 131.2 147.3 137.4 146.8 C143.7 146.3 149.9 147.9 156.1 147.8 C162.4 147.6 168.6 146.0 174.8 145.8 C181.1 145.7 187.3 147.0 193.5 146.8 C199.7 146.6 206.0 145.0 212.2 144.8 C218.4 144.7 224.7 146.0 230.9 145.8 C237.1 145.7 243.4 144.5 249.6 143.9 C255.8 143.2 262.0 142.4 268.3 141.9 C274.5 141.4 280.7 140.8 287.0 140.9 C293.2 141.1 299.4 143.2 305.7 142.9 C311.9 142.6 318.1 139.8 324.3 139.0 C330.6 138.2 336.8 137.8 343.0 138.0 C349.3 138.2 355.5 141.1 361.7 140.0 C368.0 138.8 374.2 132.0 380.4 131.2 C386.6 130.4 392.9 134.8 399.1 135.1 C405.3 135.4 411.6 134.8 417.8 133.1 C424.0 131.5 430.3 127.3 436.5 125.3 C442.7 123.4 448.9 121.9 455.2 121.4 C461.4 120.9 467.6 123.4 473.9 122.4 C480.1 121.4 486.3 117.7 492.6 115.6 C498.8 113.4 505.0 117.2 511.2 109.7 C517.5 102.2 523.7 83.0 529.9 70.6 C536.2 58.3 542.4 43.3 548.6 35.5 C554.9 27.7 561.1 1.0 567.3 23.8 C573.5 46.5 582.9 147.5 586.0 172.2 L586 180 L44 180 Z" />
+                      </g>
+                      <path class="mcp17-chart-line" id="mcp17-chart-line" d="M44.0 154.6 C47.1 154.0 56.5 151.0 62.7 150.7 C68.9 150.4 75.1 153.0 81.4 152.7 C87.6 152.3 93.8 149.1 100.1 148.8 C106.3 148.4 112.5 151.0 118.8 150.7 C125.0 150.4 131.2 147.3 137.4 146.8 C143.7 146.3 149.9 147.9 156.1 147.8 C162.4 147.6 168.6 146.0 174.8 145.8 C181.1 145.7 187.3 147.0 193.5 146.8 C199.7 146.6 206.0 145.0 212.2 144.8 C218.4 144.7 224.7 146.0 230.9 145.8 C237.1 145.7 243.4 144.5 249.6 143.9 C255.8 143.2 262.0 142.4 268.3 141.9 C274.5 141.4 280.7 140.8 287.0 140.9 C293.2 141.1 299.4 143.2 305.7 142.9 C311.9 142.6 318.1 139.8 324.3 139.0 C330.6 138.2 336.8 137.8 343.0 138.0 C349.3 138.2 355.5 141.1 361.7 140.0 C368.0 138.8 374.2 132.0 380.4 131.2 C386.6 130.4 392.9 134.8 399.1 135.1 C405.3 135.4 411.6 134.8 417.8 133.1 C424.0 131.5 430.3 127.3 436.5 125.3 C442.7 123.4 448.9 121.9 455.2 121.4 C461.4 120.9 467.6 123.4 473.9 122.4 C480.1 121.4 486.3 117.7 492.6 115.6 C498.8 113.4 505.0 117.2 511.2 109.7 C517.5 102.2 523.7 83.0 529.9 70.6 C536.2 58.3 542.4 43.3 548.6 35.5 C554.9 27.7 561.1 1.0 567.3 23.8 C573.5 46.5 582.9 147.5 586.0 172.2" />
+                    </svg>
+                  </div>
+
+                  <div class="ak-card" id="mcp17-plans-card">
+                    <div class="mcp17-head">
+                      <div class="mcp17-head-title">Accounts by plan</div>
+                      <div class="mcp17-head-link">Plans<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></div>
+                    </div>
+                    <div class="mcp17-bars">
+                      <div class="ak-bar-row mcp17-plan"><b class="mcp17-fill" style="width:100%"></b><span>Free</span><span class="ak-tag green" style="position:relative">Free</span><span class="mcp17-bar-val"><span>27</span><em>42%</em></span></div>
+                      <div class="ak-bar-row mcp17-plan"><b class="mcp17-fill" style="width:59%"></b><span>Pro</span><span class="mcp17-bar-val"><span>16</span><em>25%</em></span></div>
+                      <div class="ak-bar-row mcp17-plan"><b class="mcp17-fill" style="width:52%"></b><span>Starter</span><span class="mcp17-bar-val"><span>14</span><em>22%</em></span></div>
+                      <div class="ak-bar-row mcp17-plan"><b class="mcp17-fill" style="width:22%"></b><span>Lifetime deal</span><span class="mcp17-bar-val"><span>6</span><em>9%</em></span></div>
+                      <div class="ak-bar-row mcp17-plan"><b class="mcp17-fill" style="width:4%"></b><span>Enterprise</span><span class="mcp17-bar-val"><span>1</span><em>2%</em></span></div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="mcp17-grid mcp17-row3">
+                  <div class="ak-card" id="mcp17-recent-card">
+                    <div class="mcp17-head"><div class="mcp17-head-title">Recent activity</div></div>
+                    <div class="mcp17-recent">
+                      <div id="mcp17-recent-old">
+                        <div class="mcp17-act mcp17-act-row"><span class="mcp17-act-ic"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg></span><div><div class="mcp17-act-main"><b>Globex</b> used <b>1</b> Projects</div><div class="mcp17-act-meta">17 hours ago · total 432 · add</div></div></div>
+                        <div class="mcp17-act mcp17-act-row"><span class="mcp17-act-ic"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg></span><div><div class="mcp17-act-main"><b>Jean Stroustrup</b> used <b>1</b> Projects</div><div class="mcp17-act-meta">18 hours ago · total 270 · add</div></div></div>
+                        <div class="mcp17-act mcp17-act-row"><span class="mcp17-act-ic"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg></span><div><div class="mcp17-act-main"><b>Lynn Thompson</b> used <b>3</b> Storage (GB)</div><div class="mcp17-act-meta">18 hours ago · total 11 · amount</div></div></div>
+                        <div class="mcp17-act mcp17-act-row"><span class="mcp17-act-ic"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg></span><div><div class="mcp17-act-main"><b>Guido McCarthy</b> used <b>1</b> Projects</div><div class="mcp17-act-meta">18 hours ago · total 112 · add</div></div></div>
+                      </div>
+                      <div class="mcp17-act mcp17-act-new" id="mcp17-act-new"><span class="mcp17-act-ic"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z"/><path d="m15 9-6 6"/><path d="M9 9h.01"/><path d="M15 15h.01"/></svg></span><div><div class="mcp17-act-main"><b>Credit limit upgrade · 20% off</b><span class="ak-tag brand" id="mcp17-newtag">New</span></div><div class="mcp17-act-meta">via MCP · 3 accounts</div></div></div>
+                    </div>
+                  </div>
+
+                  <div class="ak-card" id="mcp17-top-card">
+                    <div class="mcp17-head">
+                      <div class="mcp17-head-title">Top accounts · 30d</div>
+                      <div class="mcp17-head-link">All<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></div>
+                    </div>
+                    <div class="mcp17-bars">
+                      <div class="ak-bar-row mcp17-top"><b class="mcp17-tfill" style="width:100%"></b><span class="ak-av">AT</span><span>Ada Turing</span><span class="ak-bar-val"><span class="mcp17-tcount" data-to="800">0</span> events</span></div>
+                      <div class="ak-bar-row mcp17-top"><b class="mcp17-tfill" style="width:69%"></b><span class="ak-av" style="background:rgb(48 164 108 / .2);color:#6fd69f">G</span><span>Globex</span><span class="ak-bar-val"><span class="mcp17-tcount" data-to="549">0</span> events</span></div>
+                      <div class="ak-bar-row mcp17-top"><b class="mcp17-tfill" style="width:66%"></b><span class="ak-av" style="background:rgb(59 123 246 / .2);color:#93b8ff">GR</span><span>Grace van Rossum</span><span class="ak-bar-val"><span class="mcp17-tcount" data-to="531">0</span> events</span></div>
+                      <div class="ak-bar-row mcp17-top"><b class="mcp17-tfill" style="width:65%"></b><span class="ak-av" style="background:rgb(240 180 40 / .18);color:#f5c451">LT</span><span>Lynn Thompson</span><span class="ak-bar-val"><span class="mcp17-tcount" data-to="518">0</span> events</span></div>
+                      <div class="ak-bar-row mcp17-top"><b class="mcp17-tfill" style="width:57%"></b><span class="ak-av" style="background:rgb(20 163 157 / .2);color:#62d6cf">ST</span><span>Shafi Thompson</span><span class="ak-bar-val"><span class="mcp17-tcount" data-to="454">0</span> events</span></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </main>
+        </div>
+      </div>
+
+      <!-- ===== Generic AI chat panel, connected to the Offer MCP server ===== -->
+      <div class="ak mcp17-chat" id="mcp17-chat">
+        <div class="mcp17-chat-head">
+          <span class="mcp17-wordmark">Claude</span>
+          <span class="mcp17-server" id="mcp17-server"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22v-5"/><path d="M15 8V2"/><path d="M17 8a1 1 0 0 1 1 1v4a4 4 0 0 1-4 4h-4a4 4 0 0 1-4-4V9a1 1 0 0 1 1-1z"/><path d="M9 8V2"/></svg>Offer MCP server<span class="mcp17-dotsep">·</span><span class="mcp17-live"><i></i>Live</span></span>
+        </div>
+
+        <div class="mcp17-msgs">
+          <div class="mcp17-bubble" id="mcp17-bubble">Pro accounts at their credit limit <svg class="mcp17-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg> 20% upgrade offer</div>
+
+          <div class="mcp17-chips">
+            <span class="mcp17-chip" id="mcp17-chip1"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>list_accounts<span class="mcp17-chip-state"><svg class="mcp17-spin" id="mcp17-spin1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg><svg class="mcp17-ok" id="mcp17-ok1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span></span>
+            <span class="mcp17-chip" id="mcp17-chip2"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>get_usage<span class="mcp17-chip-state"><svg class="mcp17-spin" id="mcp17-spin2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg><svg class="mcp17-ok" id="mcp17-ok2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span></span>
+          </div>
+
+          <div class="mcp17-result" id="mcp17-result">
+            <div class="mcp17-res-row"><span class="ak-av round">T</span>Tom<span class="ak-meter is-warn"><i></i></span><span class="mcp17-res-num">100%</span></div>
+            <div class="mcp17-res-row"><span class="ak-av round" style="background:rgb(59 123 246 / .2);color:#93b8ff">P</span>Priya<span class="ak-meter is-warn"><i></i></span><span class="mcp17-res-num">100%</span></div>
+            <div class="mcp17-res-row"><span class="ak-av round" style="background:rgb(48 164 108 / .2);color:#6fd69f">A</span>Ada<span class="ak-meter is-warn"><i></i></span><span class="mcp17-res-num">100%</span></div>
+          </div>
+
+          <div class="mcp17-create">
+            <span class="mcp17-chip" id="mcp17-chip3"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>create_offer<span class="mcp17-chip-state"><svg class="mcp17-spin" id="mcp17-spin3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg><svg class="mcp17-ok" id="mcp17-ok3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span></span>
+          </div>
+
+          <div class="mcp17-done" id="mcp17-done"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m16 9-5.5 5.5L8 12"/></svg>Offer live · 3 accounts</div>
+        </div>
+
+        <div class="mcp17-composer" id="mcp17-composer">
+          <div class="mcp17-comp-ring" id="mcp17-comp-ring"></div>
+          <div class="mcp17-input">
+            <span class="mcp17-placeholder" id="mcp17-placeholder">Ask Claude anything</span>
+            <span class="mcp17-typed" id="mcp17-typed"></span><span class="mcp17-caret" id="mcp17-caret"></span>
+          </div>
+          <div class="mcp17-comp-foot">
+            <span class="mcp17-tool-pill"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22v-5"/><path d="M15 8V2"/><path d="M17 8a1 1 0 0 1 1 1v4a4 4 0 0 1-4 4h-4a4 4 0 0 1-4-4V9a1 1 0 0 1 1-1z"/><path d="M9 8V2"/></svg>Offer</span>
+            <span class="mcp17-send" id="mcp17-send"><span class="mcp17-send-base"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 7-7 7 7"/><path d="M12 19V5"/></svg></span><span class="mcp17-send-neon" id="mcp17-send-neon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 7-7 7 7"/><path d="M12 19V5"/></svg></span><span class="mcp17-ripple" id="mcp17-ripple"></span></span>
+          </div>
+        </div>
+      </div>
+     </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+  <script>
+    (function () {
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+      const $ = (id) => document.getElementById(id);
+      const fmt = (n) => String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+      const FLASH_ON = "brightness(1.7) drop-shadow(0 0 10px rgba(52,213,153,0.85))";
+      const FLASH_OFF = "brightness(1) drop-shadow(0 0 0px rgba(52,213,153,0))";
+
+      // counters: seek-safe proxy tween writing the formatted value
+      function countUp(el, at, dur, ease) {
+        const to = +el.getAttribute("data-to");
+        const o = { v: 0 };
+        tl.fromTo(o, { v: 0 }, {
+          v: to, duration: dur, ease: ease || "power3.out",
+          onUpdate: function () { el.textContent = fmt(o.v); }
+        }, at);
+      }
+      // neon glow flash (pop accent): bright + green bloom, settles to rest
+      function flash(target, at, dur) {
+        tl.fromTo(target, { filter: FLASH_ON }, { filter: FLASH_OFF, duration: dur || 0.5, ease: "power2.out" }, at);
+      }
+
+      // ---------------------------------------------------------------
+      // Camera: one slow continuous push under the whole shot.
+      // Window: at rest 1366x800 centered (960,470) scale 1.1, then on
+      // "connect the MCP server" slides left + shrinks to 0.85.
+      // ---------------------------------------------------------------
+      tl.fromTo("#mcp17-cam", { scale: 1 }, { scale: 1.02, duration: 9.3, ease: "power1.inOut" }, 0);
+      tl.fromTo(
+        "#mcp17-winwrap",
+        { x: 0, y: 0, scale: 1.1 },
+        { x: -320, y: 0, scale: 0.85, duration: 0.6, ease: "power3.inOut" },
+        3.12
+      );
+
+      // ===== Beat 1 (0.0–3.1s): "The dashboard shows your insights …" =====
+      tl.fromTo(
+        ".mcp17-stat",
+        { opacity: 0, y: 10 },
+        { opacity: 1, y: 0, duration: 0.45, ease: "expo.out", stagger: 0.05 },
+        0.05
+      );
+      ["mcp17-n-accounts", "mcp17-n-plans", "mcp17-n-incent", "mcp17-n-usage"].forEach(function (id, i) {
+        countUp($(id), 0.1 + i * 0.05, 0.85);
+      });
+
+      // sparkline draws
+      const spark = $("mcp17-spark-path");
+      const sparkLen = spark.getTotalLength() * 1.05;
+      tl.fromTo(
+        spark,
+        { strokeDasharray: sparkLen + " " + sparkLen * 2, strokeDashoffset: sparkLen + 4 },
+        { strokeDashoffset: 0, duration: 0.6, ease: "power2.out" },
+        0.35
+      );
+
+      tl.fromTo(
+        ["#mcp17-chart-card", "#mcp17-plans-card"],
+        { opacity: 0, y: 12 },
+        { opacity: 1, y: 0, duration: 0.45, ease: "expo.out", stagger: 0.06 },
+        0.12
+      );
+
+      // "insights" (1.12): usage chart line + green→cyan area draw left→right, spike lands on the word
+      // one progress value drives both the line dash and the area clip, so the fill tracks the line head
+      const line = $("mcp17-chart-line");
+      const areaRect = $("mcp17-area-rect");
+      const lineLen = line.getTotalLength();
+      line.style.strokeDasharray = lineLen + " " + lineLen * 2;
+      const draw = { p: 0 };
+      function applyDraw() {
+        const off = (lineLen + 4) * (1 - draw.p);
+        line.style.strokeDashoffset = off;
+        const drawn = Math.max(0, lineLen - off);
+        const x = drawn > 0 ? line.getPointAtLength(drawn).x : 44;
+        areaRect.setAttribute("width", Math.max(0, x - 44));
+      }
+      applyDraw();
+      tl.fromTo(
+        draw,
+        { p: 0 },
+        { p: 1, duration: 0.85, ease: "power2.inOut", onUpdate: applyDraw },
+        0.55
+      );
+
+      // Accounts by plan bars fill
+      tl.fromTo(
+        ".mcp17-fill",
+        { scaleX: 0 },
+        { scaleX: 1, duration: 0.55, ease: "expo.out", stagger: 0.05 },
+        1.02
+      );
+
+      // lower cards
+      tl.fromTo(
+        ["#mcp17-recent-card", "#mcp17-top-card"],
+        { opacity: 0, y: 12 },
+        { opacity: 1, y: 0, duration: 0.45, ease: "expo.out", stagger: 0.06 },
+        1.3
+      );
+      tl.fromTo(
+        ".mcp17-act-row",
+        { opacity: 0, x: -10 },
+        { opacity: 1, x: 0, duration: 0.4, ease: "expo.out", stagger: 0.06 },
+        1.6
+      );
+
+      // "every customer's usage" (1.52–2.48): Top accounts fill + count
+      tl.fromTo(
+        ".mcp17-top",
+        { opacity: 0, x: -12 },
+        { opacity: 1, x: 0, duration: 0.4, ease: "expo.out", stagger: 0.08 },
+        1.44
+      );
+      tl.fromTo(
+        ".mcp17-tfill",
+        { scaleX: 0 },
+        { scaleX: 1, duration: 0.6, ease: "expo.out", stagger: 0.08 },
+        1.5
+      );
+      Array.prototype.slice.call(document.querySelectorAll(".mcp17-tcount")).forEach(function (el, i) {
+        countUp(el, 1.5 + i * 0.08, 0.6, "expo.out");
+      });
+
+      // ===== Beat 2 (3.1–4.95s): "Or connect the MCP server" — chat enters, prompt types =====
+      tl.fromTo(
+        "#mcp17-chat",
+        { opacity: 0, x: 140 },
+        { opacity: 1, x: 0, duration: 0.5, ease: "expo.out" },
+        3.5
+      );
+      // "server" (4.12): the neon "Offer MCP server · Live" tag pops + glows
+      tl.fromTo(
+        "#mcp17-server",
+        { opacity: 0, scale: 0.85 },
+        { opacity: 1, scale: 1, duration: 0.35, ease: "expo.out" },
+        3.9
+      );
+      flash("#mcp17-server", 3.9, 0.6);
+
+      // composer focus + send goes neon on the first keystroke
+      tl.fromTo("#mcp17-comp-ring", { opacity: 0 }, { opacity: 1, duration: 0.2, ease: "power2.out" }, 3.66);
+      tl.fromTo("#mcp17-caret", { opacity: 0 }, { opacity: 1, duration: 0.01 }, 3.66);
+      tl.set("#mcp17-placeholder", { opacity: 0 }, 3.72);
+      tl.fromTo("#mcp17-send-neon", { opacity: 0 }, { opacity: 1, duration: 0.2, ease: "power2.out" }, 3.74);
+
+      // fast typing (~50 chars/s), done before "review"
+      const typedEl = $("mcp17-typed");
+      const parts = ["Pro accounts at their credit limit ", null, " 20% upgrade offer"];
+      const chars = [];
+      parts.forEach(function (p) {
+        if (p === null) {
+          const sp = document.createElement("span");
+          sp.appendChild($("mcp17-bubble").querySelector(".mcp17-arrow").cloneNode(true));
+          typedEl.appendChild(sp);
+          chars.push(sp);
+          return;
+        }
+        for (let i = 0; i < p.length; i++) {
+          const sp = document.createElement("span");
+          sp.textContent = p[i];
+          typedEl.appendChild(sp);
+          chars.push(sp);
+        }
+      });
+      tl.fromTo(
+        chars,
+        { display: "none" },
+        { display: "inline", duration: 0.001, ease: "none", stagger: 1.06 / chars.length },
+        3.72
+      );
+
+      // submit: send press + ripple, prompt lands in the thread
+      tl.fromTo("#mcp17-send", { scale: 1 }, { scale: 0.86, duration: 0.08, ease: "power2.in" }, 4.82);
+      tl.to("#mcp17-send", { scale: 1, duration: 0.3, ease: "expo.out" }, 4.9);
+      tl.fromTo("#mcp17-ripple", { opacity: 0.9, scale: 0.6 }, { opacity: 0, scale: 2.1, duration: 0.45, ease: "power2.out" }, 4.86);
+      tl.set(["#mcp17-typed", "#mcp17-caret"], { opacity: 0 }, 4.9);
+      tl.set("#mcp17-placeholder", { opacity: 1 }, 4.9);
+      tl.fromTo(
+        "#mcp17-bubble",
+        { opacity: 0, y: 24, scale: 0.97, transformOrigin: "100% 100%" },
+        { opacity: 1, y: 0, scale: 1, duration: 0.4, ease: "expo.out" },
+        4.88
+      );
+
+      // ===== Beat 3 (4.97–7.5s): "review usage and create offers … on the fly" =====
+      function toolCall(n, at, run) {
+        tl.fromTo(
+          "#mcp17-chip" + n,
+          { opacity: 0, y: 6, scale: 0.85 },
+          { opacity: 1, y: 0, scale: 1, duration: 0.32, ease: "expo.out" },
+          at
+        );
+        tl.fromTo(
+          "#mcp17-spin" + n,
+          { rotation: 0, opacity: 1 },
+          { rotation: 360, duration: run, ease: "none" },
+          at
+        );
+        tl.set("#mcp17-spin" + n, { opacity: 0 }, at + run);
+        tl.fromTo(
+          "#mcp17-ok" + n,
+          { opacity: 0, scale: 0.4 },
+          { opacity: 1, scale: 1, duration: 0.3, ease: "expo.out" },
+          at + run
+        );
+        flash("#mcp17-chip" + n, at + run, 0.5);
+      }
+      toolCall(1, 4.97, 0.3); // "review" 5.00 → tick 5.27
+      toolCall(2, 5.07, 0.32); // tick 5.39 ("usage" 5.42)
+
+      tl.fromTo(
+        "#mcp17-result",
+        { opacity: 0, y: 10 },
+        { opacity: 1, y: 0, duration: 0.35, ease: "expo.out" },
+        5.36
+      );
+      tl.fromTo(
+        ".mcp17-res-row",
+        { opacity: 0, x: -10 },
+        { opacity: 1, x: 0, duration: 0.35, ease: "expo.out", stagger: 0.05 },
+        5.4
+      );
+      tl.fromTo(
+        ".mcp17-res-row .ak-meter > i",
+        { scaleX: 0 },
+        { scaleX: 1, duration: 0.45, ease: "expo.out", stagger: 0.05, transformOrigin: "0% 50%" },
+        5.44
+      );
+
+      // "create offers" (5.84 / 6.17): create_offer ticks → dashboard updates
+      toolCall(3, 5.74, 0.34); // tick 6.08
+
+      // nav Offers count rolls 0 -> 1 with a neon wash
+      tl.fromTo("#mcp17-navflash", { opacity: 0 }, { opacity: 1, duration: 0.15, ease: "power2.out" }, 6.06);
+      tl.to("#mcp17-navflash", { opacity: 0.35, duration: 0.7, ease: "power2.out" }, 6.25);
+      tl.fromTo("#mcp17-roll", { y: 0 }, { y: -17, duration: 0.4, ease: "expo.out" }, 6.08);
+      tl.fromTo(
+        "#mcp17-offcount",
+        { color: "rgba(236, 236, 238, 0.68)" },
+        { color: "#5fe3b1", duration: 0.3, ease: "power2.out" },
+        6.08
+      );
+
+      // the new offer row slides into Recent activity
+      tl.fromTo("#mcp17-recent-old", { y: 0 }, { y: 54, duration: 0.5, ease: "expo.out" }, 6.1);
+      tl.fromTo(
+        "#mcp17-act-new",
+        { opacity: 0, x: -24 },
+        { opacity: 1, x: 0, duration: 0.45, ease: "expo.out" },
+        6.16
+      );
+      flash("#mcp17-act-new", 6.16, 0.6);
+      // "incentives" (6.82): New tag pops
+      tl.fromTo(
+        "#mcp17-newtag",
+        { opacity: 0, scale: 0.85 },
+        { opacity: 1, scale: 1, duration: 0.3, ease: "expo.out" },
+        6.72
+      );
+      flash("#mcp17-newtag", 6.72, 0.5);
+
+      // "on the fly" (7.48): short confirmation
+      tl.fromTo(
+        "#mcp17-done",
+        { opacity: 0, y: 10 },
+        { opacity: 1, y: 0, duration: 0.4, ease: "expo.out" },
+        7.36
+      );
+      tl.fromTo(
+        "#mcp17-done svg",
+        { scale: 0.5 },
+        { scale: 1, duration: 0.4, ease: "expo.out" },
+        7.36
+      );
+      flash("#mcp17-done svg", 7.36, 0.5);
+
+      // ===== Beat 4 (7.8–9.76s): "grow revenue without growing your team" — hold =====
+      tl.set({}, {}, 9.76);
+
+      window.__timelines["17-dashboard-mcp"] = tl;
+    })();
+  </script>
+</template>

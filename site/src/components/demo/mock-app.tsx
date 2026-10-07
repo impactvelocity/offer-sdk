@@ -39,7 +39,7 @@ import {
 type View = "editor" | "team" | "settings";
 type Act = (action: Action) => void;
 
-const planColor: Record<PlanId, BadgeColor> = { free: "gray", pro: "purple", team: "teal" };
+const planColor: Record<PlanId, BadgeColor> = { free: "gray", pro: "brand", team: "teal" };
 
 const members = ["You", "Maya Chen", "Sam Ortiz", "Priya Nair", "Leo Park", "Ana Silva", "Tom Reid", "Kai Brooks", "Zoe Adams", "Ben Cole", "Ivy Lane", "Max Hart"];
 
@@ -76,7 +76,7 @@ export function MockApp({ state, act }: { state: DemoState; act: Act }) {
       {/* App header */}
       <div className="flex h-12 shrink-0 items-center gap-3 border-b border-border px-3 sm:px-4">
         <span className="flex items-center gap-2 font-display text-sm font-semibold">
-          <span className="inline-flex size-6 items-center justify-center rounded-md bg-brand text-[11px] text-white">A</span>
+          <span className="inline-flex size-6 items-center justify-center rounded-md bg-brand text-[11px] text-accent-contrast">A</span>
           <span className="hidden sm:inline">Acme Docs</span>
         </span>
         <span key={`${state.plan}-${state.status}`} className="demo-flash flex items-center gap-1.5 rounded-md">
@@ -97,7 +97,7 @@ export function MockApp({ state, act }: { state: DemoState; act: Act }) {
             <button
               type="button"
               onClick={() => act({ type: "show_offer", offer: { kind: "upgrade", target: nextPlan(state.plan)!, reason: "manual" } })}
-              className="hidden h-7 items-center gap-1 rounded-md bg-brand-vertical px-2.5 text-xs font-medium text-white shadow-[inset_0_0_0_1px_rgb(0_0_0/0.22),inset_0_0_0_2px_rgb(255_255_255/0.18)] hover:brightness-110 sm:inline-flex"
+              className="hidden h-7 items-center gap-1 rounded-md btn-neon px-2.5 text-xs font-medium sm:inline-flex"
             >
               <Sparkles className="size-3.5" />
               Upgrade
@@ -126,7 +126,7 @@ export function MockApp({ state, act }: { state: DemoState; act: Act }) {
               <span className="hidden sm:inline">{n.label}</span>
             </button>
           ))}
-          <p className="mt-4 hidden px-2 text-2xs font-medium text-fg-placeholder uppercase sm:block">Recent</p>
+          <p className="mt-4 hidden px-2 text-2xs font-medium text-fg-placeholder sm:block">Recent</p>
           {["Launch plan", "Q4 roadmap", "Partner FAQ"].map((d, i) => (
             <span key={d} className={cn("hidden truncate rounded-md px-2 py-1 text-xs sm:block", i === 0 ? "text-fg-secondary" : "text-fg-muted")}>
               {d}
@@ -593,7 +593,7 @@ function ModalButton({ children, onClick }: { children: ReactNode; onClick: () =
     <button
       type="button"
       onClick={onClick}
-      className="inline-flex h-9 items-center justify-center rounded-md bg-brand-vertical px-3 text-sm font-medium text-white shadow-[inset_0_0_0_1px_rgb(0_0_0/0.22),inset_0_0_0_2px_rgb(255_255_255/0.18)] hover:brightness-110"
+      className="inline-flex h-9 items-center justify-center rounded-md btn-neon px-3 text-sm font-medium"
     >
       {children}
     </button>

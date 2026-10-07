@@ -1,4 +1,4 @@
-import { Hono } from "hono";
+import { type Context, Hono } from "hono";
 import sql from "../db/client.ts";
 import { deleteDoc, getDoc, insertDoc, listDocs } from "../db/docs.ts";
 import { billingPlanName, startCheckout } from "../lib/checkout.ts";
@@ -361,9 +361,14 @@ offers.get("/:offerId/public", async (c) => {
 // subscription (month, year) or order (once). The SDK hands `paypal.id` to the
 // PayPal button; `approve_url` is for redirect flows such as emailed links.
 offers.post("/:offerId/checkout", async (c) => {
-  const appId = c.req.param("appId")!;
-  const offerId = c.req.param("offerId");
   const body = await readObject(c);
+  return createCheckout(c, c.req.param("offerId"), body);
+});
+
+// Validates a checkout request and starts it. Shared with the plan shortcut
+// (POST /plans/:planId/checkout), which sells through the default offer.
+export async function createCheckout(c: Context, offerId: string, body: Json) {
+  const appId = c.req.param("appId")!;
   const { account, email, ref, return_url, cancel_url } = body;
 
   if (account !== undefined && typeof account !== "string") return c.json({ error: "account must be a string" }, 400);
@@ -391,6 +396,6 @@ offers.post("/:offerId/checkout", async (c) => {
     { account, email, ref, returnUrl: return_url, cancelUrl: cancel_url },
   );
   return c.json(checkoutJson(row), 201);
-});
+}
 
 export default offers;

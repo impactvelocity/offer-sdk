@@ -1,5 +1,5 @@
 /**
- * SVG defs for the brand gradient: a violet→pink stroke, and a matching wash that fades out
+ * SVG defs for the brand gradient: a green→cyan stroke, and a matching wash that fades out
  * towards the baseline (horizontal color, vertical fade via a mask).
  */
 export function BrandGradientDefs({ id, fillOpacity = 0.28 }: { id: string; fillOpacity?: number }) {

@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
-export type BadgeColor = "gray" | "blue" | "green" | "yellow" | "orange" | "red" | "purple" | "pink" | "teal";
+export type BadgeColor = "gray" | "blue" | "green" | "yellow" | "orange" | "red" | "purple" | "pink" | "teal" | "brand";
 
 // Pastel tags, as in offer-app/src/components/ui/badge.tsx.
 const colors: Record<BadgeColor, string> = {
@@ -14,6 +14,7 @@ const colors: Record<BadgeColor, string> = {
   purple: "bg-tag-purple-bg text-tag-purple-fg",
   pink: "bg-tag-pink-bg text-tag-pink-fg",
   teal: "bg-tag-teal-bg text-tag-teal-fg",
+  brand: "bg-tag-brand-bg text-tag-brand-fg",
 };
 
 export function Badge({
@@ -37,35 +38,6 @@ export function Badge({
     >
       {icon}
       <span className="truncate">{children}</span>
-    </span>
-  );
-}
-
-/** Square pastel tile for a feature or record icon. */
-export function IconTile({ children, color = "gray", className }: { children: ReactNode; color?: BadgeColor; className?: string }) {
-  return (
-    <span className={cn("inline-flex size-8 items-center justify-center rounded-lg [&_svg]:size-4", colors[color], className)}>
-      {children}
-    </span>
-  );
-}
-
-/** Pill above a hero headline: a hairline chip with an optional colored lead-in. */
-export function Eyebrow({ children, lead, className }: { children: ReactNode; lead?: ReactNode; className?: string }) {
-  return (
-    <span
-      className={cn(
-        "inline-flex h-7 items-center gap-2 rounded-full border border-border-strong bg-bg/60 pr-3 pl-1 text-xs text-fg-secondary shadow-xs backdrop-blur",
-        !lead && "pl-3",
-        className,
-      )}
-    >
-      {lead ? (
-        <span className="inline-flex h-5 items-center rounded-full bg-accent-subtle px-2 text-2xs font-medium text-accent-fg">
-          {lead}
-        </span>
-      ) : null}
-      {children}
     </span>
   );
 }

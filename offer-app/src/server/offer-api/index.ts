@@ -11,7 +11,8 @@ import {
   sampleUsageHistory,
   seedSampleApp,
   type SampleKind,
-  type SampleTemplate,
+  type SampleUsageEvent,
+  type SeededAccount,
 } from "./sample-data";
 
 export const offerApiMode: "mock" | "remote" = env.OFFER_API_URL ? "remote" : "mock";
@@ -66,6 +67,37 @@ export const offerApi: OfferApiCall = async (method, path, body) => {
   return data;
 };
 
+// ---------------------------------------------------------------------------
+// Workspaces: each dashboard workspace (a better-auth organization) has an org
+// record in the Offer API listing its apps.
+
+export interface BackendOrg {
+  id: string;
+  app_ids: string[];
+}
+
+/** The workspace's record in the Offer API, created on first use. */
+export async function backendOrg(orgId: string): Promise<BackendOrg> {
+  try {
+    return await offerApi<BackendOrg>("GET", `/orgs/${encodeURIComponent(orgId)}`);
+  } catch (e) {
+    if (e instanceof OfferApiError && e.status === 404) {
+      return offerApi<BackendOrg>("POST", "/orgs", { id: orgId, app_ids: [] });
+    }
+    throw e;
+  }
+}
+
+/** Creates an app in a workspace, optionally with sample data. */
+export async function createWorkspaceApp(orgId: string, { name, sample }: { name: string; sample?: SampleKind | null }) {
+  const org = await backendOrg(orgId);
+  const app = await offerApi<{ id: string }>("POST", "/apps", { name });
+  // Read-modify-write of app_ids: fine for one admin at a time; move server-side with the real API.
+  await offerApi("PATCH", `/orgs/${encodeURIComponent(orgId)}`, { app_ids: [...org.app_ids, app.id] });
+  if (sample) await addSampleData(app.id, sample);
+  return app;
+}
+
 /** Base URL tenant code (and the API reference "Try it") should call. */
 export function publicApiBaseUrl(origin: string) {
   return offerApiMode === "remote" ? env.OFFER_API_URL!.replace(/\/$/, "") : `${origin}/api/mock`;
@@ -74,25 +106,45 @@ export function publicApiBaseUrl(origin: string) {
 // ---------------------------------------------------------------------------
 // Sample data
 
-/** Mock only: backdate accounts and apply months of usage events so analytics have shape. */
-function seedUsageHistory(appId: string, template: SampleTemplate, { accounts, random }: Awaited<ReturnType<typeof seedSampleApp>>) {
+/** Mock: backdates the accounts and applies their usage in memory. */
+function applyMockHistory(appId: string, accounts: SeededAccount[], events: SampleUsageEvent[]) {
   for (const account of accounts) {
     mergeDoc("namespaces", appId, account.id, { created_at: account.createdAt.toISOString() });
   }
-  for (const e of sampleUsageHistory(template, accounts, random)) {
+  for (const e of events) {
     increment(appId, e.namespace_id, e.entitlement_id, e.operation, e.amount, new Date(e.created_at));
   }
   db.events.sort((a, b) => a.created_at.localeCompare(b.created_at));
 }
 
+const IMPORT_CHUNK = 5000; // the import route takes at most 10,000 items per request
+
+/** Hosted API: backdates the accounts and imports their usage (admin-only POST /apps/:appId/import). */
+async function importHistory(appId: string, accounts: SeededAccount[], events: SampleUsageEvent[]) {
+  const path = `/apps/${appId}/import`;
+  await offerApi("POST", path, { namespaces: accounts.map((a) => ({ id: a.id, created_at: a.createdAt.toISOString() })) });
+  for (let i = 0; i < events.length; i += IMPORT_CHUNK) {
+    await offerApi("POST", path, { usage_events: events.slice(i, i + IMPORT_CHUNK) });
+  }
+}
+
 export type { SampleKind };
 
-/** Creates an app's sample catalog (and, in mock mode, usage history). */
+/** Creates an app's sample catalog, accounts, months of usage history and saved reports (plus offers and a cancel flow on the hosted API). */
 export async function addSampleData(appId: string, kind: SampleKind = "saas") {
   const template = kind === "course" ? COURSE_TEMPLATE : SAAS_TEMPLATE;
-  const seeded = await seedSampleApp(offerApi, appId, template, kind === "course" ? 11 : 7);
-  if (offerApiMode === "mock") seedUsageHistory(appId, template, seeded);
+  const { accounts, random } = await seedSampleApp(offerApi, appId, template, kind === "course" ? 11 : 7);
+  const events = sampleUsageHistory(template, accounts, random);
+  if (offerApiMode === "mock") applyMockHistory(appId, accounts, events);
+  else await importHistory(appId, accounts, events);
+
   for (const report of SAMPLE_REPORTS[kind]) await offerApi("POST", `/apps/${appId}/analytics/reports`, report);
+
+  // The mock has no offers or cancel flows.
+  if (offerApiMode === "remote") {
+    for (const offer of template.offers ?? []) await offerApi("POST", `/apps/${appId}/offers`, offer);
+    if (template.cancelFlow) await offerApi("POST", `/apps/${appId}/cancel-flows`, { ...template.cancelFlow, status: "active" });
+  }
 }
 
 const SAMPLE_REPORTS: Record<SampleKind, { name: string; entitlements: string[]; interval: string }[]> = {

@@ -12,8 +12,8 @@ const base =
 
 const variants: Record<ButtonVariant, string> = {
   primary:
-    // Dark outer edge, a 1px light inner border just inside it, then a soft drop shadow.
-    "bg-brand-vertical text-white shadow-[inset_0_0_0_1px_rgb(0_0_0/0.22),inset_0_0_0_2px_rgb(255_255_255/0.18),var(--shadow-sm)] transition-[filter,box-shadow] hover:brightness-110 active:brightness-95",
+    // Neon hairline border over a faint green wash; a soft glow in dark mode.
+    "btn-neon active:brightness-95",
   secondary:
     "bg-bg text-fg ring-1 ring-inset ring-border-strong shadow-xs hover:bg-bg-hover data-popup-open:bg-bg-hover",
   ghost: "text-fg-secondary hover:bg-bg-hover hover:text-fg data-popup-open:bg-bg-hover data-popup-open:text-fg",
@@ -76,7 +76,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
         <span
           className={cn(
             "-mr-0.5 ml-1 inline-flex h-[18px] items-center rounded-[4px] px-1.5 text-[11px] font-medium leading-none",
-            variant === "primary" || variant === "danger" ? "bg-white/20 text-white" : "bg-bg-muted text-fg-tertiary",
+            variant === "primary" ? "bg-accent/15 text-accent-fg" : variant === "danger" ? "bg-white/20 text-white" : "bg-bg-muted text-fg-tertiary",
           )}
         >
           {kbd}

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Geist_Mono } from "next/font/google";
 import localFont from "next/font/local";
 import { themeScript } from "@/lib/theme-script";
 import { Providers } from "./providers";
@@ -12,6 +13,9 @@ const calSans = localFont({
   display: "swap",
 });
 
+// Mono for code, IDs and the Neon-style eyebrow labels.
+const geistMono = Geist_Mono({ subsets: ["latin"], variable: "--font-geist-mono", display: "swap" });
+
 export const metadata: Metadata = {
   title: { default: "Offer SDK", template: "%s · Offer SDK" },
   description: "Manage entitlements, plans, incentives and offers for your product.",
@@ -20,7 +24,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     // data-theme is set by the inline script before hydration, hence suppressHydrationWarning.
-    <html lang="en" className={`${calSans.variable} h-full`} suppressHydrationWarning>
+    <html lang="en" className={`${calSans.variable} ${geistMono.variable} h-full`} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>

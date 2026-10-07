@@ -8,8 +8,9 @@
 
 /*
  * Design tokens. Attio-inspired pages inside a Dub-style shell: hairline borders, 14px UI
- * type and a single violet accent (the chart purple), with a violet→pink brand gradient on
- * primary buttons, charts and progress as the pop of color.
+ * type and a single neon-green accent (#34d599), with a green→cyan brand gradient on
+ * primary buttons, charts and progress as the pop of color. Dark mode adds a soft
+ * neon glow on primary actions.
  * Every color is a token; dark mode swaps them under [data-theme="dark"] (set before
  * first paint by the inline script in the root layout).
  */
@@ -41,11 +42,14 @@
   --border-strong: #dfdfe2;
   --border-input: #e3e3e6;
 
-  --accent: #7c4dff;
-  --accent-hover: #6c3cf2;
-  --accent-subtle: #f3effe;
-  --accent-fg: #6a3ad1;
-  --ring: rgb(124 77 255 / 0.28);
+  /* Fills (switches, checkboxes, dots) use the bright brand green with dark ink on top;
+     text and icons use the deeper accent-fg so they stay readable on white. */
+  --accent: #34d599;
+  --accent-hover: #2bc78c;
+  --accent-subtle: #e7f9f1;
+  --accent-fg: #0b7a52;
+  --accent-contrast: #04170f;
+  --ring: rgb(52 213 153 / 0.35);
 
   --danger: #e5484d;
   --danger-hover: #d93d42;
@@ -75,6 +79,8 @@
   --tag-red-fg: #c42b30;
   --tag-purple-bg: #f0eafd;
   --tag-purple-fg: #6a3ad1;
+  --tag-brand-bg: #e3f8ee;
+  --tag-brand-fg: #0b7a52;
   --tag-pink-bg: #fce9f3;
   --tag-pink-fg: #b62a78;
   --tag-teal-bg: #e2f5f4;
@@ -82,7 +88,7 @@
 
   /* Code highlighting. */
   --code-comment: #8a8c92;
-  --code-keyword: #7c4ddb;
+  --code-keyword: #0b8a5c;
   --code-string: #1b7a47;
   --code-key: #1d5bd1;
   --code-number: #b04f0b;
@@ -92,22 +98,26 @@
   --logo-mark: #ffffff;
 
   /* Categorical chart series (validated for colorblind separation on each surface). */
-  --series-1: #7c4dff;
+  --series-1: #1fb47e;
   --series-2: #eb6834;
-  --series-3: #1baf7a;
+  --series-3: #7c4dff;
   --series-4: #eda100;
-  --series-5: #e0457b;
-  --series-6: #008300;
+  --series-5: #1597b8;
+  --series-6: #e0457b;
   --series-7: #2a78d6;
   --series-8: #e34948;
   --series-other: #b9bbc0;
 
   /* Brand gradient: used sparingly as a pop of color (primary buttons, charts, progress). */
-  --brand-from: #7c4dff;
-  --brand-to: #e0457b;
+  --brand-from: #34d599;
+  --brand-to: #1fb2d0;
   --brand-gradient: linear-gradient(90deg in oklch, var(--brand-from), var(--brand-to));
-  --brand-glow: rgb(124 77 255 / 0.09);
-  --brand-glow-2: rgb(224 69 123 / 0.07);
+  --brand-glow: rgb(52 213 153 / 0.12);
+  --brand-glow-2: rgb(31 178 208 / 0.08);
+  /* Primary buttons: a neon hairline border over a faint green wash, green ink. */
+  --btn-neon-bg: rgb(52 213 153 / 0.1);
+  --btn-neon-bg-hover: rgb(52 213 153 / 0.18);
+  --shadow-brand: inset 0 0 0 1px var(--accent), 0 1px 2px rgb(16 17 19 / 0.05);
 
   /* Partner brand colors, only for their marks and integration cards. */
   --zapier: #ff4f00;
@@ -151,11 +161,12 @@
   --border-strong: #37373d;
   --border-input: #323238;
 
-  --accent: #8f6bff;
-  --accent-hover: #a083ff;
-  --accent-subtle: rgb(143 107 255 / 0.18);
-  --accent-fg: #bba6ff;
-  --ring: rgb(143 107 255 / 0.42);
+  --accent: #34d599;
+  --accent-hover: #5ce0b0;
+  --accent-subtle: rgb(52 213 153 / 0.13);
+  --accent-fg: #5fe3b1;
+  --accent-contrast: #03140c;
+  --ring: rgb(52 213 153 / 0.4);
 
   --danger: #e5484d;
   --danger-hover: #ec5d61;
@@ -184,13 +195,15 @@
   --tag-red-fg: #ff8a8d;
   --tag-purple-bg: rgb(143 107 255 / 0.2);
   --tag-purple-fg: #bba6ff;
+  --tag-brand-bg: rgb(52 213 153 / 0.14);
+  --tag-brand-fg: #5fe3b1;
   --tag-pink-bg: rgb(224 69 123 / 0.18);
   --tag-pink-fg: #ff8fba;
   --tag-teal-bg: rgb(20 163 157 / 0.18);
   --tag-teal-fg: #62d6cf;
 
   --code-comment: #7f828a;
-  --code-keyword: #b8a0ff;
+  --code-keyword: #5fe3b1;
   --code-string: #6fd69f;
   --code-key: #93b8ff;
   --code-number: #ffa072;
@@ -198,20 +211,23 @@
   --logo-tile: #f1f1f3;
   --logo-mark: #18181b;
 
-  --series-1: #8f6bff;
+  --series-1: #1aad78;
   --series-2: #d95926;
-  --series-3: #199e70;
+  --series-3: #8f6bff;
   --series-4: #c98500;
-  --series-5: #d55181;
-  --series-6: #008300;
+  --series-5: #21a3c2;
+  --series-6: #d55181;
   --series-7: #3987e5;
   --series-8: #e34948;
   --series-other: #5d5f66;
 
-  --brand-from: #8f6bff;
-  --brand-to: #e8558a;
-  --brand-glow: rgb(143 107 255 / 0.14);
-  --brand-glow-2: rgb(232 85 138 / 0.1);
+  --brand-from: #34d599;
+  --brand-to: #2cc0de;
+  --brand-glow: rgb(52 213 153 / 0.12);
+  --brand-glow-2: rgb(44 192 222 / 0.08);
+  --btn-neon-bg: rgb(52 213 153 / 0.08);
+  --btn-neon-bg-hover: rgb(52 213 153 / 0.15);
+  --shadow-brand: inset 0 0 0 1px rgb(52 213 153 / 0.85), inset 0 0 14px -6px rgb(52 213 153 / 0.35), 0 0 16px -6px rgb(52 213 153 / 0.4);
 
   --zapier: #ff5f1f;
   --zapier-subtle: rgb(255 79 0 / 0.12);
@@ -227,7 +243,7 @@
 
 @theme inline {
   --font-sans: var(--font-cal-sans), ui-sans-serif, system-ui, sans-serif;
-  --font-mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+  --font-mono: var(--font-geist-mono), ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
 
   /* Type scale: 14px for most UI text. */
   --text-2xs: 12px;
@@ -278,6 +294,8 @@
   --color-tag-red-fg: var(--tag-red-fg);
   --color-tag-purple-bg: var(--tag-purple-bg);
   --color-tag-purple-fg: var(--tag-purple-fg);
+  --color-tag-brand-bg: var(--tag-brand-bg);
+  --color-tag-brand-fg: var(--tag-brand-fg);
   --color-tag-pink-bg: var(--tag-pink-bg);
   --color-tag-pink-fg: var(--tag-pink-fg);
   --color-tag-teal-bg: var(--tag-teal-bg);
@@ -296,6 +314,7 @@
   --color-accent-hover: var(--accent-hover);
   --color-accent-subtle: var(--accent-subtle);
   --color-accent-fg: var(--accent-fg);
+  --color-accent-contrast: var(--accent-contrast);
   --color-ring: var(--ring);
   --color-danger: var(--danger);
   --color-danger-hover: var(--danger-hover);
@@ -313,6 +332,7 @@
   --shadow-md: var(--shadow-md);
   --shadow-lg: var(--shadow-lg);
   --shadow-soft: var(--shadow-soft);
+  --shadow-brand: var(--shadow-brand);
 
   --radius-sm: 4px;
   --radius-md: 6px;
@@ -328,7 +348,7 @@
   --color-muted: var(--bg-muted);
   --color-muted-foreground: var(--fg-tertiary);
   --color-primary: var(--accent);
-  --color-primary-foreground: var(--fg-inverse);
+  --color-primary-foreground: var(--accent-contrast);
   --color-sidebar: var(--bg-subtle);
 }
 
@@ -398,15 +418,36 @@
 }
 
 /*
- * Primary buttons: mostly violet, a lighter violet with a hint of pink at the top easing into
- * a slightly deeper violet at the bottom, so white text stays readable.
+ * Primary buttons: neon green with a hint of cyan and a touch of light at the top, easing
+ * into a slightly deeper green at the bottom. Ink on top is the dark accent-contrast.
  */
 @utility bg-brand-vertical {
   background-image: linear-gradient(
     180deg in oklch,
-    color-mix(in oklch, color-mix(in oklch, var(--brand-from), var(--brand-to) 18%), black 2%),
-    color-mix(in oklch, var(--brand-from), black 14%)
+    color-mix(in oklch, color-mix(in oklch, var(--brand-from), var(--brand-to) 12%), white 8%),
+    color-mix(in oklch, var(--brand-from), black 8%)
   );
+}
+
+/* Primary button: neon border, faded inner wash, accent ink. */
+@utility btn-neon {
+  background-color: var(--btn-neon-bg);
+  color: var(--accent-fg);
+  box-shadow: var(--shadow-brand);
+  &:hover {
+    background-color: var(--btn-neon-bg-hover);
+  }
+}
+
+/* Neon-style eyebrow label: small mono caps for section kickers. */
+@utility eyebrow {
+  font-family: var(--font-mono);
+  font-variation-settings: normal;
+  font-size: 11px;
+  line-height: 16px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 /* Faint brand wash for bars and highlights. */

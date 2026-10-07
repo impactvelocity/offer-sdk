@@ -10,8 +10,8 @@ export const metadata: Metadata = {
 };
 
 const tones: { tone: MarkerTone; shape: MarkerShape; use: string }[] = [
-  { tone: "violet", shape: "square", use: "Plans" },
-  { tone: "teal", shape: "diamond", use: "Entitlements" },
+  { tone: "green", shape: "square", use: "Plans" },
+  { tone: "violet", shape: "diamond", use: "Entitlements" },
   { tone: "orange", shape: "hex", use: "Add-ons" },
   { tone: "pink", shape: "circle", use: "Incentives" },
   { tone: "blue", shape: "square", use: "Offers" },
@@ -21,8 +21,7 @@ const tones: { tone: MarkerTone; shape: MarkerShape; use: string }[] = [
 export default function VisualsPage() {
   return (
     <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
-      <p className="text-sm font-medium text-accent-fg">Prototype</p>
-      <h1 className="mt-2 font-display text-4xl font-semibold">Visual language</h1>
+      <h1 className="font-display text-4xl font-medium">Visual language</h1>
       <p className="mt-4 max-w-2xl text-fg-muted">
         Abstract isometric line diagrams, one per primitive. Build them from the kit in{" "}
         <code className="text-sm text-fg-secondary">src/components/diagrams/kit.tsx</code>: solid edges for what you
@@ -42,8 +41,8 @@ export default function VisualsPage() {
           <Face d="M60 12 L100 12 L100 48 L60 48 Z" />
         </Swatch>
         <Swatch name="Marker" note="Filled = on · hollow = off">
-          <Marker at={[64, 30]} shape="diamond" tone="teal" />
-          <Marker at={[96, 30]} shape="diamond" tone="teal" hollow />
+          <Marker at={[64, 30]} shape="diamond" tone="violet" />
+          <Marker at={[96, 30]} shape="diamond" tone="violet" hollow />
         </Swatch>
       </section>
 

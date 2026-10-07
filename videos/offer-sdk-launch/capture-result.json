@@ -1,0 +1,70 @@
+{
+  "ok": true,
+  "projectDir": "/Users/dylanjones/apps/offer-sdk/videos/offer-sdk-launch/capture",
+  "url": "http://localhost:6769",
+  "httpStatus": 200,
+  "title": "Offer SDK: plans, entitlements and offers for your app",
+  "screenshots": 10,
+  "assets": 30,
+  "dropped": {
+    "size-floor": 0,
+    "budget-exhausted": 0,
+    "cap-reached": 12,
+    "unavailable": 3
+  },
+  "detectedSections": 12,
+  "fonts": [
+    "calSans",
+    "__nextjs-Geist",
+    "__nextjs-Geist Mono"
+  ],
+  "fontsDetailed": [
+    {
+      "family": "calSans",
+      "weights": [
+        400,
+        500,
+        600
+      ],
+      "variable": true,
+      "weightRange": [
+        400,
+        700
+      ]
+    },
+    {
+      "family": "__nextjs-Geist",
+      "weights": [],
+      "variable": true,
+      "weightRange": [
+        400,
+        600
+      ]
+    },
+    {
+      "family": "__nextjs-Geist Mono",
+      "weights": [],
+      "variable": true,
+      "weightRange": [
+        400,
+        600
+      ]
+    }
+  ],
+  "animations": {
+    "webAnimations": 1,
+    "cssDeclarations": 135,
+    "scrollTargets": 12,
+    "cdpAnimations": 144,
+    "canvases": 0
+  },
+  "warnings": [
+    "15 referenced asset(s) are not in this capture (12 cap-reached, 3 unavailable). A thin capture with no drops is a thin page; this one was truncated."
+  ],
+  "lastPhase": {
+    "schema": "hyperframes.capture.phase.v1",
+    "phase": "complete",
+    "status": "completed",
+    "remainingMs": 100150
+  }
+}

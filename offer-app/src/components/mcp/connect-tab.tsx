@@ -193,7 +193,7 @@ function HowItWorks() {
       <ol className="flex flex-col gap-4 px-5 py-4">
         {steps.map((s, i) => (
           <li key={s.title} className="flex gap-3">
-            <span className="mt-px flex size-5 shrink-0 items-center justify-center rounded-full bg-brand text-[11px] font-semibold tabular text-white">
+            <span className="mt-px flex size-5 shrink-0 items-center justify-center rounded-full bg-brand text-[11px] font-semibold tabular text-accent-contrast">
               {i + 1}
             </span>
             <div className="min-w-0">

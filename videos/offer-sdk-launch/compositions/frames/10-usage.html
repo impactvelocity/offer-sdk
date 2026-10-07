@@ -1,0 +1,563 @@
+<template>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<style>
+/* ==========================================================================
+   Offer SDK app kit — the offer-app dashboard (dark theme), rebuilt for video.
+   Values are copied from offer-app/src/app/globals.css (data-theme="dark") and
+   measured from the real screens in capture/assets/app/*.png.
+
+   HOW TO USE IN A FRAME
+   1. Paste this whole file inside the style block that lives inside your frame template.
+      (Template transport: styles must live inside the frame template.)
+   2. Build the window from shell.html. Author it at its LOGICAL size
+      (.ak-window is 1366×800 — a real laptop viewport, real 14px UI text) and
+      scale the wrapper with GSAP (scale ≈ 1.08–1.12 to fill the top 83%;
+      punch in to 1.5–1.9 on the region the VO is talking about).
+   3. Copy icons from icons.html (Lucide, the icon set the app uses).
+   All classes are prefixed ak- so they never collide with frame-local names.
+   ========================================================================== */
+
+@font-face { font-family: "Cal Sans"; src: url("assets/fonts/CalSansVF.woff2") format("woff2"); font-weight: 400 700; font-display: block; }
+@font-face { font-family: "Geist Mono"; src: url("assets/fonts/geist-mono-latin.woff2") format("woff2"); font-weight: 400 600; font-display: block; }
+
+.ak {
+  --canvas: #0f0f11; --panel: #161618; --bg: #18181b; --bg-subtle: #1c1c1f; --bg-muted: #222226;
+  --bg-hover: #27272c; --bg-active: #2e2e34; --bg-elevated: #202024; --bg-inverse: #f1f1f3;
+  --fg: #ececee; --fg-secondary: rgb(236 236 238 / .93); --fg-tertiary: rgb(236 236 238 / .86);
+  --fg-muted: rgb(236 236 238 / .68); --fg-placeholder: #6f7178; --fg-icon: #9c9ea5;
+  --border: #2a2a2f; --border-strong: #37373d; --border-input: #323238;
+  --accent: #34d599; --accent-hover: #5ce0b0; --accent-subtle: rgb(52 213 153 / .13); --accent-fg: #5fe3b1; --accent-contrast: #03140c; --ring: rgb(52 213 153 / .4);
+  --btn-neon-bg: rgb(52 213 153 / .08); --shadow-brand: inset 0 0 0 1px rgb(52 213 153 / .85), inset 0 0 14px -6px rgb(52 213 153 / .35), 0 0 16px -6px rgb(52 213 153 / .4);
+  --brand-vertical: linear-gradient(180deg, #4fe0b0, #2fc48c);
+  --success: #30a46c; --success-subtle: rgb(48 164 108 / .16); --success-fg: #5ed29a;
+  --danger: #e5484d; --danger-subtle: rgb(229 72 77 / .15); --danger-fg: #ff8a8d;
+  --warning: #f0a020; --warning-subtle: rgb(240 160 32 / .14); --warning-fg: #ffc35f;
+  --brand-from: #34d599; --brand-to: #2cc0de; --brand-gradient: linear-gradient(90deg, #34d599, #2cc0de);
+  --code-comment: #7f828a; --code-keyword: #5fe3b1; --code-string: #6fd69f; --code-key: #93b8ff; --code-number: #ffa072;
+  --zapier: #ff5f1f; --paypal: #0070e0;
+  --shadow-soft: 0 14px 36px -14px rgb(0 0 0 / .75), 0 2px 8px -2px rgb(0 0 0 / .45);
+  --shadow-lg: 0 18px 44px -10px rgb(0 0 0 / .7), 0 4px 12px -4px rgb(0 0 0 / .5);
+  font-family: "Cal Sans", ui-sans-serif, system-ui, sans-serif;
+  font-variation-settings: "GEOM" 25;           /* the app's UI geometry */
+  color: var(--fg); -webkit-font-smoothing: antialiased; font-size: 14px; line-height: 1.4;
+}
+.ak * { box-sizing: border-box; }
+.ak .ak-display { font-variation-settings: "GEOM" 50; letter-spacing: -0.01em; }
+/* Neon-style eyebrow: small mono caps (site + app section kickers). */
+.ak .ak-eyebrow { font-family: "Geist Mono", monospace; font-variation-settings: normal; font-size: 11px; line-height: 16px; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; color: var(--fg-muted); }
+.ak .ak-mono, .ak code { font-family: "Geist Mono", ui-monospace, monospace; font-variation-settings: normal; }
+.ak svg { display: block; flex-shrink: 0; }
+
+/* ---------- window + shell ---------- */
+.ak-window { position: absolute; width: 1366px; height: 800px; background: var(--canvas); border-radius: 18px;
+  border: 1px solid var(--border); box-shadow: 0 40px 120px -30px rgb(0 0 0 / .9), 0 0 0 1px rgb(255 255 255 / .03);
+  overflow: hidden; display: flex; padding: 6px 6px 6px 0; transform-origin: 50% 50%; }
+.ak-rail { width: 52px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; gap: 10px; padding-top: 8px; }
+.ak-rail .ak-rail-logo { width: 30px; height: 30px; border-radius: 8px; display: grid; place-items: center; color: var(--fg); }
+.ak-rail .ak-rail-logo svg { width: 18px; height: 18px; }
+.ak-rail .ak-rail-sep { width: 22px; height: 1px; background: var(--border); }
+.ak-rail .ak-app-tile { width: 28px; height: 28px; border-radius: 7px; display: grid; place-items: center; font-size: 11px; font-weight: 600; color: var(--accent-contrast);
+  background: var(--brand-vertical); }
+.ak-rail .ak-app-tile.is-active { box-shadow: 0 0 0 2px var(--canvas), 0 0 0 3.5px var(--accent); }
+.ak-rail .ak-app-tile.alt { opacity: .8; }
+.ak-rail .ak-rail-plus { color: var(--fg-icon); width: 16px; height: 16px; }
+.ak-rail .ak-rail-foot { margin-top: auto; padding-bottom: 6px; display: flex; flex-direction: column; align-items: center; gap: 14px; color: var(--fg-icon); }
+.ak-rail .ak-rail-foot svg { width: 15px; height: 15px; }
+.ak-rail .ak-avatar { width: 26px; height: 26px; border-radius: 50%; background: var(--bg-muted); color: var(--fg-secondary); font-size: 10px; display: grid; place-items: center; }
+
+.ak-nav { width: 222px; flex-shrink: 0; background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
+  margin-right: 6px; display: flex; flex-direction: column; padding: 12px 10px; box-shadow: var(--shadow-soft); }
+.ak-nav-title { font-size: 15px; font-weight: 600; padding: 2px 6px 10px; font-variation-settings: "GEOM" 50; }
+.ak-quick { height: 30px; border: 1px solid var(--border-input); border-radius: 8px; display: flex; align-items: center; gap: 8px; padding: 0 8px;
+  color: var(--fg-muted); font-size: 13px; margin-bottom: 10px; }
+.ak-quick svg { width: 14px; height: 14px; color: var(--fg-icon); }
+.ak-quick .ak-kbd { margin-left: auto; font-size: 10.5px; border: 1px solid var(--border); border-radius: 4px; padding: 0 4px; color: var(--fg-placeholder); }
+.ak-nav-group { display: flex; flex-direction: column; gap: 1px; padding: 6px 0; border-top: 1px solid var(--border); }
+.ak-nav-group:first-of-type { border-top: 0; padding-top: 0; }
+.ak-nav-item { height: 31px; border-radius: 7px; display: flex; align-items: center; gap: 10px; padding: 0 8px; font-size: 13.5px; color: var(--fg-secondary); }
+.ak-nav-item svg { width: 15px; height: 15px; color: var(--fg-icon); }
+.ak-nav-item .ak-count { margin-left: auto; font-size: 12px; color: var(--fg-muted); font-variant-numeric: tabular-nums; }
+.ak-nav-item.is-active { background: var(--accent-subtle); color: var(--accent-fg); }
+.ak-nav-item.is-active svg { color: var(--accent-fg); }
+.ak-nav-foot { margin-top: auto; }
+
+.ak-main { flex: 1; min-width: 0; background: var(--bg); border: 1px solid var(--border); border-radius: 12px; display: flex; flex-direction: column;
+  overflow: hidden; box-shadow: var(--shadow-soft); position: relative; }
+.ak-header { height: 50px; flex-shrink: 0; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; padding: 0 12px 0 16px; }
+.ak-header .ak-crumb { display: flex; align-items: center; gap: 9px; font-size: 14px; font-weight: 500; }
+.ak-header .ak-crumb svg { width: 15px; height: 15px; color: var(--fg-icon); }
+.ak-header .ak-crumb .ak-sep { color: var(--fg-placeholder); }
+.ak-header .ak-actions { margin-left: auto; display: flex; align-items: center; gap: 4px; }
+.ak-toolbar { height: 50px; flex-shrink: 0; display: flex; align-items: center; gap: 10px; padding: 0 16px; border-bottom: 1px solid var(--border); }
+.ak-body { flex: 1; min-height: 0; position: relative; overflow: hidden; }
+.ak-page { padding: 28px 40px; }
+.ak-page-title { font-size: 22px; font-weight: 600; font-variation-settings: "GEOM" 50; letter-spacing: -0.01em; }
+.ak-page-sub { color: var(--fg-muted); font-size: 13.5px; margin-top: 4px; }
+
+/* ---------- controls ---------- */
+.ak-btn { height: 30px; border-radius: 8px; display: inline-flex; align-items: center; gap: 7px; padding: 0 10px; font-size: 13.5px; color: var(--fg-secondary);
+  border: 1px solid transparent; white-space: nowrap; }
+.ak-btn svg { width: 14px; height: 14px; }
+.ak-btn.is-outline { border-color: var(--border-strong); background: var(--bg-subtle); }
+/* Primary = the app's neon button: hairline neon border, faint green wash, green ink. */
+.ak-btn.is-primary { background: var(--btn-neon-bg); color: var(--accent-fg); font-weight: 500; box-shadow: var(--shadow-brand); }
+.ak-btn.is-gradient { background: var(--btn-neon-bg); color: var(--accent-fg); font-weight: 500; box-shadow: var(--shadow-brand), 0 0 32px -8px rgb(52 213 153 / .55); }
+.ak-btn.is-solid { background: var(--brand-vertical); color: var(--accent-contrast); font-weight: 600; }
+.ak-btn.is-paypal { background: #ffc439; color: #111; font-weight: 600; }
+.ak-btn.is-lg { height: 40px; padding: 0 16px; font-size: 15px; border-radius: 10px; }
+.ak-input { height: 32px; border: 1px solid var(--border-input); background: var(--bg-subtle); border-radius: 8px; display: flex; align-items: center; gap: 8px;
+  padding: 0 10px; font-size: 13.5px; color: var(--fg); }
+.ak-input.is-placeholder { color: var(--fg-placeholder); }
+.ak-input.is-focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--ring); }
+.ak-input svg { width: 14px; height: 14px; color: var(--fg-icon); }
+.ak-label { font-size: 13px; color: var(--fg-secondary); font-weight: 500; margin-bottom: 6px; }
+.ak-seg { display: inline-flex; background: var(--bg-muted); border-radius: 8px; padding: 2px; gap: 2px; }
+.ak-seg > span { height: 26px; padding: 0 10px; border-radius: 6px; display: inline-flex; align-items: center; font-size: 13px; color: var(--fg-muted); }
+.ak-seg > span.is-on { background: var(--bg-active); color: var(--fg); }
+.ak-switch { width: 30px; height: 18px; border-radius: 9px; background: var(--bg-active); position: relative; flex-shrink: 0; }
+.ak-switch::after { content: ""; position: absolute; top: 2px; left: 2px; width: 14px; height: 14px; border-radius: 50%; background: #fff; }
+.ak-switch.is-on { background: var(--accent); }
+.ak-switch.is-on::after { background: var(--accent-contrast); }
+.ak-switch.is-on::after { left: 14px; }
+.ak-check { width: 16px; height: 16px; border-radius: 4px; border: 1px solid var(--border-strong); display: grid; place-items: center; }
+.ak-check.is-on { background: var(--accent); border-color: var(--accent); color: var(--accent-contrast); }
+.ak-check svg { width: 11px; height: 11px; }
+
+/* ---------- table (Plans / Entitlements / Add-ons / Incentives / Accounts) ---------- */
+.ak-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+.ak-table th { height: 42px; text-align: left; font-weight: 400; color: var(--fg-muted); padding: 0 14px; border-bottom: 1px solid var(--border); border-right: 1px solid var(--border); white-space: nowrap; }
+.ak-table th:last-child, .ak-table td:last-child { border-right: 0; }
+.ak-table th .ak-th { display: inline-flex; align-items: center; gap: 7px; }
+.ak-table th svg { width: 13px; height: 13px; color: var(--fg-icon); }
+.ak-table td { height: 46px; padding: 0 14px; border-bottom: 1px solid var(--border); border-right: 1px solid var(--border); white-space: nowrap; color: var(--fg-secondary); }
+.ak-table td.is-num { text-align: right; font-variant-numeric: tabular-nums; }
+.ak-table .ak-row-name { display: flex; align-items: center; gap: 9px; color: var(--fg); }
+.ak-table .ak-row-icon { width: 22px; height: 22px; border-radius: 6px; background: rgb(59 123 246 / .18); color: #93b8ff; display: grid; place-items: center; }
+.ak-table .ak-row-icon svg { width: 13px; height: 13px; }
+.ak-table tr.is-hl td { background: rgb(52 213 153 / .07); }
+.ak-table-foot { padding: 12px 16px; color: var(--fg-muted); font-size: 13px; }
+
+/* ---------- chips + tags ---------- */
+.ak-id { font-family: "Geist Mono", monospace; font-variation-settings: normal; font-size: 12px; background: var(--bg-muted); color: var(--fg-secondary);
+  border-radius: 5px; padding: 2px 6px; }
+.ak-tag { display: inline-flex; align-items: center; gap: 5px; height: 21px; padding: 0 7px; border-radius: 5px; font-size: 12px; white-space: nowrap;
+  background: rgb(255 255 255 / .08); color: #c6c7cc; }
+.ak-tag svg { width: 11px; height: 11px; }
+.ak-tag.blue { background: rgb(59 123 246 / .18); color: #93b8ff; }
+.ak-tag.green { background: rgb(48 164 108 / .18); color: #6fd69f; }
+.ak-tag.yellow { background: rgb(240 180 40 / .16); color: #f5c451; }
+.ak-tag.orange { background: rgb(235 104 52 / .18); color: #ffa072; }
+.ak-tag.red { background: rgb(229 72 77 / .18); color: #ff8a8d; }
+.ak-tag.purple { background: rgb(143 107 255 / .2); color: #bba6ff; }
+.ak-tag.brand { background: rgb(52 213 153 / .14); color: #5fe3b1; }
+.ak-tag.pink { background: rgb(224 69 123 / .18); color: #ff8fba; }
+.ak-tag.teal { background: rgb(20 163 157 / .18); color: #62d6cf; }
+.ak-more { color: var(--fg-muted); font-size: 12px; }
+
+/* ---------- cards, stats, meters ---------- */
+.ak-card { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; }
+.ak-card-head { height: 46px; display: flex; align-items: center; padding: 0 16px; border-bottom: 1px solid var(--border); font-weight: 500; font-size: 14px; }
+.ak-card-body { padding: 16px; }
+.ak-elevated { background: var(--bg-elevated); border: 1px solid var(--border-strong); border-radius: 12px; box-shadow: var(--shadow-lg); }
+.ak-stat-strip { display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+.ak-stat { padding: 16px 18px; border-right: 1px solid var(--border); }
+.ak-stat:last-child { border-right: 0; }
+.ak-stat-label { display: flex; align-items: center; gap: 7px; font-size: 13px; color: var(--fg-secondary); }
+.ak-stat-label svg { width: 13px; height: 13px; color: var(--fg-icon); }
+.ak-stat-value { font-size: 26px; font-weight: 600; margin-top: 8px; font-variant-numeric: tabular-nums; font-variation-settings: "GEOM" 50; }
+.ak-stat-sub { font-size: 12px; color: var(--fg-muted); margin-top: 4px; }
+.ak-meter { height: 8px; border-radius: 4px; background: var(--bg-active); overflow: hidden; }
+.ak-meter > i { display: block; height: 100%; width: 0; border-radius: 4px; background: var(--brand-gradient); }
+.ak-meter.is-warn > i { background: linear-gradient(90deg, #f0a020, #e5484d); }
+.ak-bar-row { position: relative; height: 30px; border-radius: 6px; display: flex; align-items: center; padding: 0 10px; font-size: 13.5px; }
+.ak-bar-row > b { position: absolute; inset: 0 auto 0 0; border-radius: 6px; background: linear-gradient(90deg, rgb(52 213 153 / .32), rgb(44 192 222 / .22)); font-weight: 400; }
+.ak-bar-row > span { position: relative; }
+.ak-bar-row > .ak-bar-val { margin-left: auto; color: var(--fg-secondary); font-variant-numeric: tabular-nums; }
+
+/* ---------- code block (site CodeBlock look) ---------- */
+.ak-code { background: #131315; border: 1px solid var(--border); border-radius: 14px; overflow: hidden; box-shadow: var(--shadow-lg); }
+.ak-code-bar { height: 40px; display: flex; align-items: center; gap: 8px; padding: 0 14px; border-bottom: 1px solid var(--border); color: var(--fg-muted); font-size: 13px; }
+.ak-code-bar .ak-dots { display: flex; gap: 6px; margin-right: 6px; }
+.ak-code-bar .ak-dots i { width: 10px; height: 10px; border-radius: 50%; background: var(--bg-active); }
+.ak-code pre { margin: 0; padding: 18px 20px; font-family: "Geist Mono", monospace; font-variation-settings: normal; font-size: 15px; line-height: 1.65; color: var(--fg-secondary); white-space: pre; }
+.ak-code .k { color: var(--code-keyword); } .ak-code .s { color: var(--code-string); } .ak-code .p { color: var(--code-key); }
+.ak-code .n { color: var(--code-number); } .ak-code .c { color: var(--code-comment); } .ak-code .f { color: #ececee; }
+.ak-code .del { background: rgb(229 72 77 / .14); } .ak-code .add { background: rgb(48 164 108 / .14); }
+
+/* ---------- feedback ---------- */
+.ak-toast { position: absolute; display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 10px; background: var(--bg-elevated);
+  border: 1px solid var(--border-strong); box-shadow: var(--shadow-lg); font-size: 13.5px; white-space: nowrap; }
+.ak-toast svg { width: 15px; height: 15px; }
+.ak-toast.is-ok svg { color: var(--success-fg); }
+.ak-toast.is-warn svg { color: var(--warning-fg); }
+.ak-toast.is-bad svg { color: var(--danger-fg); }
+.ak-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--success); display: inline-block; }
+.ak-dot.is-warn { background: var(--warning); } .ak-dot.is-bad { background: var(--danger); }
+.ak-cursor { position: absolute; width: 22px; height: 22px; z-index: 50; pointer-events: none; filter: drop-shadow(0 2px 4px rgb(0 0 0 / .6)); }
+.ak-ripple { position: absolute; width: 36px; height: 36px; margin: -18px 0 0 -18px; border-radius: 50%; border: 2px solid var(--accent-fg); z-index: 49; opacity: 0; }
+
+/* ---------- avatars + misc ---------- */
+.ak-av { width: 22px; height: 22px; border-radius: 6px; display: grid; place-items: center; font-size: 9.5px; font-weight: 600; background: rgb(52 213 153 / .14); color: #5fe3b1; }
+.ak-av.round { border-radius: 50%; }
+.ak-kv { display: flex; justify-content: space-between; font-size: 13px; padding: 7px 0; border-bottom: 1px solid var(--border); color: var(--fg-muted); }
+.ak-kv b { font-weight: 400; color: var(--fg); }
+.ak-divider { height: 1px; background: var(--border); }
+
+/* ---------- frame 10-usage ---------- */
+#root { position: absolute; inset: 0; width: 1920px; height: 1080px; overflow: hidden; }
+#\31 0-usage-bg { position: absolute; inset: 0; background: #0f0f11; z-index: 0; }
+#\31 0-usage-cam { position: absolute; left: 0; top: 0; width: 1920px; height: 940px; transform-origin: 50% 50%; z-index: 1; }
+#\31 0-usage-pan { position: absolute; left: 0; top: 0; width: 1920px; height: 940px; }
+#\31 0-usage-window { box-sizing: border-box; left: 277px; top: 70px; }
+.\31 0-usage-page { position: absolute; inset: 0; }
+.\31 0-usage-title { position: absolute; left: 36px; top: 22px; }
+.\31 0-usage-sub { position: absolute; left: 36px; top: 52px; margin: 0; }
+.\31 0-usage-strip { position: absolute; left: 36px; top: 92px; width: 1004px; height: 100px; }
+.\31 0-usage-ev-row { display: flex; align-items: flex-end; gap: 14px; }
+.\31 0-usage-ev-wrap { width: 84px; }
+.\31 0-usage-ev { display: inline-block; transform-origin: 0% 70%; font-variant-numeric: tabular-nums; }
+.\31 0-usage-spark { width: 104px; height: 28px; margin-bottom: 2px; overflow: visible; }
+.\31 0-usage-chart { position: absolute; left: 36px; top: 208px; width: 600px; height: 300px; overflow: hidden; }
+.\31 0-usage-chart-head { height: 64px; display: flex; align-items: flex-start; justify-content: space-between; padding: 13px 16px 0; border-bottom: 1px solid var(--border); }
+.\31 0-usage-ch-t { font-size: 14px; font-weight: 500; }
+.\31 0-usage-ch-s { font-size: 13px; color: var(--fg-muted); margin-top: 3px; }
+.\31 0-usage-link { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--fg-secondary); margin-left: auto; }
+.\31 0-usage-link svg { width: 13px; height: 13px; }
+.\31 0-usage-chart-svg { width: 568px; height: 220px; margin: 8px 16px 0; }
+.\31 0-usage-chart-svg .\31 0-usage-grid { stroke: #2a2a2f; stroke-width: 1; }
+.\31 0-usage-chart-svg .\31 0-usage-ax { fill: #8e9097; font-size: 11px; font-family: "Cal Sans", sans-serif; }
+.\31 0-usage-top { position: absolute; left: 36px; top: 524px; width: 600px; height: 190px; overflow: hidden; }
+.\31 0-usage-top-body { padding: 12px 16px; display: flex; flex-direction: column; gap: 6px; }
+.\31 0-usage-top-body .ak-bar-row { gap: 9px; }
+.\31 0-usage-av { width: 18px; height: 18px; font-size: 8px; border-radius: 5px; position: relative; }
+.\31 0-usage-feed { position: absolute; left: 652px; top: 208px; width: 388px; height: 506px; overflow: hidden; }
+.\31 0-usage-live { margin-left: auto; }
+.\31 0-usage-live .ak-dot { width: 6px; height: 6px; background: var(--accent); }
+.\31 0-usage-feed-view { position: absolute; left: 0; right: 0; top: 46px; bottom: 0; overflow: hidden; }
+.\31 0-usage-list { position: absolute; left: 0; right: 0; top: 0; padding: 0 8px; }
+.\31 0-usage-row { height: 56px; display: flex; align-items: center; gap: 12px; padding: 0 10px; border-radius: 8px; }
+.\31 0-usage-ico { width: 22px; height: 22px; border-radius: 50%; border: 1px solid var(--border-strong); display: grid; place-items: center; color: var(--accent-fg); flex-shrink: 0; }
+.\31 0-usage-ico svg { width: 12px; height: 12px; }
+.\31 0-usage-txt { min-width: 0; }
+.\31 0-usage-t { font-size: 13.5px; color: var(--fg-secondary); white-space: nowrap; }
+.\31 0-usage-t b { font-weight: 500; color: var(--fg); }
+.\31 0-usage-s { font-size: 12px; color: var(--fg-muted); margin-top: 2px; white-space: nowrap; }
+.\31 0-usage-s .ak-mono { font-size: 11px; }
+.\31 0-usage-scrim { position: absolute; inset: 0; background: rgba(15,15,17,0.55); opacity: 0; pointer-events: none; }
+.\31 0-usage-glow { position: absolute; left: -154px; top: 54px; width: 980px; height: 600px; background: radial-gradient(closest-side, rgba(52,213,153,0.2), transparent); opacity: 0; pointer-events: none; }
+/* neon flash overlay: hairline neon border + glow, faded in/out by the timeline */
+.\31 0-usage-flash { position: absolute; inset: -1px; border-radius: inherit; pointer-events: none; opacity: 0;
+  box-shadow: inset 0 0 0 1px rgba(52,213,153,0.95), inset 0 0 14px -6px rgba(52,213,153,0.45), 0 0 22px -4px rgba(52,213,153,0.6); }
+.\31 0-usage-chips { position: absolute; left: 36px; top: 214px; height: 34px; display: flex; gap: 8px; white-space: nowrap; }
+.\31 0-usage-agent, .\31 0-usage-pill { position: relative; height: 34px; display: inline-flex; align-items: center; gap: 7px; background: var(--bg-elevated); border: 1px solid var(--border-strong); box-shadow: var(--shadow-soft); font-size: 13.5px; color: var(--fg); }
+.\31 0-usage-agent { border-radius: 9px; padding: 0 12px 0 6px; }
+.\31 0-usage-bot { width: 22px; height: 22px; border-radius: 6px; background: var(--accent-subtle); color: var(--accent-fg); display: grid; place-items: center; }
+.\31 0-usage-bot svg { width: 14px; height: 14px; }
+.\31 0-usage-pill { border-radius: 999px; padding: 0 13px; }
+.\31 0-usage-pill .ak-mono { font-size: 12px; color: var(--fg-secondary); }
+.\31 0-usage-pill em { font-style: normal; color: var(--accent-fg); }
+.\31 0-usage-card { position: absolute; left: 36px; top: 262px; width: 600px; padding: 18px 20px 20px; border-color: rgba(52,213,153,0.28); }
+.\31 0-usage-card-head { height: 28px; display: flex; align-items: center; gap: 10px; }
+.\31 0-usage-av-lg { width: 28px; height: 28px; font-size: 10.5px; }
+.\31 0-usage-name { font-size: 16px; font-weight: 600; font-variation-settings: "GEOM" 50; }
+.\31 0-usage-div { margin: 14px 0 16px; }
+.\31 0-usage-m + .\31 0-usage-m { margin-top: 18px; }
+.\31 0-usage-m-row { display: flex; align-items: center; justify-content: space-between; height: 22px; }
+.\31 0-usage-m-name { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; color: var(--fg-secondary); }
+.\31 0-usage-m-name svg { width: 14px; height: 14px; color: var(--fg-icon); }
+.\31 0-usage-m-val { font-size: 14px; color: var(--fg-muted); font-variant-numeric: tabular-nums; }
+.\31 0-usage-num { display: inline-block; min-width: 50px; text-align: right; font-size: 17px; font-weight: 600; color: var(--fg); transform-origin: 100% 70%; font-variation-settings: "GEOM" 50; font-variant-numeric: tabular-nums; }
+.\31 0-usage-m-bar { display: flex; align-items: center; gap: 12px; margin-top: 10px; }
+.\31 0-usage-meter { position: relative; flex: 1; height: 10px; border-radius: 5px; overflow: visible; }
+.\31 0-usage-meter > i.\31 0-usage-fill { position: absolute; left: 0; top: 0; width: 100%; height: 100%; border-radius: 5px; transform-origin: 0% 50%; transform: scaleX(0); box-shadow: 0 0 14px -3px rgba(52,213,153,0.6); }
+.\31 0-usage-meter > i.\31 0-usage-warn { background: linear-gradient(90deg, #f0a020, #ffc35f); box-shadow: 0 0 16px -3px rgba(240,160,32,0.7); opacity: 0; }
+.\31 0-usage-pct { width: 38px; text-align: right; font-size: 13px; color: var(--fg-muted); font-variant-numeric: tabular-nums; }
+
+</style>
+
+<div id="root" data-composition-id="10-usage" data-width="1920" data-height="1080" data-duration="7.22">
+  <div id="10-usage-bg" class="clip" data-start="0" data-duration="7.22" data-track-index="0"></div>
+
+  <div id="10-usage-cam"><div id="10-usage-pan">
+<div class="ak ak-window" id="10-usage-window">
+  <aside class="ak-rail">
+    <div class="ak-rail-logo"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 13.74a2 2 0 0 1-2 0L2.5 8.87a1 1 0 0 1 0-1.74L11 2.26a2 2 0 0 1 2 0l8.5 4.87a1 1 0 0 1 0 1.74z"/><path d="m20 14.285 1.5.845a1 1 0 0 1 0 1.74L13 21.74a2 2 0 0 1-2 0l-8.5-4.87a1 1 0 0 1 0-1.74l1.5-.845"/></svg></div>
+    <div class="ak-rail-sep"></div>
+    <div class="ak-app-tile is-active">AA</div>
+    <div class="ak-app-tile alt">CH</div>
+    <div class="ak-rail-plus"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg></div>
+    <div class="ak-rail-foot"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"/><circle cx="12" cy="12" r="3"/></svg><div class="ak-avatar">DA</div></div>
+  </aside>
+  <nav class="ak-nav">
+    <div class="ak-nav-title">AmazingApp AI</div>
+    <div class="ak-quick"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg><span>Quick actions</span><span class="ak-kbd">⌘K</span></div>
+    <div class="ak-nav-group">
+      <div class="ak-nav-item is-active" data-nav="overview"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Overview</div>
+      <div class="ak-nav-item" data-nav="analytics"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>Analytics</div>
+      <div class="ak-nav-item" data-nav="agent"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z"/><path d="M20 2v4"/><path d="M22 4h-4"/><circle cx="4" cy="20" r="2"/></svg>Agent</div>
+      <div class="ak-nav-item" data-nav="offers"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z"/><path d="m15 9-6 6"/><path d="M9 9h.01"/><path d="M15 15h.01"/></svg>Offers</div>
+      <div class="ak-nav-item" data-nav="cancel-flow"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 21H2"/><path d="M10 3H7a2 2 0 00-2 2v16"/><path d="M14 12h.01"/><path d="M19 21V5a2 2 0 00-1.675-1.974l-6.163-1.013A1 1 0 0010 3v18a1 1 0 001.124.992z"/><path d="M22 21h-3"/></svg>Cancel flow</div>
+    </div>
+    <div class="ak-nav-group">
+      <div class="ak-nav-item" data-nav="plans"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83z"/><path d="M2 12a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 12"/><path d="M2 17a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 17"/></svg>Plans<span class="ak-count">5</span></div>
+      <div class="ak-nav-item" data-nav="entitlements"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z"/><circle cx="16.5" cy="7.5" r=".5" fill="currentColor"/></svg>Entitlements<span class="ak-count">9</span></div>
+      <div class="ak-nav-item" data-nav="addons"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15.39 4.39a1 1 0 0 0 1.68-.474 2.5 2.5 0 1 1 3.014 3.015 1 1 0 0 0-.474 1.68l1.683 1.682a2.414 2.414 0 0 1 0 3.414L19.61 15.39a1 1 0 0 1-1.68-.474 2.5 2.5 0 1 0-3.014 3.015 1 1 0 0 1 .474 1.68l-1.683 1.682a2.414 2.414 0 0 1-3.414 0L8.61 19.61a1 1 0 0 0-1.68.474 2.5 2.5 0 1 1-3.014-3.015 1 1 0 0 0 .474-1.68l-1.683-1.682a2.414 2.414 0 0 1 0-3.414L4.39 8.61a1 1 0 0 1 1.68.474 2.5 2.5 0 1 0 3.014-3.015 1 1 0 0 1-.474-1.68l1.683-1.682a2.414 2.414 0 0 1 3.414 0z"/></svg>Add-ons<span class="ak-count">3</span></div>
+      <div class="ak-nav-item" data-nav="incentives"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 7v14"/><path d="M20 11v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-8"/><path d="M7.5 7a1 1 0 0 1 0-5A4.8 8 0 0 1 12 7a4.8 8 0 0 1 4.5-5 1 1 0 0 1 0 5"/><rect x="3" y="7" width="18" height="4" rx="1"/></svg>Incentives<span class="ak-count">4</span></div>
+    </div>
+    <div class="ak-nav-group">
+      <div class="ak-nav-item" data-nav="accounts"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><path d="M16 3.128a4 4 0 0 1 0 7.744"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><circle cx="9" cy="7" r="4"/></svg>Accounts<span class="ak-count">64</span></div>
+    </div>
+    <div class="ak-nav-group">
+      <div class="ak-nav-item" data-nav="integration"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 18 6-6-6-6"/><path d="m8 6-6 6 6 6"/></svg>Integration</div>
+      <div class="ak-nav-item" data-nav="api"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H7a2 2 0 0 0-2 2v5a2 2 0 0 1-2 2 2 2 0 0 1 2 2v5c0 1.1.9 2 2 2h1"/><path d="M16 21h1a2 2 0 0 0 2-2v-5c0-1.1.9-2 2-2a2 2 0 0 1-2-2V5a2 2 0 0 0-2-2h-1"/></svg>API reference</div>
+      <div class="ak-nav-item" data-nav="mcp"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22v-5"/><path d="M15 8V2"/><path d="M17 8a1 1 0 0 1 1 1v4a4 4 0 0 1-4 4h-4a4 4 0 0 1-4-4V9a1 1 0 0 1 1-1z"/><path d="M9 8V2"/></svg>MCP server</div>
+      <div class="ak-nav-item" data-nav="keys"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m2 21 9.6-9.6"/><path d="m7.5 15.5 2.3 2.3a1 1 0 0 1 0 1.4l-2.1 2.1a1 1 0 0 1-1.4 0L4 19"/><circle cx="15.5" cy="7.5" r="5.5"/></svg>API keys</div>
+      <div class="ak-nav-item" data-nav="webhooks"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 16.98h-5.99c-1.1 0-1.95.94-2.48 1.9A4 4 0 0 1 2 17c.01-.7.2-1.4.57-2"/><path d="m6 17 3.13-5.78c.53-.97.1-2.18-.5-3.1a4 4 0 1 1 6.89-4.06"/><path d="m12 6 3.13 5.73C15.66 12.7 16.9 13 18 13a4 4 0 0 1 0 8"/></svg>Webhooks</div>
+    </div>
+    <div class="ak-nav-foot"><div class="ak-nav-item"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"/><circle cx="12" cy="12" r="3"/></svg>App settings</div></div>
+  </nav>
+  <main class="ak-main">
+    <header class="ak-header">
+      <div class="ak-crumb"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Overview</div>
+      <div class="ak-actions"><span class="ak-btn is-outline"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v16"/><path d="M20.001 19A2 2 0 0022 17V5a2 2 0 00-1.999-2L16 3.002A5 5 0 0012 5a5 5 0 00-4-2H4a2 2 0 00-2 2v12a2 2 0 001.999 2H8a5 5 0 014 2 5 5 0 014-2z"/></svg>Integration guide</span></div>
+    </header>
+    <div class="ak-body">
+      <div class="10-usage-page">
+        <div class="10-usage-title ak-page-title">AmazingApp AI</div>
+        <div class="10-usage-sub ak-page-sub">Change what every account can access — plans, limits, feature flags and offers — without redeploying your app.</div>
+
+        <div class="ak-stat-strip 10-usage-strip">
+          <div class="ak-stat"><div class="ak-stat-label"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><path d="M16 3.128a4 4 0 0 1 0 7.744"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><circle cx="9" cy="7" r="4"/></svg>Accounts</div><div class="ak-stat-value">64</div><div class="ak-stat-sub">On 5 plans</div></div>
+          <div class="ak-stat"><div class="ak-stat-label"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83z"/><path d="M2 12a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 12"/><path d="M2 17a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 17"/></svg>Plans</div><div class="ak-stat-value">5</div><div class="ak-stat-sub">1 free</div></div>
+          <div class="ak-stat"><div class="ak-stat-label"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 7v14"/><path d="M20 11v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-8"/><path d="M7.5 7a1 1 0 0 1 0-5A4.8 8 0 0 1 12 7a4.8 8 0 0 1 4.5-5 1 1 0 0 1 0 5"/><rect x="3" y="7" width="18" height="4" rx="1"/></svg>Accounts with an incentive</div><div class="ak-stat-value">8</div><div class="ak-stat-sub">13% of accounts</div></div>
+          <div class="ak-stat"><div class="ak-stat-label"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"/></svg>Usage events · 30d</div>
+            <div class="10-usage-ev-row"><div class="ak-stat-value 10-usage-ev-wrap"><span id="10-usage-events" class="10-usage-ev">8,129</span></div>
+              <svg class="10-usage-spark" viewBox="0 0 104 28"><path id="10-usage-sparkline" pathLength="1" stroke-dasharray="1" d="M0.0 22.4 L3.6 22.9 L7.2 22.1 L10.8 22.5 L14.3 21.8 L17.9 22.2 L21.5 21.9 L25.1 21.5 L28.7 22.0 L32.3 21.6 L35.9 21.2 L39.4 21.7 L43.0 21.5 L46.6 21.0 L50.2 21.4 L53.8 20.8 L57.4 20.6 L61.0 21.1 L64.6 20.3 L68.1 19.9 L71.7 18.5 L75.3 19.2 L78.9 18.8 L82.5 17.0 L86.1 17.2 L89.7 16.5 L93.2 13.4 L96.8 6.8 L100.4 2.3 L104.0 9.2" fill="none" stroke="url(#10-usage-sparkgrad)" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/><defs><linearGradient id="10-usage-sparkgrad" x1="0" x2="1" y1="0" y2="0"><stop offset="0" stop-color="#34d599"/><stop offset="1" stop-color="#2cc0de"/></linearGradient></defs></svg></div>
+            <div class="ak-stat-sub"><span id="10-usage-total">18,776</span> total usage</div></div>
+        </div>
+
+        <div class="ak-card 10-usage-chart" id="10-usage-chart">
+          <div class="10-usage-chart-head"><div><div class="10-usage-ch-t">Usage · last 30 days</div><div class="10-usage-ch-s">Usage events per day</div></div><span class="10-usage-link">Analytics <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></span></div>
+          <svg class="10-usage-chart-svg" viewBox="0 0 568 220">
+            <defs>
+              <linearGradient id="10-usage-stroke" gradientUnits="userSpaceOnUse" x1="40" x2="556" y1="0" y2="0"><stop offset="0" stop-color="#34d599"/><stop offset="1" stop-color="#2cc0de"/></linearGradient>
+              <linearGradient id="10-usage-fill" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#2cc0de" stop-opacity=".30"/><stop offset="1" stop-color="#34d599" stop-opacity=".03"/></linearGradient>
+              <clipPath id="10-usage-clip"><rect id="10-usage-cliprect" x="0" y="0" width="568" height="220"/></clipPath>
+            </defs>
+            <line x1="40" x2="556" y1="186" y2="186" class="10-usage-grid"/><text x="32" y="190" text-anchor="end" class="10-usage-ax">0</text><line x1="40" x2="556" y1="142" y2="142" class="10-usage-grid"/><text x="32" y="146" text-anchor="end" class="10-usage-ax">200</text><line x1="40" x2="556" y1="98" y2="98" class="10-usage-grid"/><text x="32" y="102" text-anchor="end" class="10-usage-ax">400</text><line x1="40" x2="556" y1="54" y2="54" class="10-usage-grid"/><text x="32" y="58" text-anchor="end" class="10-usage-ax">600</text><line x1="40" x2="556" y1="10" y2="10" class="10-usage-grid"/><text x="32" y="14" text-anchor="end" class="10-usage-ax">800</text><text x="40" y="206" text-anchor="start" class="10-usage-ax">Sep 7</text><text x="111.2" y="206" text-anchor="middle" class="10-usage-ax">Sep 11</text><text x="182.3" y="206" text-anchor="middle" class="10-usage-ax">Sep 15</text><text x="253.5" y="206" text-anchor="middle" class="10-usage-ax">Sep 19</text><text x="324.7" y="206" text-anchor="middle" class="10-usage-ax">Sep 23</text><text x="395.9" y="206" text-anchor="middle" class="10-usage-ax">Sep 27</text><text x="467" y="206" text-anchor="middle" class="10-usage-ax">Oct 1</text><text x="556" y="206" text-anchor="end" class="10-usage-ax">Oct 6</text>
+            <g clip-path="url(#10-usage-clip)"><path d="M40 159.6 L57.8 162.9 L75.6 157.4 L93.4 160 L111.2 155.2 L129 158.3 L146.8 156.3 L164.6 153 L182.3 157 L200.1 154.1 L217.9 150.8 L235.7 154.8 L253.5 153 L271.3 149 L289.1 151.9 L306.9 148.2 L324.7 146.4 L342.5 149.7 L360.3 144.2 L378.1 140.9 L395.9 131 L413.7 135.8 L431.4 133.2 L449.2 120 L467 121.8 L484.8 116 L502.6 93.6 L520.4 45.2 L538.2 12.2 L556 62.8 L556 186 L40 186 Z" fill="url(#10-usage-fill)"/><path d="M40 159.6 L57.8 162.9 L75.6 157.4 L93.4 160 L111.2 155.2 L129 158.3 L146.8 156.3 L164.6 153 L182.3 157 L200.1 154.1 L217.9 150.8 L235.7 154.8 L253.5 153 L271.3 149 L289.1 151.9 L306.9 148.2 L324.7 146.4 L342.5 149.7 L360.3 144.2 L378.1 140.9 L395.9 131 L413.7 135.8 L431.4 133.2 L449.2 120 L467 121.8 L484.8 116 L502.6 93.6 L520.4 45.2 L538.2 12.2 L556 62.8" fill="none" stroke="url(#10-usage-stroke)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/></g>
+          </svg>
+        </div>
+
+        <div class="ak-card 10-usage-top" id="10-usage-top">
+          <div class="ak-card-head">Top accounts · 30d<span class="10-usage-link">All <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></span></div>
+          <div class="10-usage-top-body">
+            <div class="ak-bar-row"><b style="width:100%"></b><span class="ak-av 10-usage-av">AT</span><span>Ada Turing</span><span class="ak-bar-val">797 events</span></div>
+            <div class="ak-bar-row"><b style="width:69%"></b><span class="ak-av 10-usage-av">G</span><span>Globex</span><span class="ak-bar-val">549 events</span></div>
+            <div class="ak-bar-row"><b style="width:67%"></b><span class="ak-av 10-usage-av">GR</span><span>Grace van Rossum</span><span class="ak-bar-val">531 events</span></div>
+          </div>
+        </div>
+
+        <div class="ak-card 10-usage-feed" id="10-usage-feed">
+          <div class="ak-card-head">Recent activity<span class="ak-tag brand 10-usage-live"><i class="ak-dot"></i>Live</span></div>
+          <div class="10-usage-feed-view"><div class="10-usage-list" id="10-usage-list">
+          <div class="10-usage-row" data-arr="6.0"><span class="10-usage-ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg></span><div class="10-usage-txt"><div class="10-usage-t"><b>Ada Turing</b> used <b>440</b> API calls</div><div class="10-usage-s">just now · total 9,700 · <span class="ak-mono">add</span></div></div></div>
+          <div class="10-usage-row" data-arr="5.7"><span class="10-usage-ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg></span><div class="10-usage-txt"><div class="10-usage-t"><b>Ada Turing</b> used <b>430</b> API calls</div><div class="10-usage-s">just now · total 9,260 · <span class="ak-mono">add</span></div></div></div>
+          <div class="10-usage-row" data-arr="5.2"><span class="10-usage-ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg></span><div class="10-usage-txt"><div class="10-usage-t"><b>Ada Turing</b> used <b>430</b> API calls</div><div class="10-usage-s">just now · total 8,830 · <span class="ak-mono">add</span></div></div></div>
+          <div class="10-usage-row" data-arr="4.55"><span class="10-usage-ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg></span><div class="10-usage-txt"><div class="10-usage-t"><b>Grace van Rossum</b> used <b>1</b> AI credits</div><div class="10-usage-s">just now · total 532 · <span class="ak-mono">add</span></div></div></div>
+          <div class="10-usage-row" data-arr="3.95"><span class="10-usage-ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg></span><div class="10-usage-txt"><div class="10-usage-t"><b>Tyrell</b> used <b>1</b> Projects</div><div class="10-usage-s">just now · total 362 · <span class="ak-mono">add</span></div></div></div>
+          <div class="10-usage-row" data-arr="2.3"><span class="10-usage-ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg></span><div class="10-usage-txt"><div class="10-usage-t"><b>Globex</b> used <b>3</b> API calls</div><div class="10-usage-s">just now · total 3,962 · <span class="ak-mono">add</span></div></div></div>
+          <div class="10-usage-row" data-arr="2.06"><span class="10-usage-ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg></span><div class="10-usage-txt"><div class="10-usage-t"><b>Guido McCarthy</b> used <b>2</b> AI credits</div><div class="10-usage-s">just now · total 114 · <span class="ak-mono">add</span></div></div></div>
+          <div class="10-usage-row" data-arr="1.82"><span class="10-usage-ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg></span><div class="10-usage-txt"><div class="10-usage-t"><b>Shafi Thompson</b> used <b>4</b> API calls</div><div class="10-usage-s">just now · total 1,208 · <span class="ak-mono">add</span></div></div></div>
+          <div class="10-usage-row" data-arr="1.58"><span class="10-usage-ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg></span><div class="10-usage-txt"><div class="10-usage-t"><b>Lynn Thompson</b> used <b>1</b> Storage (GB)</div><div class="10-usage-s">just now · total 12 · <span class="ak-mono">amount</span></div></div></div>
+          <div class="10-usage-row" data-arr="1.34"><span class="10-usage-ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg></span><div class="10-usage-txt"><div class="10-usage-t"><b>Ada Turing</b> used <b>5</b> AI credits</div><div class="10-usage-s">just now · total 2,180 · <span class="ak-mono">add</span></div></div></div>
+          <div class="10-usage-row" data-arr="1.1"><span class="10-usage-ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg></span><div class="10-usage-txt"><div class="10-usage-t"><b>Jean Stroustrup</b> used <b>1</b> Projects</div><div class="10-usage-s">just now · total 271 · <span class="ak-mono">add</span></div></div></div>
+          <div class="10-usage-row" data-arr="0.88"><span class="10-usage-ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg></span><div class="10-usage-txt"><div class="10-usage-t"><b>Grace van Rossum</b> used <b>2</b> AI credits</div><div class="10-usage-s">just now · total 531 · <span class="ak-mono">add</span></div></div></div>
+          <div class="10-usage-row" data-arr="0.62"><span class="10-usage-ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg></span><div class="10-usage-txt"><div class="10-usage-t"><b>Ada Turing</b> used <b>3</b> API calls</div><div class="10-usage-s">just now · total 8,400 · <span class="ak-mono">add</span></div></div></div>
+          <div class="10-usage-row" data-arr="0.36"><span class="10-usage-ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg></span><div class="10-usage-txt"><div class="10-usage-t"><b>Globex</b> used <b>1</b> AI credits</div><div class="10-usage-s">just now · total 51 · <span class="ak-mono">add</span></div></div></div>
+          <div class="10-usage-row"><span class="10-usage-ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg></span><div class="10-usage-txt"><div class="10-usage-t"><b>Globex</b> used <b>1</b> Projects</div><div class="10-usage-s">19 hours ago · total 432 · <span class="ak-mono">add</span></div></div></div>
+          <div class="10-usage-row"><span class="10-usage-ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg></span><div class="10-usage-txt"><div class="10-usage-t"><b>Jean Stroustrup</b> used <b>1</b> Projects</div><div class="10-usage-s">19 hours ago · total 270 · <span class="ak-mono">add</span></div></div></div>
+          <div class="10-usage-row"><span class="10-usage-ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg></span><div class="10-usage-txt"><div class="10-usage-t"><b>Lynn Thompson</b> used <b>3</b> Storage (GB)</div><div class="10-usage-s">19 hours ago · total 11 · <span class="ak-mono">amount</span></div></div></div>
+          <div class="10-usage-row"><span class="10-usage-ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg></span><div class="10-usage-txt"><div class="10-usage-t"><b>Guido McCarthy</b> used <b>1</b> Projects</div><div class="10-usage-s">19 hours ago · total 112 · <span class="ak-mono">add</span></div></div></div>
+          <div class="10-usage-row"><span class="10-usage-ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg></span><div class="10-usage-txt"><div class="10-usage-t"><b>Lynn Goldwasser</b> used <b>1</b> Projects</div><div class="10-usage-s">19 hours ago · total 140 · <span class="ak-mono">add</span></div></div></div>
+          <div class="10-usage-row"><span class="10-usage-ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg></span><div class="10-usage-txt"><div class="10-usage-t"><b>Tyrell</b> used <b>1</b> Projects</div><div class="10-usage-s">19 hours ago · total 361 · <span class="ak-mono">add</span></div></div></div>
+          <div class="10-usage-row"><span class="10-usage-ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg></span><div class="10-usage-txt"><div class="10-usage-t"><b>Ada Lamport</b> used <b>1</b> Projects</div><div class="10-usage-s">19 hours ago · total 88 · <span class="ak-mono">add</span></div></div></div>
+          </div></div>
+        </div>
+
+        <div class="10-usage-scrim" id="10-usage-scrim"></div>
+        <div class="10-usage-glow" id="10-usage-glow"></div>
+
+        <div class="10-usage-chips" id="10-usage-chips">
+          <span class="10-usage-agent" id="10-usage-agent"><span class="10-usage-bot"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg></span>agent<i class="10-usage-flash" id="10-usage-agentflash"></i></span>
+          <span class="10-usage-pill" data-pill="1"><span class="ak-mono"><em>POST</em> /v1/generate</span><i class="10-usage-flash" data-flash></i></span>
+          <span class="10-usage-pill" data-pill="2"><span class="ak-mono"><em>POST</em> /v1/generate</span><i class="10-usage-flash" data-flash></i></span>
+          <span class="10-usage-pill" data-pill="3"><span class="ak-mono"><em>POST</em> /v1/generate</span><i class="10-usage-flash" data-flash></i></span>
+        </div>
+
+        <div class="ak-elevated 10-usage-card" id="10-usage-card">
+          <div class="10-usage-card-head"><span class="ak-av round 10-usage-av-lg">AT</span><span class="10-usage-name">Ada Turing</span><span class="ak-tag brand">Pro</span></div>
+          <div class="ak-divider 10-usage-div"></div>
+          <div class="10-usage-m">
+            <div class="10-usage-m-row"><span class="10-usage-m-name"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z"/><path d="M20 2v4"/><path d="M22 4h-4"/><circle cx="4" cy="20" r="2"/></svg>AI credits</span><span class="10-usage-m-val"><span class="10-usage-num" id="10-usage-ai">0</span> / 2,500</span></div>
+            <div class="10-usage-m-bar"><div class="ak-meter 10-usage-meter"><i class="10-usage-fill" id="10-usage-aifill"></i></div><span class="10-usage-pct" id="10-usage-aipct">0%</span></div>
+          </div>
+          <div class="10-usage-m">
+            <div class="10-usage-m-row"><span class="10-usage-m-name"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 18 6-6-6-6"/><path d="m8 6-6 6 6 6"/></svg>API calls</span><span class="10-usage-m-val"><span class="10-usage-num" id="10-usage-api">0</span> / 10,000</span></div>
+            <div class="10-usage-m-bar"><div class="ak-meter 10-usage-meter"><i class="10-usage-fill" id="10-usage-apifill"></i><i class="10-usage-fill 10-usage-warn" id="10-usage-apiwarn"></i></div><span class="10-usage-pct" id="10-usage-apipct">0%</span></div>
+          </div>
+          <i class="10-usage-flash" id="10-usage-cardflash"></i>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+  </div></div>
+
+  <script>
+    (function () {
+      window.__timelines = window.__timelines || {};
+      var DUR = 6.82;
+      var tl = gsap.timeline({ paused: true });
+      var byId = function (id) { return document.getElementById("10-usage-" + id); };
+
+      var cam = byId("cam"), pan = byId("pan");
+      var list = byId("list"), card = byId("card"), glow = byId("glow");
+      var chart = byId("chart"), top3 = byId("top");
+      var agent = byId("agent"), agentFlash = byId("agentflash"), cardFlash = byId("cardflash");
+      var evEl = byId("events"), totalEl = byId("total");
+      var aiEl = byId("ai"), aiPct = byId("aipct"), aiFill = byId("aifill");
+      var apiEl = byId("api"), apiPct = byId("apipct"), apiFill = byId("apifill"), apiWarn = byId("apiwarn");
+
+      // ---- deterministic data, timed to the cue sheet ----
+      // rows stream on "counts every call" (0.43–2.0), keep ticking under the punch,
+      // and the agent's three requests land on "APIs" 5.30 / "tools" 5.82 / "AI agents" 6.15.
+      var ARR = [[0.36,1],[0.62,3],[0.88,2],[1.1,1],[1.34,5],[1.58,1],[1.82,4],[2.06,2],[2.3,3],[3.95,1],[4.55,1],[5.2,430],[5.7,430],[6.0,440]];
+      var EV0 = 8129, TOT0 = 18776, ROW = 56;
+      var evInc = ARR.map(function (a, k) { return 1 + ((k * 2) % 3); }); // 1,3,2,1,3,2…
+      var AI_T = 2.85, API_T = 3.0, FILL_DUR = 1.1;            // meters fill on "charge by usage"
+      var TICKS = [[5.2, 430, 0.5], [5.7, 430, 0.45], [6.0, 440, 0.42]];  // POST /v1/generate ticks
+
+      function clamp(p) { return p < 0 ? 0 : p > 1 ? 1 : p; }
+      function p3(p) { p = clamp(p); return 1 - Math.pow(1 - p, 4); }   // == power3.out
+      function p4(p) { p = clamp(p); return 1 - Math.pow(1 - p, 5); }   // == power4.out
+      function ex(p) { p = clamp(p); return p >= 1 ? 1 : 1 - Math.pow(2, -10 * p); } // == expo.out
+      function fmt(n) { return Math.round(n).toLocaleString("en-US"); }
+      function mix(a, b, w) { return "rgb(" + Math.round(a[0] + (b[0] - a[0]) * w) + "," + Math.round(a[1] + (b[1] - a[1]) * w) + "," + Math.round(a[2] + (b[2] - a[2]) * w) + ")"; }
+      var FG = [236, 236, 238], GREEN = [95, 227, 177], AMBER = [255, 195, 95], MUTED = [171, 171, 173];
+
+      var last = {};
+      function put(el, key, txt) { if (last[key] !== txt) { el.textContent = txt; last[key] = txt; } }
+      function sty(el, key, prop, v) { if (last[key] !== v) { el.style[prop] = v; last[key] = v; } }
+
+      // Every readout is a pure function of timeline time t (seek-safe).
+      function render(t) {
+        // Usage events stat: small increments per arriving row, number pops (scale + green flash)
+        var ev = EV0, tot = TOT0, since = -1;
+        for (var k = 0; k < ARR.length; k++) {
+          var d = t - ARR[k][0];
+          if (d < 0) continue;
+          var p = p3(d / 0.35);
+          ev += evInc[k] * p;
+          tot += ARR[k][1] * p;
+          since = d;
+        }
+        // feed scroll: each arrival slides the list down one row (expo.out, 0.42s)
+        var ly = -ARR.length * ROW;
+        for (var q = 0; q < ARR.length; q++) ly += ROW * ex((t - ARR[q][0]) / 0.42);
+        sty(list, "ly", "transform", "translate3d(0," + ly.toFixed(2) + "px,0)");
+        put(evEl, "ev", fmt(ev));
+        put(totalEl, "tot", fmt(tot));
+        var pop = since < 0 ? 1 : ex(since / 0.35);
+        sty(evEl, "evs", "transform", "scale(" + (0.9 + 0.1 * pop).toFixed(4) + ")");
+        sty(evEl, "evc", "color", since < 0 ? "" : mix(GREEN, FG, clamp(since / 0.55)));
+
+        // AI credits meter (counting-dynamic-scale: value + scale share the fill's ease)
+        var ap = p4((t - AI_T) / FILL_DUR);
+        var ai = 2180 * ap;
+        put(aiEl, "ai", fmt(ai));
+        put(aiPct, "aip", Math.round(ai / 25) + "%");
+        sty(aiFill, "aif", "transform", "scaleX(" + (ai / 2500).toFixed(4) + ")");
+        sty(aiEl, "ais", "transform", "scale(" + (0.8 + 0.2 * ap).toFixed(4) + ")");
+
+        // API calls meter: fills to 8,400, then the agent's ticks race it toward the limit
+        var bp = p4((t - API_T) / FILL_DUR);
+        var api = 8400 * bp, tick = 1;
+        for (var i = 0; i < TICKS.length; i++) {
+          var dt = t - TICKS[i][0];
+          if (dt < 0) continue;
+          api += TICKS[i][1] * p3(dt / TICKS[i][2]);
+          tick = 0.9 + 0.1 * ex(dt / 0.35);
+        }
+        put(apiEl, "api", fmt(api));
+        put(apiPct, "apip", Math.round(api / 100) + "%");
+        var sx = "scaleX(" + (api / 10000).toFixed(4) + ")";
+        sty(apiFill, "apif", "transform", sx);
+        sty(apiWarn, "apiw", "transform", sx);
+        sty(apiEl, "apis", "transform", "scale(" + ((0.8 + 0.2 * bp) * tick).toFixed(4) + ")");
+        // the fill turns amber as usage crosses ~94–96.5% of the limit (lands on "AI agents")
+        var w = clamp((api - 9400) / 250);
+        sty(apiWarn, "apio", "opacity", w.toFixed(3));
+        sty(apiEl, "apic", "color", w > 0 ? mix(FG, AMBER, w) : "");
+        sty(apiPct, "apipc", "color", w > 0 ? mix(MUTED, AMBER, w) : "");
+      }
+      // One linear clock drives every readout. A modifier (not onUpdate) so readouts stay correct
+      // even when the host seeks with suppressEvents.
+      var clock = { t: 0 };
+      tl.fromTo(clock, { t: 0 }, { t: DUR, duration: DUR, ease: "none", modifiers: { t: function (v) { render(parseFloat(v) || 0); return v; } } }, 0);
+      render(0);
+
+      // ---- camera: window at rest (handoff_in: 960,470 @1.1) → drift → punch onto the usage card ----
+      gsap.set(cam, { scale: 1.1 });
+      gsap.set(pan, { x: 0, y: 0 });
+      tl.fromTo(cam, { scale: 1.1 }, { scale: 1.135, duration: 2.38, ease: "power1.inOut", immediateRender: false }, 0.1);
+      tl.fromTo(pan, { x: 0, y: 0 }, { x: -22, y: -8, duration: 2.38, ease: "power1.inOut", immediateRender: false }, 0.1);
+      // coordinate-target-zoom (nested wrappers): focus = chips + card, center in cam coords ≈ (894, 470).
+      // pan T = (66, -8) puts it at screen (960, ~455). Punch is centered on "charge", lands on "by".
+      tl.fromTo(cam, { scale: 1.135 }, { scale: 1.65, duration: 0.76, ease: "expo.inOut", immediateRender: false }, 2.48);
+      tl.fromTo(pan, { x: -22, y: -8 }, { x: 66, y: -8, duration: 0.76, ease: "expo.inOut", immediateRender: false }, 2.48);
+      tl.fromTo(cam, { scale: 1.65 }, { scale: 1.675, duration: DUR - 3.24, ease: "power1.out", immediateRender: false }, 3.24);
+
+      // ---- chart + sparkline draw in under the crossfade (first motion at 0.04) ----
+      tl.fromTo(byId("cliprect"), { attr: { width: 0 } }, { attr: { width: 568 }, duration: 1.0, ease: "power3.out" }, 0.04);
+      tl.fromTo(byId("sparkline"), { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 0.8, ease: "power3.out" }, 0.08);
+
+      // ---- Scene 1: Recent activity streams in from the top ("counts every call") ----
+      // (the list's slide-down is computed in render(): rows arrive faster than a slide lasts,
+      //  and summed offsets stay seek-order independent where stacked tweens would not)
+      var rows = list.querySelectorAll("[data-arr]"), N = ARR.length; // rows: newest first in the DOM
+      for (var k = 1; k <= N; k++) {
+        var at = ARR[k - 1][0];
+        var r = rows[N - k];
+        tl.fromTo(r, { opacity: 0, x: -10 }, { opacity: 1, x: 0, duration: 0.4, ease: "expo.out" }, at + 0.03);
+        tl.fromTo(r, { backgroundColor: "rgba(52,213,153,0.18)" }, { backgroundColor: "rgba(52,213,153,0)", duration: Math.min(1.0, DUR - at - 0.05), ease: "power2.out" }, at + 0.03);
+      }
+
+      // ---- Scene 2: "so you can charge by usage" — usage card slides over the chart, meters fill ----
+      tl.fromTo(chart, { opacity: 1 }, { opacity: 0, duration: 0.45, ease: "power2.out" }, 2.4);
+      tl.fromTo(top3, { opacity: 1 }, { opacity: 0.3, duration: 0.45, ease: "power2.out" }, 2.4);
+      tl.fromTo(byId("scrim"), { opacity: 0 }, { opacity: 1, duration: 0.5, ease: "power2.out" }, 2.42);
+      tl.fromTo(card, { opacity: 0, y: 34, scale: 0.96 }, { opacity: 1, y: 0, scale: 1, duration: 0.5, ease: "expo.out" }, 2.42);
+      tl.fromTo(cardFlash, { opacity: 1 }, { opacity: 0, duration: 0.9, ease: "power2.out", immediateRender: false }, 2.62);
+      tl.fromTo(glow, { opacity: 0 }, { opacity: 1, duration: 0.8, ease: "power2.out" }, 2.6);
+
+      // ---- Scene 3: "selling APIs and tools to AI agents" — agent chip + request pills race the meter ----
+      tl.fromTo(agent, { opacity: 0, scale: 0.85 }, { opacity: 1, scale: 1, duration: 0.45, ease: "expo.out" }, 4.42);
+      tl.fromTo(agentFlash, { opacity: 1 }, { opacity: 0, duration: 0.7, ease: "power2.out", immediateRender: false }, 4.46);
+      var pills = byId("chips").querySelectorAll("[data-pill]");
+      for (var j = 0; j < pills.length; j++) {
+        var pt = TICKS[j][0];
+        tl.fromTo(pills[j], { opacity: 0, scale: 0.85, x: -8 }, { opacity: 1, scale: 1, x: 0, duration: 0.38, ease: "expo.out" }, pt);
+        tl.fromTo(pills[j].querySelector("[data-flash]"), { opacity: 1 }, { opacity: 0, duration: 0.6, ease: "power2.out", immediateRender: false }, pt + 0.02);
+      }
+      // "AI agents": the agent chip lights up again as the meter tips amber
+      tl.fromTo(agentFlash, { opacity: 1 }, { opacity: 0, duration: 0.6, ease: "power2.out", immediateRender: false }, 6.1);
+
+      // pin the timeline to the frame's full duration (hold at the edge)
+      tl.set({}, {}, DUR);
+
+      window.__timelines["10-usage"] = tl;
+    })();
+  </script>
+</div>
+</template>

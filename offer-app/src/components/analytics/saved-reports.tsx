@@ -69,7 +69,7 @@ export function ReportsMenu({
           className: "max-w-60 data-popup-open:bg-bg-hover",
         })}
       >
-        <Bookmark className={cn(active && "fill-current text-accent")} />
+        <Bookmark className={cn(active && "fill-current text-accent-fg")} />
         <span className="truncate">{active ? active.name : "Reports"}</span>
         {dirty ? <span className="size-1.5 shrink-0 rounded-full bg-accent" aria-label="Edited" /> : null}
         <ChevronDown className="!size-3.5 text-fg-icon" />
@@ -84,7 +84,7 @@ export function ReportsMenu({
                   <div className="truncate">{r.name}</div>
                   <div className="truncate text-xs text-fg-tertiary">{reportSummary(r, nameOf)}</div>
                 </div>
-                {r.id === active?.id ? <Check className="!text-accent" /> : null}
+                {r.id === active?.id ? <Check className="!text-accent-fg" /> : null}
               </MenuItem>
             ))
           ) : (

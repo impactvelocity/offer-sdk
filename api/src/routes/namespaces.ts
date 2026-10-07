@@ -2,7 +2,8 @@ import { Hono } from "hono";
 import sql from "../db/client.ts";
 import { changeDoc, deleteDoc, getDoc, insertDoc } from "../db/docs.ts";
 import { searchNamespaces } from "../db/search.ts";
-import { omit, pagination, readJson, readObject } from "../lib/http.ts";
+import { DEFAULT_TOKEN_TTL, MAX_TOKEN_TTL, mintAccountToken } from "../lib/account-tokens.ts";
+import { omit, pagination, readJson, readObject, readOptionalJson } from "../lib/http.ts";
 import { buildNamespacePlan } from "../lib/namespace-plan.ts";
 import { emit, emitAccountChanges } from "../lib/webhooks.ts";
 
@@ -105,6 +106,22 @@ namespaces.patch("/:namespaceId", async (c) => {
   if (!change) return c.json(notFound, 404);
   await emitAccountChanges(appId, change.before, change.after);
   return c.json(change.after);
+});
+
+// POST /apps/:appId/namespaces/:namespaceId/token
+// Body: { ttl_seconds? } (default 1 hour, max 24). Secret key only. Mints an
+// account token for customer-facing SDK flows (e.g. the cancel flow): it can
+// act for this one account and nothing else.
+namespaces.post("/:namespaceId/token", async (c) => {
+  const appId = c.req.param("appId")!;
+  const namespaceId = c.req.param("namespaceId");
+  const { ttl_seconds = DEFAULT_TOKEN_TTL } = await readOptionalJson(c);
+  if (!Number.isInteger(ttl_seconds) || ttl_seconds < 60 || ttl_seconds > MAX_TOKEN_TTL) {
+    return c.json({ error: `ttl_seconds must be an integer from 60 to ${MAX_TOKEN_TTL}` }, 400);
+  }
+  if (!(await getDoc("namespaces", appId, namespaceId))) return c.json(notFound, 404);
+  const [app] = await sql`select api_key from apps where id = ${appId}`;
+  return c.json({ account_id: namespaceId, ...mintAccountToken(appId, app.api_key, namespaceId, ttl_seconds) }, 201);
 });
 
 // DELETE /apps/:appId/namespaces/:namespaceId/incentive

@@ -206,7 +206,7 @@ export function EntitlementsEditor({ appId, owner, catalog }: { appId: string; o
                       {!ent ? <Badge color="red">Deleted</Badge> : null}
                     </div>
                   </TD>
-                  <TD>{type === "usage" ? <Badge color="blue">Usage</Badge> : <Badge color="purple">Feature</Badge>}</TD>
+                  <TD>{type === "usage" ? <Badge color="blue">Usage</Badge> : <Badge color="brand">Feature</Badge>}</TD>
                   <TD className="py-1">
                     {type === "usage" ? (
                       <LimitCell

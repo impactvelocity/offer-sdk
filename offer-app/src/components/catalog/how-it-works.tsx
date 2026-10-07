@@ -250,7 +250,7 @@ export function HowItWorksSheet({
                 <RecordIcon size="sm" tone={guide.tone}>
                   <Icon />
                 </RecordIcon>
-                <span className="text-xs font-medium uppercase tracking-wider text-fg-icon">How it works</span>
+                <span className="eyebrow text-fg-icon">How it works</span>
               </div>
               <SheetTitle className="font-display text-2xl font-semibold text-fg">{guide.title}</SheetTitle>
               <SheetDescription className="text-sm leading-relaxed text-fg-tertiary">{guide.tagline}</SheetDescription>

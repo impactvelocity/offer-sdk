@@ -3,7 +3,7 @@ import type { Json } from "../lib/http.ts";
 
 // Per-app resources share one shape: (app_id, id, data jsonb, created_at).
 // Table names come from this union only, never from user input.
-export type DocTable = "plans" | "entitlements" | "addons" | "incentives" | "namespaces" | "analytics_reports" | "offers";
+export type DocTable = "plans" | "entitlements" | "addons" | "incentives" | "namespaces" | "analytics_reports" | "offers" | "cancel_flows";
 
 export async function listDocs(table: DocTable, appId: string): Promise<Json[]> {
   const rows = await sql.unsafe(

@@ -1,4 +1,4 @@
-import { Copy, Link as LinkIcon, Lock, Sparkles } from "lucide-react";
+import { Link as LinkIcon, Lock, Sparkles } from "lucide-react";
 import type { ReactNode } from "react";
 import { Badge, type BadgeColor } from "@/components/ui/badge";
 import { CodeBlock } from "@/components/ui/code-block";
@@ -29,13 +29,6 @@ export function ApiVisual() {
         <span className="ml-auto shrink-0 text-success-fg">200 · 38ms</span>
       </div>
       <CodeBlock code={fullPlan} className="shadow-none" />
-      <div className="flex flex-wrap gap-1.5">
-        {["Plans", "Entitlements", "Add-ons", "Usage", "Offers", "Webhooks"].map((r) => (
-          <span key={r} className="rounded-md border border-border bg-bg px-2 py-1 font-mono text-[11px] text-fg-tertiary">
-            /{r.toLowerCase().replace("-", "")}
-          </span>
-        ))}
-      </div>
     </div>
   );
 }
@@ -63,7 +56,7 @@ export function SdkVisual() {
           </span>
         </Row>
         <Row label="Custom domains" locked>
-          <span className="inline-flex h-7 items-center rounded-md bg-brand-vertical px-2.5 text-xs font-medium text-white">
+          <span className="inline-flex h-7 items-center rounded-md btn-neon px-2.5 text-xs font-medium">
             Unlock with Pro
           </span>
         </Row>
@@ -76,9 +69,7 @@ export function AgentVisual() {
   return (
     <div className="stagger space-y-3">
       <div className="flex items-center gap-2 text-xs text-fg-tertiary">
-        <span className="size-1.5 rounded-full bg-danger" />
         <span className="font-mono">acct_42</span> clicked <span className="text-fg">Cancel subscription</span>
-        <span className="ml-auto">just now</span>
       </div>
       <div className="flex gap-3">
         <span className="inline-flex size-7 shrink-0 items-center justify-center rounded-full bg-[color-mix(in_oklch,var(--tone)_20%,transparent)] text-(--tone)">
@@ -101,18 +92,11 @@ export function AgentVisual() {
           </div>
           <Badge color="pink">+2,000 credits</Badge>
         </div>
-        <div className="flex items-center gap-3 p-4">
-          <span className="inline-flex h-9 flex-1 items-center justify-center rounded-md bg-(--paypal) text-sm font-semibold text-(--paypal-fg)">
+        <div className="p-4">
+          <span className="inline-flex h-9 w-full items-center justify-center rounded-md bg-(--paypal) text-sm font-semibold text-(--paypal-fg)">
             Pay with PayPal
           </span>
-          <span className="text-xs text-fg-muted">Expires in 48h</span>
         </div>
-      </div>
-      <div className="ml-10 flex gap-4 text-xs text-fg-tertiary">
-        <span>
-          Projected LTV <span className="text-success-fg tabular">+$214</span>
-        </span>
-        <span>Within your discount guardrails</span>
       </div>
     </div>
   );
@@ -151,12 +135,6 @@ const bundles: { initials: string; color: BadgeColor; name: string; kind: string
 export function BundlesVisual() {
   return (
     <div className="stagger space-y-3">
-      <div className="flex items-center justify-between text-xs text-fg-tertiary">
-        <span>
-          Checkout page <span className="font-mono text-fg-secondary">/pricing</span>
-        </span>
-        <span>1 page · 3 bundles · 0 deploys</span>
-      </div>
       {bundles.map((b) => (
         <div key={b.link} className="flex items-center gap-3 rounded-xl border border-border bg-bg p-3">
           <Badge color={b.color} className="size-9 justify-center rounded-full px-0 text-xs">
@@ -175,11 +153,9 @@ export function BundlesVisual() {
           <span className="hidden items-center gap-1.5 rounded-md border border-border px-2 py-1 font-mono text-[11px] text-fg-secondary md:inline-flex">
             <LinkIcon className="size-3 text-fg-icon" />
             {b.link}
-            <Copy className="size-3 text-fg-icon" />
           </span>
         </div>
       ))}
-      <p className="text-xs text-fg-muted">Edit a bundle in the dashboard and its link updates. No code changes.</p>
     </div>
   );
 }
@@ -188,12 +164,7 @@ function Window({ title, children }: { title: string; children: ReactNode }) {
   return (
     <div className="overflow-hidden rounded-xl border border-border bg-bg">
       <div className="flex h-9 items-center gap-2 border-b border-border bg-panel px-3 text-xs text-fg-tertiary">
-        <span className="flex gap-1.5" aria-hidden>
-          <span className="size-2 rounded-full bg-bg-active" />
-          <span className="size-2 rounded-full bg-bg-active" />
-          <span className="size-2 rounded-full bg-bg-active" />
-        </span>
-        <span className="ml-2">{title}</span>
+        {title}
       </div>
       <div className="divide-y divide-border">{children}</div>
     </div>

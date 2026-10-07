@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
-export type BadgeColor = "gray" | "blue" | "green" | "yellow" | "orange" | "red" | "purple" | "pink" | "teal";
+export type BadgeColor = "gray" | "blue" | "green" | "yellow" | "orange" | "red" | "purple" | "pink" | "teal" | "brand";
 
 // Attio-style pastel tags.
 const colors: Record<BadgeColor, string> = {
@@ -14,6 +14,8 @@ const colors: Record<BadgeColor, string> = {
   purple: "bg-tag-purple-bg text-tag-purple-fg",
   pink: "bg-tag-pink-bg text-tag-pink-fg",
   teal: "bg-tag-teal-bg text-tag-teal-fg",
+  // Brand highlight (featured, proposed, AI): the accent green.
+  brand: "bg-tag-brand-bg text-tag-brand-fg",
 };
 
 const dots: Record<BadgeColor, string> = {
@@ -26,6 +28,7 @@ const dots: Record<BadgeColor, string> = {
   purple: "bg-[#8b5cf6]",
   pink: "bg-[#e0479e]",
   teal: "bg-[#14a39d]",
+  brand: "bg-accent",
 };
 
 export function Badge({

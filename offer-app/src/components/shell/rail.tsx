@@ -82,7 +82,7 @@ export function AppRail({ appId }: { appId?: string }) {
 
   return (
     <div className="flex h-full w-[68px] shrink-0 flex-col items-center gap-1.5 py-2.5">
-      <RailMenu label={workspace.name} trigger={<LogoMark className="size-8" />} className="hover:bg-transparent data-popup-open:bg-transparent data-popup-open:shadow-none">
+      <RailMenu label={workspace.name} trigger={<LogoMark bare className="!size-[26px]" />} className="hover:bg-transparent data-popup-open:bg-transparent data-popup-open:shadow-none">
         <div className="flex items-center gap-2.5 px-2.5 py-2">
           <Avatar name={workspace.name} seed={workspace.id} size="lg" variant="solid" />
           <div className="min-w-0">
@@ -94,7 +94,7 @@ export function AppRail({ appId }: { appId?: string }) {
         <MenuItem onClick={() => router.push("/apps")}>
           <LayoutGrid />
           All apps
-          {pathname === "/apps" ? <Check className="ml-auto !text-accent" /> : null}
+          {pathname === "/apps" ? <Check className="ml-auto !text-accent-fg" /> : null}
         </MenuItem>
         <MenuItem onClick={() => router.push("/apps?new=1")}>
           <Plus />
@@ -123,7 +123,7 @@ export function AppRail({ appId }: { appId?: string }) {
                   <MenuItem key={w.id} onClick={() => w.id !== workspace.id && switchWorkspace(w.id)}>
                     <Avatar name={w.name} seed={w.id} size="sm" variant="solid" />
                     <span className="truncate">{w.name}</span>
-                    {w.id === workspace.id ? <Check className="ml-auto !text-accent" /> : null}
+                    {w.id === workspace.id ? <Check className="ml-auto !text-accent-fg" /> : null}
                   </MenuItem>
                 ))}
                 <MenuSeparator />
@@ -200,7 +200,7 @@ export function AppRail({ appId }: { appId?: string }) {
                     <MenuItem key={o.value} onClick={() => theme.setTheme(o.value)}>
                       {o.icon}
                       {o.label}
-                      {theme.preference === o.value ? <Check className="ml-auto !text-accent" /> : null}
+                      {theme.preference === o.value ? <Check className="ml-auto !text-accent-fg" /> : null}
                     </MenuItem>
                   ))}
                 </BaseMenu.Popup>

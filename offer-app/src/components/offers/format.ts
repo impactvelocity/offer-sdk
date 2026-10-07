@@ -49,3 +49,10 @@ export function offerLink(app: Pick<App, "id" | "public_key" | "checkout_url">, 
   if (ref?.trim()) url.searchParams.set("ref", ref.trim());
   return url.toString();
 }
+
+/** A link to the checkout page selling one plan at its list price (the default offer). */
+export function planLink(app: Pick<App, "id" | "public_key" | "checkout_url">, planId: string, origin = "") {
+  const url = new URL(offerLink(app, "default", undefined, origin));
+  url.searchParams.set("plan", planId);
+  return url.toString();
+}

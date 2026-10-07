@@ -177,7 +177,7 @@ export function AgentChat({
       {messages.length === 0 ? (
         <ConversationEmptyState
           icon={
-            <div className="flex size-11 items-center justify-center rounded-xl bg-brand-vertical text-white shadow-sm [&_svg]:size-5">
+            <div className="flex size-11 items-center justify-center rounded-xl bg-brand-vertical text-accent-contrast shadow-sm [&_svg]:size-5">
               <Sparkles />
             </div>
           }

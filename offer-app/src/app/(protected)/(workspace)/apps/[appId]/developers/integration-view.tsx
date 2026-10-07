@@ -1,11 +1,12 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { ArrowRight, Braces, Code, Copy, Check } from "lucide-react";
+import { ArrowRight, Braces, Code, Copy, Check, Download } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { buildPrompt, type PromptOptions } from "@/components/developers/ai-prompt";
 import { CopyField, InlineCode, ToggleChip } from "@/components/developers/bits";
+import { buildSdkSkill, SKILL_PATH, sdkFilesFor, type SdkFile, type SdkSkillOptions } from "@/components/developers/sdk-skill";
 import { Callout } from "@/components/ui/callout";
 import { GuideSection, OnThisPage, RefLink, useActiveSection } from "@/components/developers/guide-layout";
 import * as snippets from "@/components/developers/snippets";
@@ -29,11 +30,12 @@ const SECTIONS = [
   { id: "track-usage", title: "Track usage" },
   { id: "billing", title: "Billing webhooks" },
   { id: "pricing", title: "Pricing page" },
+  { id: "sdk-skill", title: "React SDK skill" },
   { id: "ai-context", title: "AI assistant context" },
 ];
 const SECTION_IDS = SECTIONS.map((s) => s.id);
 
-export function IntegrationView() {
+export function IntegrationView({ sdkFiles }: { sdkFiles: SdkFile[] | null }) {
   const ctx = useDevContext();
   const [real, setReal] = useState(false);
 
@@ -99,7 +101,7 @@ export function IntegrationView() {
                 <GuideSkeleton />
               )
             ) : (
-              <Guide ctx={ctx} s={snippet} />
+              <Guide ctx={ctx} s={snippet} sdkFiles={sdkFiles} />
             )}
           </div>
           <aside className="hidden w-44 shrink-0 xl:block">
@@ -122,7 +124,7 @@ function GuideSkeleton() {
   );
 }
 
-function Guide({ ctx, s }: { ctx: DevContext; s: snippets.SnippetContext }) {
+function Guide({ ctx, s, sdkFiles }: { ctx: DevContext; s: snippets.SnippetContext; sdkFiles: SdkFile[] | null }) {
   const { appId, app } = ctx;
   if (!app) return null;
   return (
@@ -312,8 +314,17 @@ function Guide({ ctx, s }: { ctx: DevContext; s: snippets.SnippetContext }) {
       </GuideSection>
 
       <GuideSection
-        id="ai-context"
+        id="sdk-skill"
         step={7}
+        title="Install the React SDK with an agent"
+        description="A skill for Claude Code, Cursor or any coding agent. It carries the SDK's source and this app's settings, so the agent copies the SDK into your React app and wires it up. The secret key is never included."
+      >
+        <SkillBuilder s={s} files={sdkFiles} />
+      </GuideSection>
+
+      <GuideSection
+        id="ai-context"
+        step={8}
         className="min-h-[75vh]"
         title="AI assistant context"
         description="Paste this into Claude, Cursor or Copilot. It describes this app's endpoints, IDs and response shapes, so the assistant writes the integration against your real catalog."
@@ -425,6 +436,87 @@ const PROMPT_CHIPS: { key: keyof PromptOptions; label: string }[] = [
   { key: "usage", label: "Usage tracking" },
   { key: "webhooks", label: "Billing webhooks" },
 ];
+
+const SKILL_CHIPS: { key: "checkout" | "cancel"; label: string }[] = [
+  { key: "checkout", label: "Checkout" },
+  { key: "cancel", label: "Cancel flow" },
+];
+
+function SkillBuilder({ s, files }: { s: snippets.SnippetContext; files: SdkFile[] | null }) {
+  const [opts, setOpts] = useState<SdkSkillOptions>({ checkout: true, cancel: true, publicKey: false });
+  const { copied, copy } = useCopy();
+  const set = (key: keyof SdkSkillOptions) => (value: boolean) => setOpts((o) => ({ ...o, [key]: value }));
+
+  const skill = useMemo(
+    () =>
+      files
+        ? buildSdkSkill(
+            {
+              baseUrl: s.baseUrl,
+              appId: s.appId,
+              appName: s.appName,
+              publicKey: s.publicKey,
+              files,
+              examples: { flag: s.flag, usageEntitlement: s.ex.usageEntitlement },
+            },
+            opts,
+          )
+        : null,
+    [s, files, opts],
+  );
+
+  if (!files || !skill) {
+    return (
+      <Callout tone="danger" title="Couldn't read the SDK source">
+        The dashboard reads it from <InlineCode>src/sdk</InlineCode> on its server, and that folder wasn&apos;t there.
+      </Callout>
+    );
+  }
+
+  const fileCount = sdkFilesFor(files, opts).length;
+  return (
+    <>
+      <div className="flex flex-wrap items-center gap-2">
+        {SKILL_CHIPS.map((c) => (
+          <ToggleChip key={c.key} pressed={opts[c.key]} onPressedChange={set(c.key)}>
+            {c.label}
+          </ToggleChip>
+        ))}
+        <ToggleChip pressed={opts.publicKey} onPressedChange={set("publicKey")}>
+          Include publishable key
+        </ToggleChip>
+        <div className="ml-auto flex gap-2">
+          <Button onClick={() => downloadText("SKILL.md", skill)}>
+            <Download />
+            Download
+          </Button>
+          <Button variant="primary" onClick={() => copy(skill)}>
+            {copied ? <Check /> : <Copy />}
+            {copied ? "Copied" : "Copy skill"}
+          </Button>
+        </div>
+      </div>
+      <Notes>
+        <li>
+          Claude Code: save it as <InlineCode>{SKILL_PATH}</InlineCode> in your repo, then ask it to install the Offer SDK.
+        </li>
+        <li>Cursor, Copilot and other agents: paste it into the chat, or save it in the repo and point the agent at it.</li>
+        <li>
+          Entitlement checks are always included. The skill carries {pluralize(fileCount, "SDK file")} (
+          {Math.round(new Blob([skill]).size / 1024)} KB).
+        </li>
+      </Notes>
+      <CodeBlock code={skill} lang="text" maxHeight={420} wrap />
+    </>
+  );
+}
+
+function downloadText(filename: string, text: string) {
+  const url = URL.createObjectURL(new Blob([text], { type: "text/markdown" }));
+  const link = Object.assign(document.createElement("a"), { href: url, download: filename });
+  link.click();
+  setTimeout(() => URL.revokeObjectURL(url), 0);
+}
 
 function PromptBuilder({ ctx, s }: { ctx: DevContext; s: snippets.SnippetContext }) {
   const [opts, setOpts] = useState<PromptOptions>({

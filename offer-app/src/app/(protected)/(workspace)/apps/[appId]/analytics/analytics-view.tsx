@@ -541,7 +541,7 @@ function ByEntitlement({
                     ) : ent.type === "usage" ? (
                       <Badge color="blue">Usage</Badge>
                     ) : (
-                      <Badge color="purple">Feature flag</Badge>
+                      <Badge color="brand">Feature flag</Badge>
                     )}
                   </TD>
                   <TD align="right" className="font-medium">

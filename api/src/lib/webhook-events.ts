@@ -1,7 +1,7 @@
 // Webhook event catalog: types, categories, sample payloads and diffPrevious.
 // Keep in sync with offer-app/src/lib/webhooks/catalog.ts.
 
-export type WebhookEventCategory = "account" | "usage" | "plan" | "incentive" | "billing";
+export type WebhookEventCategory = "account" | "usage" | "plan" | "incentive" | "billing" | "retention";
 
 export const WEBHOOK_EVENT_TYPES = [
   "account.created",
@@ -22,6 +22,10 @@ export const WEBHOOK_EVENT_TYPES = [
   "account.addon_granted",
   "subscription.renewed",
   "subscription.cancelled",
+  "subscription.paused",
+  "subscription.resumed",
+  "cancel_flow.saved",
+  "cancel_flow.cancelled",
 ] as const;
 
 export type WebhookEventType = (typeof WEBHOOK_EVENT_TYPES)[number];
@@ -45,6 +49,7 @@ export const WEBHOOK_CATEGORIES: { id: WebhookEventCategory; title: string }[] =
   { id: "plan", title: "Plans" },
   { id: "incentive", title: "Incentives" },
   { id: "billing", title: "Billing" },
+  { id: "retention", title: "Retention" },
 ];
 
 export const WEBHOOK_EVENTS: WebhookEventDef[] = [
@@ -126,6 +131,30 @@ export const WEBHOOK_EVENTS: WebhookEventDef[] = [
     title: "Subscription cancelled",
     description: "A PayPal subscription was cancelled or expired. The account moved to the free plan if there is one.",
   },
+  {
+    type: "subscription.paused",
+    category: "billing",
+    title: "Subscription paused",
+    description: "Billing was suspended in PayPal for a few months, usually from a cancel-flow save offer. `data.object.subscription.pause.resume_at` is when it resumes; the account is on the free plan until then.",
+  },
+  {
+    type: "subscription.resumed",
+    category: "billing",
+    title: "Subscription resumed",
+    description: "A paused subscription started billing again and the account is back on its plan.",
+  },
+  {
+    type: "cancel_flow.saved",
+    category: "retention",
+    title: "Customer saved",
+    description: "A customer in the cancel flow accepted a save offer. `data.object` is the session with their answers and the offer.",
+  },
+  {
+    type: "cancel_flow.cancelled",
+    category: "retention",
+    title: "Customer cancelled",
+    description: "A customer finished the cancel flow and cancelled. PayPal subscriptions are cancelled for you; for other billing, cancel it when this arrives. `data.object.answers` has their reasons.",
+  },
 ];
 
 export const isWebhookEventType = (value: unknown): value is WebhookEventType =>
@@ -206,6 +235,27 @@ function sampleUsage(max: number, usage: number) {
   };
 }
 
+function sampleCancelSession(appId: string, status: "saved" | "cancelled") {
+  return {
+    id: "cxl_Q2wErTyUiOpAsDfG",
+    app_id: appId,
+    flow_id: "default",
+    account_id: "user_8f3k2",
+    status,
+    answers: [{ step: "reason", step_title: "Why are you leaving?", answer: "price", label: "It's too expensive", text: null }],
+    offer: {
+      kind: "discount",
+      source: "dynamic",
+      headline: "Stay for 30% less",
+      body: "Keep everything you've built for $34.30/month for the next 3 months.",
+      details: { percent: 30, cycles: 3 },
+      status: status === "saved" ? "accepted" : "declined",
+    },
+    created_at: SAMPLE_TIME,
+    completed_at: SAMPLE_TIME,
+  };
+}
+
 /** The `data` of a sample event of this type. */
 export function sampleEventData(type: WebhookEventType, appId: string): Record<string, unknown> {
   const account = sampleAccount(appId);
@@ -267,6 +317,25 @@ export function sampleEventData(type: WebhookEventType, appId: string): Record<s
         object: { ...account, plan: "free", subscription: { ...sampleSubscription(), status: "cancelled" } },
         previous: { plan: "pro" },
       };
+    case "subscription.paused":
+      return {
+        object: {
+          ...account,
+          plan: "free",
+          subscription: {
+            ...sampleSubscription(),
+            status: "suspended",
+            pause: { months: 2, paused_at: SAMPLE_TIME, resume_at: "2026-12-01T12:00:00.000Z", resume_plan: "pro", session_id: "cxl_Q2wErTyUiOpAsDfG" },
+          },
+        },
+        previous: { plan: "pro" },
+      };
+    case "subscription.resumed":
+      return { object: { ...account, subscription: sampleSubscription() }, previous: { plan: "free" } };
+    case "cancel_flow.saved":
+      return { object: sampleCancelSession(appId, "saved"), account };
+    case "cancel_flow.cancelled":
+      return { object: sampleCancelSession(appId, "cancelled"), account: { ...account, plan: "free" } };
   }
 }
 

@@ -43,13 +43,17 @@ export function AuthForm({ mode, demo }: { mode: "sign-in" | "sign-up"; demo?: {
     if (!demo) return;
     setError(null);
     setPending("demo");
+    // Builds the demo workspace the first time (a few seconds), then signs in to it.
+    const ready = await fetch("/api/demo-workspace", { method: "POST" }).catch(() => null);
+    if (!ready?.ok) {
+      const body = (await ready?.json().catch(() => null)) as { error?: string } | null;
+      setError(body?.error ?? "Couldn't reach the dashboard");
+      setPending(null);
+      return;
+    }
     const { error } = await signIn.email(demo);
     if (error) {
-      setError(
-        error.status === 401
-          ? "The demo workspace isn't set up yet. Run pnpm seed:demo."
-          : (error.message ?? "Couldn't sign in to the demo account"),
-      );
+      setError(error.message ?? "Couldn't sign in to the demo account");
       setPending(null);
       return;
     }
@@ -115,7 +119,7 @@ export function AuthForm({ mode, demo }: { mode: "sign-in" | "sign-up"; demo?: {
               <span className="h-px flex-1 bg-border" />
             </div>
             <Button size="md" className="w-full" onClick={useDemo} loading={pending === "demo"} disabled={pending !== null}>
-              <Sparkles className="text-accent" />
+              <Sparkles className="text-accent-fg" />
               Explore the demo workspace
             </Button>
           </>

@@ -462,6 +462,21 @@ describe("checkout", () => {
     expect(account).toMatchObject({ plan: "lifetime", subscription: { interval: "once", offer_id: null, renews_at_price: null } });
     expect((await fullPlan("initech")).offer).toBeNull();
   });
+
+  test("a plan can be bought directly at its list price", async () => {
+    const team = await call("POST", a("/plans/team/checkout"), { key: pub, body: { email: "buyer@example.com" } });
+    expect(team.status).toBe(201);
+    expect(team.json).toMatchObject({ offer_id: null, plan_id: "team", interval: "month", total_today: 199, paypal: { kind: "subscription" } });
+
+    const lifetime = await call("POST", a("/plans/lifetime/checkout"), { key: pub, body: { email: "buyer@example.com" } });
+    expect(lifetime.json).toMatchObject({ interval: "once", total_today: 299, paypal: { kind: "order" } });
+
+    const yearly = await call("POST", a("/plans/pro/checkout"), { key: pub, body: { interval: "year", email: "buyer@example.com", bumps: ["x"] } });
+    expect(yearly.json).toMatchObject({ plan_id: "pro", interval: "year", total_today: 990 });
+
+    expect((await call("POST", a("/plans/nope/checkout"), { key: pub, body: { email: "buyer@example.com" } })).status).toBe(404);
+    expect((await call("POST", a("/plans/free/checkout"), { key: pub, body: { email: "buyer@example.com" } })).status).toBe(400);
+  });
 });
 
 describe("PayPal webhooks", () => {

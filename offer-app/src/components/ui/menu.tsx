@@ -63,7 +63,7 @@ export function MenuCheckboxItem({
     <BaseMenu.CheckboxItem className={cn(popupItem, "pr-8 relative", className)} {...props}>
       {children}
       <BaseMenu.CheckboxItemIndicator className="absolute right-2 flex">
-        <Check className="!text-accent" />
+        <Check className="!text-accent-fg" />
       </BaseMenu.CheckboxItemIndicator>
     </BaseMenu.CheckboxItem>
   );

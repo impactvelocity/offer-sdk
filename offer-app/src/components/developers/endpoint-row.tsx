@@ -46,7 +46,7 @@ export function EndpointRow({
         <PathText path={endpoint.path} dimPrefix className="min-w-0 truncate" />
         <span className="hidden min-w-0 flex-1 truncate text-sm text-fg-tertiary sm:block">{endpoint.summary}</span>
         <span className="hidden shrink-0 items-center gap-1.5 md:flex">
-          {endpoint.proposed ? <Badge color="purple">Proposed</Badge> : null}
+          {endpoint.proposed ? <Badge color="brand">Proposed</Badge> : null}
           <AuthBadge auth={endpoint.auth} />
         </span>
       </button>
@@ -66,7 +66,7 @@ function EndpointDetails({ endpoint, ctx }: { endpoint: Endpoint; ctx: DevContex
     <div className="flex flex-col gap-5 px-5 pb-6 pt-2 sm:pl-[52px]">
       <div className="flex flex-col gap-2">
         <div className="flex flex-wrap items-center gap-1.5 md:hidden">
-          {endpoint.proposed ? <Badge color="purple">Proposed</Badge> : null}
+          {endpoint.proposed ? <Badge color="brand">Proposed</Badge> : null}
           <AuthBadge auth={endpoint.auth} />
         </div>
         {endpoint.description ? (

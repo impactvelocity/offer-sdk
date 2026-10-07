@@ -1,0 +1,600 @@
+<template id="18-react-sdk-template">
+<div id="root" data-composition-id="18-react-sdk" data-width="1920" data-height="1080" data-start="0" data-duration="8.34">
+<style>
+/* ==========================================================================
+   Offer SDK app kit — the offer-app dashboard (dark theme), rebuilt for video.
+   Values are copied from offer-app/src/app/globals.css (data-theme="dark") and
+   measured from the real screens in capture/assets/app/*.png.
+
+   HOW TO USE IN A FRAME
+   1. Paste this whole file inside the style block that lives inside your frame template.
+      (Template transport: styles must live inside the frame template.)
+   2. Build the window from shell.html. Author it at its LOGICAL size
+      (.ak-window is 1366×800 — a real laptop viewport, real 14px UI text) and
+      scale the wrapper with GSAP (scale ≈ 1.08–1.12 to fill the top 83%;
+      punch in to 1.5–1.9 on the region the VO is talking about).
+   3. Copy icons from icons.html (Lucide, the icon set the app uses).
+   All classes are prefixed ak- so they never collide with frame-local names.
+   ========================================================================== */
+
+@font-face { font-family: "Cal Sans"; src: url("assets/fonts/CalSansVF.woff2") format("woff2"); font-weight: 400 700; font-display: block; }
+@font-face { font-family: "Geist Mono"; src: url("assets/fonts/geist-mono-latin.woff2") format("woff2"); font-weight: 400 600; font-display: block; }
+
+.ak {
+  --canvas: #0f0f11; --panel: #161618; --bg: #18181b; --bg-subtle: #1c1c1f; --bg-muted: #222226;
+  --bg-hover: #27272c; --bg-active: #2e2e34; --bg-elevated: #202024; --bg-inverse: #f1f1f3;
+  --fg: #ececee; --fg-secondary: rgb(236 236 238 / .93); --fg-tertiary: rgb(236 236 238 / .86);
+  --fg-muted: rgb(236 236 238 / .68); --fg-placeholder: #6f7178; --fg-icon: #9c9ea5;
+  --border: #2a2a2f; --border-strong: #37373d; --border-input: #323238;
+  --accent: #34d599; --accent-hover: #5ce0b0; --accent-subtle: rgb(52 213 153 / .13); --accent-fg: #5fe3b1; --accent-contrast: #03140c; --ring: rgb(52 213 153 / .4);
+  --btn-neon-bg: rgb(52 213 153 / .08); --shadow-brand: inset 0 0 0 1px rgb(52 213 153 / .85), inset 0 0 14px -6px rgb(52 213 153 / .35), 0 0 16px -6px rgb(52 213 153 / .4);
+  --brand-vertical: linear-gradient(180deg, #4fe0b0, #2fc48c);
+  --success: #30a46c; --success-subtle: rgb(48 164 108 / .16); --success-fg: #5ed29a;
+  --danger: #e5484d; --danger-subtle: rgb(229 72 77 / .15); --danger-fg: #ff8a8d;
+  --warning: #f0a020; --warning-subtle: rgb(240 160 32 / .14); --warning-fg: #ffc35f;
+  --brand-from: #34d599; --brand-to: #2cc0de; --brand-gradient: linear-gradient(90deg, #34d599, #2cc0de);
+  --code-comment: #7f828a; --code-keyword: #5fe3b1; --code-string: #6fd69f; --code-key: #93b8ff; --code-number: #ffa072;
+  --zapier: #ff5f1f; --paypal: #0070e0;
+  --shadow-soft: 0 14px 36px -14px rgb(0 0 0 / .75), 0 2px 8px -2px rgb(0 0 0 / .45);
+  --shadow-lg: 0 18px 44px -10px rgb(0 0 0 / .7), 0 4px 12px -4px rgb(0 0 0 / .5);
+  font-family: "Cal Sans", ui-sans-serif, system-ui, sans-serif;
+  font-variation-settings: "GEOM" 25;           /* the app's UI geometry */
+  color: var(--fg); -webkit-font-smoothing: antialiased; font-size: 14px; line-height: 1.4;
+}
+.ak * { box-sizing: border-box; }
+.ak .ak-display { font-variation-settings: "GEOM" 50; letter-spacing: -0.01em; }
+/* Neon-style eyebrow: small mono caps (site + app section kickers). */
+.ak .ak-eyebrow { font-family: "Geist Mono", monospace; font-variation-settings: normal; font-size: 11px; line-height: 16px; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; color: var(--fg-muted); }
+.ak .ak-mono, .ak code { font-family: "Geist Mono", ui-monospace, monospace; font-variation-settings: normal; }
+.ak svg { display: block; flex-shrink: 0; }
+
+/* ---------- window + shell ---------- */
+.ak-window { position: absolute; width: 1366px; height: 800px; background: var(--canvas); border-radius: 18px;
+  border: 1px solid var(--border); box-shadow: 0 40px 120px -30px rgb(0 0 0 / .9), 0 0 0 1px rgb(255 255 255 / .03);
+  overflow: hidden; display: flex; padding: 6px 6px 6px 0; transform-origin: 50% 50%; }
+.ak-rail { width: 52px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; gap: 10px; padding-top: 8px; }
+.ak-rail .ak-rail-logo { width: 30px; height: 30px; border-radius: 8px; display: grid; place-items: center; color: var(--fg); }
+.ak-rail .ak-rail-logo svg { width: 18px; height: 18px; }
+.ak-rail .ak-rail-sep { width: 22px; height: 1px; background: var(--border); }
+.ak-rail .ak-app-tile { width: 28px; height: 28px; border-radius: 7px; display: grid; place-items: center; font-size: 11px; font-weight: 600; color: var(--accent-contrast);
+  background: var(--brand-vertical); }
+.ak-rail .ak-app-tile.is-active { box-shadow: 0 0 0 2px var(--canvas), 0 0 0 3.5px var(--accent); }
+.ak-rail .ak-app-tile.alt { opacity: .8; }
+.ak-rail .ak-rail-plus { color: var(--fg-icon); width: 16px; height: 16px; }
+.ak-rail .ak-rail-foot { margin-top: auto; padding-bottom: 6px; display: flex; flex-direction: column; align-items: center; gap: 14px; color: var(--fg-icon); }
+.ak-rail .ak-rail-foot svg { width: 15px; height: 15px; }
+.ak-rail .ak-avatar { width: 26px; height: 26px; border-radius: 50%; background: var(--bg-muted); color: var(--fg-secondary); font-size: 10px; display: grid; place-items: center; }
+
+.ak-nav { width: 222px; flex-shrink: 0; background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
+  margin-right: 6px; display: flex; flex-direction: column; padding: 12px 10px; box-shadow: var(--shadow-soft); }
+.ak-nav-title { font-size: 15px; font-weight: 600; padding: 2px 6px 10px; font-variation-settings: "GEOM" 50; }
+.ak-quick { height: 30px; border: 1px solid var(--border-input); border-radius: 8px; display: flex; align-items: center; gap: 8px; padding: 0 8px;
+  color: var(--fg-muted); font-size: 13px; margin-bottom: 10px; }
+.ak-quick svg { width: 14px; height: 14px; color: var(--fg-icon); }
+.ak-quick .ak-kbd { margin-left: auto; font-size: 10.5px; border: 1px solid var(--border); border-radius: 4px; padding: 0 4px; color: var(--fg-placeholder); }
+.ak-nav-group { display: flex; flex-direction: column; gap: 1px; padding: 6px 0; border-top: 1px solid var(--border); }
+.ak-nav-group:first-of-type { border-top: 0; padding-top: 0; }
+.ak-nav-item { height: 31px; border-radius: 7px; display: flex; align-items: center; gap: 10px; padding: 0 8px; font-size: 13.5px; color: var(--fg-secondary); }
+.ak-nav-item svg { width: 15px; height: 15px; color: var(--fg-icon); }
+.ak-nav-item .ak-count { margin-left: auto; font-size: 12px; color: var(--fg-muted); font-variant-numeric: tabular-nums; }
+.ak-nav-item.is-active { background: var(--accent-subtle); color: var(--accent-fg); }
+.ak-nav-item.is-active svg { color: var(--accent-fg); }
+.ak-nav-foot { margin-top: auto; }
+
+.ak-main { flex: 1; min-width: 0; background: var(--bg); border: 1px solid var(--border); border-radius: 12px; display: flex; flex-direction: column;
+  overflow: hidden; box-shadow: var(--shadow-soft); position: relative; }
+.ak-header { height: 50px; flex-shrink: 0; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; padding: 0 12px 0 16px; }
+.ak-header .ak-crumb { display: flex; align-items: center; gap: 9px; font-size: 14px; font-weight: 500; }
+.ak-header .ak-crumb svg { width: 15px; height: 15px; color: var(--fg-icon); }
+.ak-header .ak-crumb .ak-sep { color: var(--fg-placeholder); }
+.ak-header .ak-actions { margin-left: auto; display: flex; align-items: center; gap: 4px; }
+.ak-toolbar { height: 50px; flex-shrink: 0; display: flex; align-items: center; gap: 10px; padding: 0 16px; border-bottom: 1px solid var(--border); }
+.ak-body { flex: 1; min-height: 0; position: relative; overflow: hidden; }
+.ak-page { padding: 28px 40px; }
+.ak-page-title { font-size: 22px; font-weight: 600; font-variation-settings: "GEOM" 50; letter-spacing: -0.01em; }
+.ak-page-sub { color: var(--fg-muted); font-size: 13.5px; margin-top: 4px; }
+
+/* ---------- controls ---------- */
+.ak-btn { height: 30px; border-radius: 8px; display: inline-flex; align-items: center; gap: 7px; padding: 0 10px; font-size: 13.5px; color: var(--fg-secondary);
+  border: 1px solid transparent; white-space: nowrap; }
+.ak-btn svg { width: 14px; height: 14px; }
+.ak-btn.is-outline { border-color: var(--border-strong); background: var(--bg-subtle); }
+/* Primary = the app's neon button: hairline neon border, faint green wash, green ink. */
+.ak-btn.is-primary { background: var(--btn-neon-bg); color: var(--accent-fg); font-weight: 500; box-shadow: var(--shadow-brand); }
+.ak-btn.is-gradient { background: var(--btn-neon-bg); color: var(--accent-fg); font-weight: 500; box-shadow: var(--shadow-brand), 0 0 32px -8px rgb(52 213 153 / .55); }
+.ak-btn.is-solid { background: var(--brand-vertical); color: var(--accent-contrast); font-weight: 600; }
+.ak-btn.is-paypal { background: #ffc439; color: #111; font-weight: 600; }
+.ak-btn.is-lg { height: 40px; padding: 0 16px; font-size: 15px; border-radius: 10px; }
+.ak-input { height: 32px; border: 1px solid var(--border-input); background: var(--bg-subtle); border-radius: 8px; display: flex; align-items: center; gap: 8px;
+  padding: 0 10px; font-size: 13.5px; color: var(--fg); }
+.ak-input.is-placeholder { color: var(--fg-placeholder); }
+.ak-input.is-focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--ring); }
+.ak-input svg { width: 14px; height: 14px; color: var(--fg-icon); }
+.ak-label { font-size: 13px; color: var(--fg-secondary); font-weight: 500; margin-bottom: 6px; }
+.ak-seg { display: inline-flex; background: var(--bg-muted); border-radius: 8px; padding: 2px; gap: 2px; }
+.ak-seg > span { height: 26px; padding: 0 10px; border-radius: 6px; display: inline-flex; align-items: center; font-size: 13px; color: var(--fg-muted); }
+.ak-seg > span.is-on { background: var(--bg-active); color: var(--fg); }
+.ak-switch { width: 30px; height: 18px; border-radius: 9px; background: var(--bg-active); position: relative; flex-shrink: 0; }
+.ak-switch::after { content: ""; position: absolute; top: 2px; left: 2px; width: 14px; height: 14px; border-radius: 50%; background: #fff; }
+.ak-switch.is-on { background: var(--accent); }
+.ak-switch.is-on::after { background: var(--accent-contrast); }
+.ak-switch.is-on::after { left: 14px; }
+.ak-check { width: 16px; height: 16px; border-radius: 4px; border: 1px solid var(--border-strong); display: grid; place-items: center; }
+.ak-check.is-on { background: var(--accent); border-color: var(--accent); color: var(--accent-contrast); }
+.ak-check svg { width: 11px; height: 11px; }
+
+/* ---------- table (Plans / Entitlements / Add-ons / Incentives / Accounts) ---------- */
+.ak-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+.ak-table th { height: 42px; text-align: left; font-weight: 400; color: var(--fg-muted); padding: 0 14px; border-bottom: 1px solid var(--border); border-right: 1px solid var(--border); white-space: nowrap; }
+.ak-table th:last-child, .ak-table td:last-child { border-right: 0; }
+.ak-table th .ak-th { display: inline-flex; align-items: center; gap: 7px; }
+.ak-table th svg { width: 13px; height: 13px; color: var(--fg-icon); }
+.ak-table td { height: 46px; padding: 0 14px; border-bottom: 1px solid var(--border); border-right: 1px solid var(--border); white-space: nowrap; color: var(--fg-secondary); }
+.ak-table td.is-num { text-align: right; font-variant-numeric: tabular-nums; }
+.ak-table .ak-row-name { display: flex; align-items: center; gap: 9px; color: var(--fg); }
+.ak-table .ak-row-icon { width: 22px; height: 22px; border-radius: 6px; background: rgb(59 123 246 / .18); color: #93b8ff; display: grid; place-items: center; }
+.ak-table .ak-row-icon svg { width: 13px; height: 13px; }
+.ak-table tr.is-hl td { background: rgb(52 213 153 / .07); }
+.ak-table-foot { padding: 12px 16px; color: var(--fg-muted); font-size: 13px; }
+
+/* ---------- chips + tags ---------- */
+.ak-id { font-family: "Geist Mono", monospace; font-variation-settings: normal; font-size: 12px; background: var(--bg-muted); color: var(--fg-secondary);
+  border-radius: 5px; padding: 2px 6px; }
+.ak-tag { display: inline-flex; align-items: center; gap: 5px; height: 21px; padding: 0 7px; border-radius: 5px; font-size: 12px; white-space: nowrap;
+  background: rgb(255 255 255 / .08); color: #c6c7cc; }
+.ak-tag svg { width: 11px; height: 11px; }
+.ak-tag.blue { background: rgb(59 123 246 / .18); color: #93b8ff; }
+.ak-tag.green { background: rgb(48 164 108 / .18); color: #6fd69f; }
+.ak-tag.yellow { background: rgb(240 180 40 / .16); color: #f5c451; }
+.ak-tag.orange { background: rgb(235 104 52 / .18); color: #ffa072; }
+.ak-tag.red { background: rgb(229 72 77 / .18); color: #ff8a8d; }
+.ak-tag.purple { background: rgb(143 107 255 / .2); color: #bba6ff; }
+.ak-tag.brand { background: rgb(52 213 153 / .14); color: #5fe3b1; }
+.ak-tag.pink { background: rgb(224 69 123 / .18); color: #ff8fba; }
+.ak-tag.teal { background: rgb(20 163 157 / .18); color: #62d6cf; }
+.ak-more { color: var(--fg-muted); font-size: 12px; }
+
+/* ---------- cards, stats, meters ---------- */
+.ak-card { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; }
+.ak-card-head { height: 46px; display: flex; align-items: center; padding: 0 16px; border-bottom: 1px solid var(--border); font-weight: 500; font-size: 14px; }
+.ak-card-body { padding: 16px; }
+.ak-elevated { background: var(--bg-elevated); border: 1px solid var(--border-strong); border-radius: 12px; box-shadow: var(--shadow-lg); }
+.ak-stat-strip { display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+.ak-stat { padding: 16px 18px; border-right: 1px solid var(--border); }
+.ak-stat:last-child { border-right: 0; }
+.ak-stat-label { display: flex; align-items: center; gap: 7px; font-size: 13px; color: var(--fg-secondary); }
+.ak-stat-label svg { width: 13px; height: 13px; color: var(--fg-icon); }
+.ak-stat-value { font-size: 26px; font-weight: 600; margin-top: 8px; font-variant-numeric: tabular-nums; font-variation-settings: "GEOM" 50; }
+.ak-stat-sub { font-size: 12px; color: var(--fg-muted); margin-top: 4px; }
+.ak-meter { height: 8px; border-radius: 4px; background: var(--bg-active); overflow: hidden; }
+.ak-meter > i { display: block; height: 100%; width: 0; border-radius: 4px; background: var(--brand-gradient); }
+.ak-meter.is-warn > i { background: linear-gradient(90deg, #f0a020, #e5484d); }
+.ak-bar-row { position: relative; height: 30px; border-radius: 6px; display: flex; align-items: center; padding: 0 10px; font-size: 13.5px; }
+.ak-bar-row > b { position: absolute; inset: 0 auto 0 0; border-radius: 6px; background: linear-gradient(90deg, rgb(52 213 153 / .32), rgb(44 192 222 / .22)); font-weight: 400; }
+.ak-bar-row > span { position: relative; }
+.ak-bar-row > .ak-bar-val { margin-left: auto; color: var(--fg-secondary); font-variant-numeric: tabular-nums; }
+
+/* ---------- code block (site CodeBlock look) ---------- */
+.ak-code { background: #131315; border: 1px solid var(--border); border-radius: 14px; overflow: hidden; box-shadow: var(--shadow-lg); }
+.ak-code-bar { height: 40px; display: flex; align-items: center; gap: 8px; padding: 0 14px; border-bottom: 1px solid var(--border); color: var(--fg-muted); font-size: 13px; }
+.ak-code-bar .ak-dots { display: flex; gap: 6px; margin-right: 6px; }
+.ak-code-bar .ak-dots i { width: 10px; height: 10px; border-radius: 50%; background: var(--bg-active); }
+.ak-code pre { margin: 0; padding: 18px 20px; font-family: "Geist Mono", monospace; font-variation-settings: normal; font-size: 15px; line-height: 1.65; color: var(--fg-secondary); white-space: pre; }
+.ak-code .k { color: var(--code-keyword); } .ak-code .s { color: var(--code-string); } .ak-code .p { color: var(--code-key); }
+.ak-code .n { color: var(--code-number); } .ak-code .c { color: var(--code-comment); } .ak-code .f { color: #ececee; }
+.ak-code .del { background: rgb(229 72 77 / .14); } .ak-code .add { background: rgb(48 164 108 / .14); }
+
+/* ---------- feedback ---------- */
+.ak-toast { position: absolute; display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 10px; background: var(--bg-elevated);
+  border: 1px solid var(--border-strong); box-shadow: var(--shadow-lg); font-size: 13.5px; white-space: nowrap; }
+.ak-toast svg { width: 15px; height: 15px; }
+.ak-toast.is-ok svg { color: var(--success-fg); }
+.ak-toast.is-warn svg { color: var(--warning-fg); }
+.ak-toast.is-bad svg { color: var(--danger-fg); }
+.ak-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--success); display: inline-block; }
+.ak-dot.is-warn { background: var(--warning); } .ak-dot.is-bad { background: var(--danger); }
+.ak-cursor { position: absolute; width: 22px; height: 22px; z-index: 50; pointer-events: none; filter: drop-shadow(0 2px 4px rgb(0 0 0 / .6)); }
+.ak-ripple { position: absolute; width: 36px; height: 36px; margin: -18px 0 0 -18px; border-radius: 50%; border: 2px solid var(--accent-fg); z-index: 49; opacity: 0; }
+
+/* ---------- avatars + misc ---------- */
+.ak-av { width: 22px; height: 22px; border-radius: 6px; display: grid; place-items: center; font-size: 9.5px; font-weight: 600; background: rgb(52 213 153 / .14); color: #5fe3b1; }
+.ak-av.round { border-radius: 50%; }
+.ak-kv { display: flex; justify-content: space-between; font-size: 13px; padding: 7px 0; border-bottom: 1px solid var(--border); color: var(--fg-muted); }
+.ak-kv b { font-weight: 400; color: var(--fg); }
+.ak-divider { height: 1px; background: var(--border); }
+
+
+/* ==========================================================================
+   Frame 18 — The React SDK + agent skill (neon)
+   ========================================================================== */
+#root { position: absolute; inset: 0; width: 1920px; height: 1080px; overflow: hidden; }
+
+.\31 8-react-sdk-bg { position: absolute; inset: 0; background: #0f0f11; overflow: hidden; }
+.\31 8-react-sdk-stage { position: absolute; inset: 0; }
+.\31 8-react-sdk-world { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; transform-origin: 960px 480px; }
+.\31 8-react-sdk-glow { position: absolute; left: 60px; top: 80px; width: 1100px; height: 800px; border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(52,213,153,0.2), rgba(52,213,153,0)); }
+
+/* ---------- left: code panel + terminal (same box) ---------- */
+.\31 8-react-sdk-panels { position: absolute; left: 96px; top: 206px; width: 1010px; height: 536px; }
+.\31 8-react-sdk-panel { position: absolute; inset: 0; transform-origin: 50% 50%; }
+.\31 8-react-sdk-panel.ak-code { border-radius: 16px; display: flex; flex-direction: column; }
+.\31 8-react-sdk-bar { height: 52px; flex-shrink: 0; display: flex; align-items: center; gap: 10px; padding: 0 20px;
+  border-bottom: 1px solid var(--border); color: var(--fg-muted); font-size: 18px; }
+.\31 8-react-sdk-dots { display: flex; gap: 8px; margin-right: 10px; }
+.\31 8-react-sdk-dots i { width: 12px; height: 12px; border-radius: 50%; background: var(--bg-active); display: block; }
+.\31 8-react-sdk-bar svg { width: 18px; height: 18px; color: var(--fg-icon); }
+.\31 8-react-sdk-lang { margin-left: auto; font-family: "Geist Mono", monospace; font-size: 15px; color: var(--fg-placeholder); }
+
+.\31 8-react-sdk-pre { position: relative; flex: 1; padding: 24px 32px; font-family: "Geist Mono", ui-monospace, monospace;
+  font-variation-settings: normal; font-size: 22px; line-height: 38px; color: var(--fg-secondary); overflow: hidden;
+  font-variant-ligatures: none; font-feature-settings: "liga" 0, "calt" 0; }
+.\31 8-react-sdk-ln { position: relative; z-index: 1; height: 38px; white-space: pre; }
+.\31 8-react-sdk-hl { position: absolute; left: 0; right: 0; z-index: 0; transform-origin: 0 50%;
+  background: linear-gradient(90deg, rgba(52,213,153,0.15), rgba(52,213,153,0.04) 70%, rgba(52,213,153,0));
+  border-left: 3px solid #34d599; box-shadow: inset 14px 0 18px -14px rgba(52,213,153,0.7); }
+
+/* terminal */
+.\31 8-react-sdk-tbody { position: relative; flex: 1; font-family: "Geist Mono", ui-monospace, monospace; font-variation-settings: normal;
+  font-size: 22px; line-height: 36px; color: var(--fg-secondary); font-variant-ligatures: none; font-feature-settings: "liga" 0, "calt" 0; }
+.\31 8-react-sdk-tline { position: absolute; left: 32px; right: 32px; height: 36px; white-space: pre; display: flex; align-items: center; }
+.\31 8-react-sdk-tcmd { position: relative; white-space: pre; }
+.\31 8-react-sdk-dim { color: var(--fg-placeholder); }
+.\31 8-react-sdk-ok { color: #5fe3b1; gap: 12px; }
+.\31 8-react-sdk-chk { display: grid; place-items: center; width: 24px; height: 24px; }
+.\31 8-react-sdk-chk svg { width: 24px; height: 24px; color: #34d599; filter: drop-shadow(0 0 6px rgba(52,213,153,0.6)); }
+.\31 8-react-sdk-tcaret { position: absolute; left: 0; top: 5px; width: 3px; height: 26px; border-radius: 1px; background: #5fe3b1;
+  box-shadow: 0 0 8px rgba(52,213,153,0.6); }
+
+.\31 8-react-sdk-prompt { position: absolute; left: 32px; right: 32px; top: 116px; height: 66px; border-radius: 12px;
+  border: 1px solid var(--border-strong); background: #18181b; display: flex; align-items: center; padding: 0 12px 0 20px; }
+.\31 8-react-sdk-prompt-ring { position: absolute; inset: -1px; border-radius: 12px;
+  box-shadow: 0 0 0 1.5px #34d599, 0 0 24px -4px rgba(52,213,153,0.5); }
+.\31 8-react-sdk-ptext { position: relative; flex: 1; height: 36px; white-space: pre; color: var(--fg); }
+.\31 8-react-sdk-pchev { color: #5fe3b1; }
+.\31 8-react-sdk-send { position: relative; width: 44px; height: 44px; border-radius: 10px; display: grid; place-items: center;
+  background: rgb(52 213 153 / .08); color: #5fe3b1; box-shadow: var(--shadow-brand), 0 0 24px -8px rgb(52 213 153 / .55); }
+.\31 8-react-sdk-send svg { width: 20px; height: 20px; }
+.\31 8-react-sdk-ripple { position: absolute; left: 50%; top: 50%; width: 44px; height: 44px; margin: -22px 0 0 -22px; border-radius: 50%;
+  border: 2px solid #5fe3b1; opacity: 0; }
+
+.\31 8-react-sdk-diff { position: absolute; left: 32px; right: 32px; top: 204px; border: 1px solid var(--border); border-radius: 12px;
+  background: #0f0f11; overflow: hidden; }
+.\31 8-react-sdk-diff-head { height: 46px; display: flex; align-items: center; gap: 12px; padding: 0 16px; border-bottom: 1px solid var(--border);
+  font-size: 18px; color: var(--fg-muted); }
+.\31 8-react-sdk-diff-head svg { width: 18px; height: 18px; color: var(--fg-icon); }
+.\31 8-react-sdk-count { margin-left: auto; height: 28px; padding: 0 10px; border-radius: 6px; display: inline-flex; align-items: center;
+  font-size: 16px; background: rgb(52 213 153 / .14); color: #5fe3b1; font-variant-numeric: tabular-nums; }
+.\31 8-react-sdk-diff-body { padding: 6px 0; }
+.\31 8-react-sdk-diff-ln { height: 36px; padding: 0 16px; white-space: pre; color: var(--fg); background: rgba(52,213,153,0.09);
+  box-shadow: inset 3px 0 0 rgba(52,213,153,0.55); }
+.\31 8-react-sdk-diff-ln + .\31 8-react-sdk-diff-ln { margin-top: 0; }
+.\31 8-react-sdk-plus { color: #34d599; }
+
+.\31 8-react-sdk-final { top: 424px; }
+
+/* ---------- right: "your app" window ---------- */
+.\31 8-react-sdk-appgroup { position: absolute; left: 1160px; top: 266px; width: 664px; height: 440px; }
+.\31 8-react-sdk-app { position: absolute; left: 0; top: 0; width: 664px; background: #18181b; border: 1px solid var(--border);
+  border-radius: 16px; overflow: hidden; box-shadow: var(--shadow-lg); }
+.\31 8-react-sdk-app-bar { height: 52px; display: flex; align-items: center; gap: 10px; padding: 0 20px; background: #161618;
+  border-bottom: 1px solid var(--border); color: var(--fg-muted); font-size: 18px; }
+.\31 8-react-sdk-live { position: relative; margin-left: auto; display: inline-flex; align-items: center; gap: 8px; height: 30px; padding: 0 12px;
+  border-radius: 6px; background: rgb(52 213 153 / .14); color: #5fe3b1; font-size: 16px; }
+.\31 8-react-sdk-live .ak-dot { width: 8px; height: 8px; background: #34d599; box-shadow: 0 0 8px rgba(52,213,153,0.8); }
+.\31 8-react-sdk-row { position: relative; height: 84px; display: flex; align-items: center; justify-content: space-between; gap: 20px;
+  padding: 0 26px; border-bottom: 1px solid var(--border); }
+.\31 8-react-sdk-row:last-child { border-bottom: 0; }
+.\31 8-react-sdk-row-label { position: relative; z-index: 1; display: flex; align-items: center; gap: 12px; font-size: 22px; color: #ececee; }
+.\31 8-react-sdk-lock { display: grid; place-items: center; width: 20px; height: 20px; }
+.\31 8-react-sdk-lock svg { width: 20px; height: 20px; color: var(--fg-icon); }
+.\31 8-react-sdk-price { color: var(--fg-muted); font-size: 19px; }
+.\31 8-react-sdk-right { position: relative; z-index: 1; display: flex; align-items: center; }
+.\31 8-react-sdk-lit { position: absolute; left: 8px; right: 8px; top: 6px; bottom: 6px; border-radius: 10px; z-index: 0;
+  background: rgba(52,213,153,0.07); box-shadow: inset 0 0 0 1.5px rgba(52,213,153,0.5), 0 0 22px -10px rgba(52,213,153,0.6); }
+.\31 8-react-sdk-upgrade { position: relative; height: 40px; padding: 0 16px; border-radius: 8px; display: inline-flex; align-items: center; gap: 8px;
+  background: rgb(52 213 153 / .08); color: #5fe3b1; font-size: 17px; font-weight: 500;
+  box-shadow: var(--shadow-brand), 0 0 32px -8px rgb(52 213 153 / .55); }
+.\31 8-react-sdk-upgrade svg { width: 16px; height: 16px; }
+.\31 8-react-sdk-flash { position: absolute; inset: -1px; border-radius: inherit; pointer-events: none; opacity: 0;
+  box-shadow: 0 0 0 1.5px #5fe3b1, 0 0 28px 2px rgba(52,213,153,0.75); }
+.\31 8-react-sdk-flash.is-yellow { box-shadow: 0 0 0 1.5px #ffd979, 0 0 28px 2px rgba(255,196,57,0.6); }
+.\31 8-react-sdk-paypal { position: relative; height: 44px; padding: 0 22px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px;
+  background: #ffc439; color: #111; font-size: 18px; font-weight: 500; }
+.\31 8-react-sdk-paypal b { font-weight: 700; font-style: italic; color: #003087; }
+.\31 8-react-sdk-cancel-link { font-size: 21px; color: #ff8a8d; text-decoration: underline; text-underline-offset: 5px;
+  text-decoration-color: rgba(255,138,141,0.45); }
+
+.\31 8-react-sdk-modal { position: absolute; left: 238px; top: 262px; padding: 22px 24px 24px; border-radius: 14px;
+  box-shadow: 0 30px 60px -16px rgb(0 0 0 / .85), 0 4px 12px -4px rgb(0 0 0 / .5); }
+.\31 8-react-sdk-modal-title { font-size: 25px; font-weight: 600; font-variation-settings: "GEOM" 50; letter-spacing: -0.01em; color: var(--fg); }
+.\31 8-react-sdk-modal-btns { display: flex; gap: 12px; margin-top: 18px; }
+.\31 8-react-sdk-mbtn.ak-btn { position: relative; height: 44px; padding: 0 18px; font-size: 18px; border-radius: 9px; }
+</style>
+
+<div class="clip 18-react-sdk-bg" id="18-react-sdk-bg" data-start="0" data-duration="8.34" data-track-index="0"></div>
+
+<div class="clip ak 18-react-sdk-stage" id="18-react-sdk-stage" data-start="0" data-duration="8.34" data-track-index="1">
+  <div class="18-react-sdk-world" id="18-react-sdk-world">
+    <div class="18-react-sdk-glow" id="18-react-sdk-glow"></div>
+
+    <!-- ===== left: code panel (gate / checkout / cancel) + terminal (skill + prompt), same box ===== -->
+    <div class="18-react-sdk-panels">
+
+      <div class="ak-code 18-react-sdk-panel" id="18-react-sdk-code">
+        <div class="18-react-sdk-bar">
+          <span class="18-react-sdk-dots"><i></i><i></i><i></i></span>
+          <span>app/settings.tsx</span>
+          <span class="18-react-sdk-lang">tsx</span>
+        </div>
+        <div class="18-react-sdk-pre">
+          <div class="18-react-sdk-hl" id="18-react-sdk-hl-imp" style="top:24px;height:38px;"></div>
+          <div class="18-react-sdk-hl" id="18-react-sdk-hl-gate" style="top:176px;height:114px;"></div>
+          <div class="18-react-sdk-hl" id="18-react-sdk-hl-checkout" style="top:290px;height:38px;"></div>
+          <div class="18-react-sdk-hl" id="18-react-sdk-hl-cancel" style="top:328px;height:38px;"></div>
+
+          <div class="18-react-sdk-ln"><span class="k">import</span> { Gate, Offer, CancelFlow } <span class="k">from</span> <span class="s">"offer-sdk"</span>;</div>
+          <div class="18-react-sdk-ln"> </div>
+          <div class="18-react-sdk-ln"><span class="k">export function</span> <span class="f">Settings</span>() {</div>
+          <div class="18-react-sdk-ln">  <span class="k">return</span> (&lt;&gt;</div>
+          <div class="18-react-sdk-ln 18-react-sdk-key" id="18-react-sdk-ln-gate1">    &lt;<span class="p">Gate</span> <span class="f">feature</span>=<span class="s">"custom_domains"</span> <span class="f">fallback</span>={&lt;<span class="p">UpgradeOffer</span> /&gt;}&gt;</div>
+          <div class="18-react-sdk-ln 18-react-sdk-key" id="18-react-sdk-ln-gate2">      &lt;<span class="p">DomainSettings</span> /&gt;</div>
+          <div class="18-react-sdk-ln 18-react-sdk-key" id="18-react-sdk-ln-gate3">    &lt;/<span class="p">Gate</span>&gt;</div>
+          <div class="18-react-sdk-ln 18-react-sdk-key" id="18-react-sdk-ln-checkout">    &lt;<span class="p">Offer.Checkout</span> <span class="f">plan</span>=<span class="s">"pro"</span> /&gt;</div>
+          <div class="18-react-sdk-ln 18-react-sdk-key" id="18-react-sdk-ln-cancel">    &lt;<span class="p">CancelFlow</span> /&gt;</div>
+          <div class="18-react-sdk-ln">  &lt;/&gt;);</div>
+          <div class="18-react-sdk-ln">}</div>
+        </div>
+      </div>
+
+      <div class="ak-code 18-react-sdk-panel" id="18-react-sdk-term">
+        <div class="18-react-sdk-bar">
+          <span class="18-react-sdk-dots"><i></i><i></i><i></i></span>
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19h8"/><path d="m4 17 6-6-6-6"/></svg>
+          <span>~/my-app</span>
+          <span class="18-react-sdk-lang">zsh</span>
+        </div>
+        <div class="18-react-sdk-tbody">
+          <div class="18-react-sdk-tline" style="top:24px;"><span class="18-react-sdk-tcmd"><span class="18-react-sdk-dim">$ </span><span id="18-react-sdk-t-cmd">npx skills add <span class="s">offer-sdk</span></span><span class="18-react-sdk-tcaret" id="18-react-sdk-cmdcaret"></span></span></div>
+          <div class="18-react-sdk-tline 18-react-sdk-ok" id="18-react-sdk-installed" style="top:62px;">
+            <i class="18-react-sdk-chk" id="18-react-sdk-installed-chk"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></i>
+            <span>skill installed</span>
+          </div>
+
+          <div class="18-react-sdk-prompt" id="18-react-sdk-prompt">
+            <div class="18-react-sdk-prompt-ring" id="18-react-sdk-prompt-ring"></div>
+            <div class="18-react-sdk-ptext"><span class="18-react-sdk-pchev">&gt; </span><span id="18-react-sdk-t-prompt">Add Offer SDK to my app</span><span class="18-react-sdk-tcaret" id="18-react-sdk-pcaret"></span></div>
+            <div class="18-react-sdk-send" id="18-react-sdk-send">
+              <i class="18-react-sdk-ripple" id="18-react-sdk-ripple"></i>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z"/><path d="m21.854 2.147-10.94 10.939"/></svg>
+            </div>
+          </div>
+
+          <div class="18-react-sdk-diff" id="18-react-sdk-diff">
+            <div class="18-react-sdk-diff-head">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"/><path d="M14 2v5a1 1 0 0 0 1 1h5"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>
+              <span class="ak-mono">app/layout.tsx</span>
+              <span class="ak-mono 18-react-sdk-count" id="18-react-sdk-count">+4</span>
+            </div>
+            <div class="18-react-sdk-diff-body">
+              <div class="18-react-sdk-diff-ln" id="18-react-sdk-d1"><span class="18-react-sdk-plus">+ </span><span class="k">import</span> { OfferProvider } <span class="k">from</span> <span class="s">"offer-sdk"</span>;</div>
+              <div class="18-react-sdk-diff-ln" id="18-react-sdk-d2"><span class="18-react-sdk-plus">+ </span>&lt;<span class="p">OfferProvider</span> <span class="f">appId</span>=<span class="s">"app_lnpSrz"</span>&gt;</div>
+              <div class="18-react-sdk-diff-ln" id="18-react-sdk-d3"><span class="18-react-sdk-plus">+ </span>  {children}</div>
+              <div class="18-react-sdk-diff-ln" id="18-react-sdk-d4"><span class="18-react-sdk-plus">+ </span>&lt;/<span class="p">OfferProvider</span>&gt;</div>
+            </div>
+          </div>
+
+          <div class="18-react-sdk-tline 18-react-sdk-ok 18-react-sdk-final" id="18-react-sdk-final">
+            <i class="18-react-sdk-chk" id="18-react-sdk-final-chk"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></i>
+            <span>3 files changed</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== right: the mini "your app" settings window ===== -->
+    <div class="18-react-sdk-appgroup" id="18-react-sdk-appgroup">
+      <div class="18-react-sdk-app" id="18-react-sdk-app">
+        <div class="18-react-sdk-app-bar">
+          <span class="18-react-sdk-dots"><i></i><i></i><i></i></span>
+          <span>Your app · Settings</span>
+          <span class="18-react-sdk-live" id="18-react-sdk-live"><i class="ak-dot"></i>Live<i class="18-react-sdk-flash" id="18-react-sdk-live-flash"></i></span>
+        </div>
+
+        <div class="18-react-sdk-row" id="18-react-sdk-row-domains">
+          <i class="18-react-sdk-lit" id="18-react-sdk-lit-domains"></i>
+          <span class="18-react-sdk-row-label" id="18-react-sdk-domains-label">Custom domains<i class="18-react-sdk-lock" id="18-react-sdk-lock"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></i></span>
+          <span class="18-react-sdk-right"><span class="18-react-sdk-upgrade" id="18-react-sdk-upgrade">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z"/></svg>
+            Upgrade<i class="18-react-sdk-flash" id="18-react-sdk-upgrade-flash"></i></span></span>
+        </div>
+
+        <div class="18-react-sdk-row" id="18-react-sdk-row-plan">
+          <i class="18-react-sdk-lit" id="18-react-sdk-lit-plan"></i>
+          <span class="18-react-sdk-row-label">Pro plan <span class="18-react-sdk-price">$29/mo</span></span>
+          <span class="18-react-sdk-right"><span class="18-react-sdk-paypal" id="18-react-sdk-paypal">Pay with <b>PayPal</b><i class="18-react-sdk-flash is-yellow" id="18-react-sdk-paypal-flash"></i></span></span>
+        </div>
+
+        <div class="18-react-sdk-row" id="18-react-sdk-row-cancel">
+          <i class="18-react-sdk-lit" id="18-react-sdk-lit-cancel"></i>
+          <span class="18-react-sdk-row-label"><span class="18-react-sdk-cancel-link">Cancel subscription</span></span>
+        </div>
+      </div>
+
+      <div class="ak-elevated 18-react-sdk-modal" id="18-react-sdk-modal">
+        <div class="18-react-sdk-modal-title">Before you go</div>
+        <div class="18-react-sdk-modal-btns">
+          <span class="ak-btn is-primary 18-react-sdk-mbtn" id="18-react-sdk-mb-keep">Keep Pro<i class="18-react-sdk-flash" id="18-react-sdk-keep-flash"></i></span>
+          <span class="ak-btn is-outline 18-react-sdk-mbtn" id="18-react-sdk-mb-cancel">Cancel anyway</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<script>
+(function () {
+  var $ = function (n) { return document.getElementById("18-react-sdk-" + n); };
+  var tl = gsap.timeline({ paused: true });
+  var CW = 13.2;   // Geist Mono advance at 22px (0.6em)
+  var END = 7.84;
+
+  // Wrap every character of a typed span (keeping its syntax spans) so it can be revealed one by one.
+  function split(el) {
+    var out = [];
+    (function walk(node) {
+      Array.prototype.slice.call(node.childNodes).forEach(function (c) {
+        if (c.nodeType === 3) {
+          var frag = document.createDocumentFragment();
+          var txt = c.textContent;
+          for (var i = 0; i < txt.length; i++) {
+            var s = document.createElement("span");
+            s.textContent = txt.charAt(i);
+            frag.appendChild(s);
+            out.push(s);
+          }
+          c.parentNode.replaceChild(frag, c);
+        } else if (c.nodeType === 1) {
+          walk(c);
+        }
+      });
+    })(el);
+    return out;
+  }
+
+  // Character-by-character typing; the caret steps to the insertion point with each character.
+  function type(el, caret, col, t, per) {
+    var chars = split(el);
+    var n = chars.length;
+    gsap.set(chars, { opacity: 0 });
+    tl.set(chars, { opacity: 0 }, 0);
+    tl.set(caret, { x: col * CW, opacity: 1 }, t);
+    tl.fromTo(chars, { opacity: 0 }, { opacity: 1, duration: 0.001, ease: "none", stagger: per, immediateRender: false }, t + per);
+    for (var i = 1; i <= n; i++) { tl.set(caret, { x: (col + i) * CW }, t + i * per); }
+    return t + (n + 1) * per;
+  }
+
+  // A code line "lights": the highlight bar wipes in from the left edge.
+  function light(hl, t) {
+    tl.fromTo(hl, { opacity: 1, scaleX: 0 }, { opacity: 1, scaleX: 1, duration: 0.4, ease: "expo.out", immediateRender: false }, t);
+  }
+
+  // A UI chip pops 0.85 -> 1 with a brief neon glow flash.
+  function pop(el, flash, t) {
+    tl.fromTo(el, { opacity: 0, scale: 0.85 }, { opacity: 1, scale: 1, duration: 0.4, ease: "expo.out" }, t);
+    glint(flash, t + 0.04);
+  }
+  function glint(flash, t) {
+    tl.fromTo(flash, { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "power2.out", immediateRender: false }, t);
+    tl.to(flash, { opacity: 0, duration: 0.4, ease: "power2.out" }, t + 0.12);
+  }
+
+  var code = $("code"), term = $("term");
+  var cmdCaret = $("cmdcaret"), pCaret = $("pcaret");
+  var hls = [$("hl-imp"), $("hl-gate"), $("hl-checkout"), $("hl-cancel")];
+  var flashes = [$("upgrade-flash"), $("paypal-flash"), $("keep-flash"), $("live-flash")];
+
+  /* ---------- initial states (applied at build and re-asserted at t=0 for seeks) ---------- */
+  gsap.set([cmdCaret, pCaret, term, $("prompt-ring"), $("ripple")].concat(hls, flashes), { opacity: 0 });
+  tl.set([cmdCaret, pCaret, term, $("prompt-ring"), $("ripple")].concat(hls, flashes), { opacity: 0 }, 0);
+
+  /* ======================================================================
+     Scene 1 (0.0–4.2s) — code bound to the mini app: gate · checkout · cancel flow
+     ====================================================================== */
+  // establishing — code panel (hero) + app window, one glow, slow push-in under the whole shot
+  tl.fromTo($("glow"), { opacity: 0, scale: 0.9 }, { opacity: 1, scale: 1, duration: 1.0, ease: "power3.out" }, 0);
+  tl.fromTo($("world"), { scale: 1 }, { scale: 1.035, duration: END, ease: "power1.inOut" }, 0);
+  tl.fromTo(code, { opacity: 0, y: 28 }, { opacity: 1, y: 0, duration: 0.5, ease: "expo.out" }, 0);
+  var lns = code.getElementsByClassName("18-react-sdk-ln");
+  for (var i = 0; i < lns.length; i++) {
+    var isKey = lns[i].classList.contains("18-react-sdk-key");
+    tl.fromTo(lns[i], { opacity: 0, x: -10 }, { opacity: isKey ? 0.36 : 1, x: 0, duration: 0.4, ease: "power4.out" }, 0.06 + i * 0.04);
+  }
+  tl.fromTo($("app"), { opacity: 0, x: 40 }, { opacity: 1, x: 0, duration: 0.55, ease: "expo.out" }, 0.1);
+  tl.fromTo([$("row-domains"), $("row-plan"), $("row-cancel")], { opacity: 0, y: 10 },
+    { opacity: 1, y: 0, duration: 0.4, ease: "power4.out", stagger: 0.06 }, 0.26);
+
+  // "Offer SDK" — the import line glints
+  light($("hl-imp"), 0.44);
+  tl.to($("hl-imp"), { opacity: 0, duration: 0.25, ease: "power2.out" }, 0.98);
+
+  // "gates features" — <Gate> lights; Custom domains locks and the neon Upgrade chip pops
+  light($("hl-gate"), 1.04);
+  tl.fromTo([$("ln-gate1"), $("ln-gate2"), $("ln-gate3")], { opacity: 0.36 },
+    { opacity: 1, duration: 0.25, ease: "power2.out", stagger: 0.04, immediateRender: false }, 1.06);
+  tl.fromTo($("lit-domains"), { opacity: 0 }, { opacity: 1, duration: 0.3, ease: "power2.out" }, 1.1);
+  tl.fromTo($("lock"), { opacity: 0, scale: 0.5 }, { opacity: 1, scale: 1, duration: 0.4, ease: "expo.out" }, 1.14);
+  tl.fromTo($("domains-label"), { color: "#ececee" }, { color: "#8e9096", duration: 0.3, ease: "power2.out", immediateRender: false }, 1.14);
+  pop($("upgrade"), $("upgrade-flash"), 1.2);
+
+  // "triggers checkouts" — <Offer.Checkout /> lights; the PayPal button pops
+  tl.to([$("hl-gate"), $("lit-domains")], { opacity: 0, duration: 0.3, ease: "power2.out" }, 1.88);
+  light($("hl-checkout"), 1.9);
+  tl.fromTo($("ln-checkout"), { opacity: 0.36 }, { opacity: 1, duration: 0.25, ease: "power2.out", immediateRender: false }, 1.92);
+  tl.fromTo($("lit-plan"), { opacity: 0 }, { opacity: 1, duration: 0.3, ease: "power2.out" }, 1.98);
+  pop($("paypal"), $("paypal-flash"), 2.14);
+
+  // "runs cancel flows" — <CancelFlow /> lights; the save modal peeks up over the app
+  tl.to([$("hl-checkout"), $("lit-plan")], { opacity: 0, duration: 0.3, ease: "power2.out" }, 3.0);
+  light($("hl-cancel"), 3.1);
+  tl.fromTo($("ln-cancel"), { opacity: 0.36 }, { opacity: 1, duration: 0.25, ease: "power2.out", immediateRender: false }, 3.12);
+  tl.fromTo($("lit-cancel"), { opacity: 0 }, { opacity: 1, duration: 0.3, ease: "power2.out" }, 3.16);
+  tl.fromTo($("modal"), { opacity: 0, y: 46, scale: 0.97 }, { opacity: 1, y: 0, scale: 1, duration: 0.55, ease: "expo.out" }, 3.28);
+  tl.fromTo([$("mb-keep"), $("mb-cancel")], { opacity: 0, y: 8 },
+    { opacity: 1, y: 0, duration: 0.35, ease: "power4.out", stagger: 0.06 }, 3.44);
+  glint($("keep-flash"), 3.84);   // "flows" — the save button glints
+
+  /* ======================================================================
+     Scene 2 (4.2–7.84s) — code flips to a terminal: skill install, one prompt, the diff
+     ====================================================================== */
+  // zoom-through on "Add": code accelerates forward, cut at peak blur, terminal resolves into the focal plane
+  tl.to([$("hl-cancel"), $("lit-cancel")], { opacity: 0, duration: 0.25, ease: "power2.out" }, 4.12);
+  tl.to(code, { scale: 1.06, filter: "blur(14px)", duration: 0.18, ease: "power3.in" }, 4.14);
+  tl.to(code, { opacity: 0.15, duration: 0.18, ease: "none" }, 4.14);
+  tl.set(code, { opacity: 0 }, 4.32);
+  tl.set(term, { opacity: 0.15, scale: 0.92, filter: "blur(14px)" }, 4.32);
+  tl.to(term, { opacity: 1, scale: 1, filter: "blur(0px)", duration: 0.45, ease: "expo.out" }, 4.32);
+  tl.to($("appgroup"), { opacity: 0.4, duration: 0.4, ease: "power2.out" }, 4.16);
+
+  // "the Offer SDK agent skill" — npx skills add offer-sdk → ✓ on "skill"
+  type($("t-cmd"), cmdCaret, 2, 4.42, 0.026);
+  tl.set(cmdCaret, { opacity: 0 }, 5.26);
+  tl.fromTo($("installed"), { opacity: 0, x: -10 }, { opacity: 1, x: 0, duration: 0.35, ease: "power4.out" }, 5.3);
+  tl.fromTo($("installed-chk"), { scale: 0.4 }, { scale: 1, duration: 0.4, ease: "expo.out" }, 5.3);
+
+  // "and one prompt" — the prompt types fast and submits
+  tl.fromTo($("prompt"), { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.35, ease: "power4.out" }, 5.6);
+  tl.fromTo($("prompt-ring"), { opacity: 0 }, { opacity: 1, duration: 0.25, ease: "power2.out", immediateRender: false }, 5.7);
+  type($("t-prompt"), pCaret, 2, 5.78, 0.018);
+  tl.to($("send"), { scale: 0.88, duration: 0.07, ease: "power2.in" }, 6.26);
+  tl.to($("send"), { scale: 1, duration: 0.25, ease: "power3.out" }, 6.33);
+  tl.fromTo($("ripple"), { opacity: 0, scale: 0.5 }, { opacity: 0.9, scale: 0.8, duration: 0.05, ease: "none", immediateRender: false }, 6.28);
+  tl.to($("ripple"), { opacity: 0, scale: 1.9, duration: 0.42, ease: "power2.out" }, 6.33);
+  tl.set(pCaret, { opacity: 0 }, 6.32);
+  tl.to($("prompt-ring"), { opacity: 0, duration: 0.3, ease: "power2.out" }, 6.36);
+
+  // "installs it" — the green diff cascades, the +N counter counts with it
+  tl.fromTo($("diff"), { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.4, ease: "expo.out" }, 6.42);
+  tl.fromTo([$("d1"), $("d2"), $("d3"), $("d4")], { opacity: 0, x: -12 },
+    { opacity: 1, x: 0, duration: 0.3, ease: "power4.out", stagger: 0.07 }, 6.54);
+  var countEl = $("count"), cnt = { v: 0 };
+  tl.fromTo(cnt, { v: 0 }, { v: 4, duration: 0.28, ease: "none", onUpdate: function () {
+    countEl.textContent = "+" + Math.min(4, Math.round(cnt.v + 0.49));
+  } }, 6.52);
+
+  // "in your app" — ✓ 3 files changed; the app comes back up, now live
+  tl.fromTo($("final"), { opacity: 0, x: -10 }, { opacity: 1, x: 0, duration: 0.35, ease: "power4.out" }, 7.1);
+  tl.fromTo($("final-chk"), { scale: 0.4 }, { scale: 1, duration: 0.4, ease: "expo.out" }, 7.1);
+  tl.to($("appgroup"), { opacity: 1, duration: 0.35, ease: "power2.out" }, 7.04);
+  pop($("live"), $("live-flash"), 7.18);
+
+  // hold the landed state to the end of the shot
+  tl.set($("bg"), { opacity: 1 }, END);
+
+  window.__timelines = window.__timelines || {};
+  window.__timelines["18-react-sdk"] = tl;
+})();
+</script>
+</div>
+</template>

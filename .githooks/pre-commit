@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+# Block staged files GitHub would reject (>100MB) and warn on ones it flags (>50MB).
+# Enabled by `pnpm install` (prepare script) or: git config core.hooksPath .githooks
+
+limit=$((100 * 1024 * 1024))
+warn=$((50 * 1024 * 1024))
+blocked=0
+
+git diff --cached --name-only --diff-filter=ACMR -z | while IFS= read -r -d '' file; do
+  [ -f "$file" ] || continue
+  size=$(git cat-file -s ":$file" 2>/dev/null) || continue
+  mb=$((size / 1024 / 1024))
+  if [ "$size" -gt "$limit" ]; then
+    echo "✖ $file is ${mb}MB — over GitHub's 100MB limit. Unstage it or add it to .gitignore." >&2
+    echo blocked
+  elif [ "$size" -gt "$warn" ]; then
+    echo "⚠ $file is ${mb}MB — GitHub warns above 50MB. Consider ignoring it." >&2
+  fi
+done | grep -q blocked && blocked=1
+
+if [ "$blocked" -eq 1 ]; then
+  echo "Commit blocked. Bypass with --no-verify if you really mean it." >&2
+  exit 1
+fi
+exit 0

@@ -1,0 +1,632 @@
+<template id="05-say-yes-template">
+  <style>
+/* ==========================================================================
+   Offer SDK app kit — the offer-app dashboard (dark theme), rebuilt for video.
+   Values are copied from offer-app/src/app/globals.css (data-theme="dark") and
+   measured from the real screens in capture/assets/app/*.png.
+
+   HOW TO USE IN A FRAME
+   1. Paste this whole file inside the style block that lives inside your frame template.
+      (Template transport: styles must live inside the frame template.)
+   2. Build the window from shell.html. Author it at its LOGICAL size
+      (.ak-window is 1366×800 — a real laptop viewport, real 14px UI text) and
+      scale the wrapper with GSAP (scale ≈ 1.08–1.12 to fill the top 83%;
+      punch in to 1.5–1.9 on the region the VO is talking about).
+   3. Copy icons from icons.html (Lucide, the icon set the app uses).
+   All classes are prefixed ak- so they never collide with frame-local names.
+   ========================================================================== */
+
+@font-face { font-family: "Cal Sans"; src: url("assets/fonts/CalSansVF.woff2") format("woff2"); font-weight: 400 700; font-display: block; }
+@font-face { font-family: "Geist Mono"; src: url("assets/fonts/geist-mono-latin.woff2") format("woff2"); font-weight: 400 600; font-display: block; }
+
+.ak {
+  --canvas: #0f0f11; --panel: #161618; --bg: #18181b; --bg-subtle: #1c1c1f; --bg-muted: #222226;
+  --bg-hover: #27272c; --bg-active: #2e2e34; --bg-elevated: #202024; --bg-inverse: #f1f1f3;
+  --fg: #ececee; --fg-secondary: rgb(236 236 238 / .93); --fg-tertiary: rgb(236 236 238 / .86);
+  --fg-muted: rgb(236 236 238 / .68); --fg-placeholder: #6f7178; --fg-icon: #9c9ea5;
+  --border: #2a2a2f; --border-strong: #37373d; --border-input: #323238;
+  --accent: #34d599; --accent-hover: #5ce0b0; --accent-subtle: rgb(52 213 153 / .13); --accent-fg: #5fe3b1; --accent-contrast: #03140c; --ring: rgb(52 213 153 / .4);
+  --btn-neon-bg: rgb(52 213 153 / .08); --shadow-brand: inset 0 0 0 1px rgb(52 213 153 / .85), inset 0 0 14px -6px rgb(52 213 153 / .35), 0 0 16px -6px rgb(52 213 153 / .4);
+  --brand-vertical: linear-gradient(180deg, #4fe0b0, #2fc48c);
+  --success: #30a46c; --success-subtle: rgb(48 164 108 / .16); --success-fg: #5ed29a;
+  --danger: #e5484d; --danger-subtle: rgb(229 72 77 / .15); --danger-fg: #ff8a8d;
+  --warning: #f0a020; --warning-subtle: rgb(240 160 32 / .14); --warning-fg: #ffc35f;
+  --brand-from: #34d599; --brand-to: #2cc0de; --brand-gradient: linear-gradient(90deg, #34d599, #2cc0de);
+  --code-comment: #7f828a; --code-keyword: #5fe3b1; --code-string: #6fd69f; --code-key: #93b8ff; --code-number: #ffa072;
+  --zapier: #ff5f1f; --paypal: #0070e0;
+  --shadow-soft: 0 14px 36px -14px rgb(0 0 0 / .75), 0 2px 8px -2px rgb(0 0 0 / .45);
+  --shadow-lg: 0 18px 44px -10px rgb(0 0 0 / .7), 0 4px 12px -4px rgb(0 0 0 / .5);
+  font-family: "Cal Sans", ui-sans-serif, system-ui, sans-serif;
+  font-variation-settings: "GEOM" 25;           /* the app's UI geometry */
+  color: var(--fg); -webkit-font-smoothing: antialiased; font-size: 14px; line-height: 1.4;
+}
+.ak * { box-sizing: border-box; }
+.ak .ak-display { font-variation-settings: "GEOM" 50; letter-spacing: -0.01em; }
+/* Neon-style eyebrow: small mono caps (site + app section kickers). */
+.ak .ak-eyebrow { font-family: "Geist Mono", monospace; font-variation-settings: normal; font-size: 11px; line-height: 16px; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; color: var(--fg-muted); }
+.ak .ak-mono, .ak code { font-family: "Geist Mono", ui-monospace, monospace; font-variation-settings: normal; }
+.ak svg { display: block; flex-shrink: 0; }
+
+/* ---------- window + shell ---------- */
+.ak-window { position: absolute; width: 1366px; height: 800px; background: var(--canvas); border-radius: 18px;
+  border: 1px solid var(--border); box-shadow: 0 40px 120px -30px rgb(0 0 0 / .9), 0 0 0 1px rgb(255 255 255 / .03);
+  overflow: hidden; display: flex; padding: 6px 6px 6px 0; transform-origin: 50% 50%; }
+.ak-rail { width: 52px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; gap: 10px; padding-top: 8px; }
+.ak-rail .ak-rail-logo { width: 30px; height: 30px; border-radius: 8px; display: grid; place-items: center; color: var(--fg); }
+.ak-rail .ak-rail-logo svg { width: 18px; height: 18px; }
+.ak-rail .ak-rail-sep { width: 22px; height: 1px; background: var(--border); }
+.ak-rail .ak-app-tile { width: 28px; height: 28px; border-radius: 7px; display: grid; place-items: center; font-size: 11px; font-weight: 600; color: var(--accent-contrast);
+  background: var(--brand-vertical); }
+.ak-rail .ak-app-tile.is-active { box-shadow: 0 0 0 2px var(--canvas), 0 0 0 3.5px var(--accent); }
+.ak-rail .ak-app-tile.alt { opacity: .8; }
+.ak-rail .ak-rail-plus { color: var(--fg-icon); width: 16px; height: 16px; }
+.ak-rail .ak-rail-foot { margin-top: auto; padding-bottom: 6px; display: flex; flex-direction: column; align-items: center; gap: 14px; color: var(--fg-icon); }
+.ak-rail .ak-rail-foot svg { width: 15px; height: 15px; }
+.ak-rail .ak-avatar { width: 26px; height: 26px; border-radius: 50%; background: var(--bg-muted); color: var(--fg-secondary); font-size: 10px; display: grid; place-items: center; }
+
+.ak-nav { width: 222px; flex-shrink: 0; background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
+  margin-right: 6px; display: flex; flex-direction: column; padding: 12px 10px; box-shadow: var(--shadow-soft); }
+.ak-nav-title { font-size: 15px; font-weight: 600; padding: 2px 6px 10px; font-variation-settings: "GEOM" 50; }
+.ak-quick { height: 30px; border: 1px solid var(--border-input); border-radius: 8px; display: flex; align-items: center; gap: 8px; padding: 0 8px;
+  color: var(--fg-muted); font-size: 13px; margin-bottom: 10px; }
+.ak-quick svg { width: 14px; height: 14px; color: var(--fg-icon); }
+.ak-quick .ak-kbd { margin-left: auto; font-size: 10.5px; border: 1px solid var(--border); border-radius: 4px; padding: 0 4px; color: var(--fg-placeholder); }
+.ak-nav-group { display: flex; flex-direction: column; gap: 1px; padding: 6px 0; border-top: 1px solid var(--border); }
+.ak-nav-group:first-of-type { border-top: 0; padding-top: 0; }
+.ak-nav-item { height: 31px; border-radius: 7px; display: flex; align-items: center; gap: 10px; padding: 0 8px; font-size: 13.5px; color: var(--fg-secondary); }
+.ak-nav-item svg { width: 15px; height: 15px; color: var(--fg-icon); }
+.ak-nav-item .ak-count { margin-left: auto; font-size: 12px; color: var(--fg-muted); font-variant-numeric: tabular-nums; }
+.ak-nav-item.is-active { background: var(--accent-subtle); color: var(--accent-fg); }
+.ak-nav-item.is-active svg { color: var(--accent-fg); }
+.ak-nav-foot { margin-top: auto; }
+
+.ak-main { flex: 1; min-width: 0; background: var(--bg); border: 1px solid var(--border); border-radius: 12px; display: flex; flex-direction: column;
+  overflow: hidden; box-shadow: var(--shadow-soft); position: relative; }
+.ak-header { height: 50px; flex-shrink: 0; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; padding: 0 12px 0 16px; }
+.ak-header .ak-crumb { display: flex; align-items: center; gap: 9px; font-size: 14px; font-weight: 500; }
+.ak-header .ak-crumb svg { width: 15px; height: 15px; color: var(--fg-icon); }
+.ak-header .ak-crumb .ak-sep { color: var(--fg-placeholder); }
+.ak-header .ak-actions { margin-left: auto; display: flex; align-items: center; gap: 4px; }
+.ak-toolbar { height: 50px; flex-shrink: 0; display: flex; align-items: center; gap: 10px; padding: 0 16px; border-bottom: 1px solid var(--border); }
+.ak-body { flex: 1; min-height: 0; position: relative; overflow: hidden; }
+.ak-page { padding: 28px 40px; }
+.ak-page-title { font-size: 22px; font-weight: 600; font-variation-settings: "GEOM" 50; letter-spacing: -0.01em; }
+.ak-page-sub { color: var(--fg-muted); font-size: 13.5px; margin-top: 4px; }
+
+/* ---------- controls ---------- */
+.ak-btn { height: 30px; border-radius: 8px; display: inline-flex; align-items: center; gap: 7px; padding: 0 10px; font-size: 13.5px; color: var(--fg-secondary);
+  border: 1px solid transparent; white-space: nowrap; }
+.ak-btn svg { width: 14px; height: 14px; }
+.ak-btn.is-outline { border-color: var(--border-strong); background: var(--bg-subtle); }
+/* Primary = the app's neon button: hairline neon border, faint green wash, green ink. */
+.ak-btn.is-primary { background: var(--btn-neon-bg); color: var(--accent-fg); font-weight: 500; box-shadow: var(--shadow-brand); }
+.ak-btn.is-gradient { background: var(--btn-neon-bg); color: var(--accent-fg); font-weight: 500; box-shadow: var(--shadow-brand), 0 0 32px -8px rgb(52 213 153 / .55); }
+.ak-btn.is-solid { background: var(--brand-vertical); color: var(--accent-contrast); font-weight: 600; }
+.ak-btn.is-paypal { background: #ffc439; color: #111; font-weight: 600; }
+.ak-btn.is-lg { height: 40px; padding: 0 16px; font-size: 15px; border-radius: 10px; }
+.ak-input { height: 32px; border: 1px solid var(--border-input); background: var(--bg-subtle); border-radius: 8px; display: flex; align-items: center; gap: 8px;
+  padding: 0 10px; font-size: 13.5px; color: var(--fg); }
+.ak-input.is-placeholder { color: var(--fg-placeholder); }
+.ak-input.is-focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--ring); }
+.ak-input svg { width: 14px; height: 14px; color: var(--fg-icon); }
+.ak-label { font-size: 13px; color: var(--fg-secondary); font-weight: 500; margin-bottom: 6px; }
+.ak-seg { display: inline-flex; background: var(--bg-muted); border-radius: 8px; padding: 2px; gap: 2px; }
+.ak-seg > span { height: 26px; padding: 0 10px; border-radius: 6px; display: inline-flex; align-items: center; font-size: 13px; color: var(--fg-muted); }
+.ak-seg > span.is-on { background: var(--bg-active); color: var(--fg); }
+.ak-switch { width: 30px; height: 18px; border-radius: 9px; background: var(--bg-active); position: relative; flex-shrink: 0; }
+.ak-switch::after { content: ""; position: absolute; top: 2px; left: 2px; width: 14px; height: 14px; border-radius: 50%; background: #fff; }
+.ak-switch.is-on { background: var(--accent); }
+.ak-switch.is-on::after { background: var(--accent-contrast); }
+.ak-switch.is-on::after { left: 14px; }
+.ak-check { width: 16px; height: 16px; border-radius: 4px; border: 1px solid var(--border-strong); display: grid; place-items: center; }
+.ak-check.is-on { background: var(--accent); border-color: var(--accent); color: var(--accent-contrast); }
+.ak-check svg { width: 11px; height: 11px; }
+
+/* ---------- table (Plans / Entitlements / Add-ons / Incentives / Accounts) ---------- */
+.ak-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+.ak-table th { height: 42px; text-align: left; font-weight: 400; color: var(--fg-muted); padding: 0 14px; border-bottom: 1px solid var(--border); border-right: 1px solid var(--border); white-space: nowrap; }
+.ak-table th:last-child, .ak-table td:last-child { border-right: 0; }
+.ak-table th .ak-th { display: inline-flex; align-items: center; gap: 7px; }
+.ak-table th svg { width: 13px; height: 13px; color: var(--fg-icon); }
+.ak-table td { height: 46px; padding: 0 14px; border-bottom: 1px solid var(--border); border-right: 1px solid var(--border); white-space: nowrap; color: var(--fg-secondary); }
+.ak-table td.is-num { text-align: right; font-variant-numeric: tabular-nums; }
+.ak-table .ak-row-name { display: flex; align-items: center; gap: 9px; color: var(--fg); }
+.ak-table .ak-row-icon { width: 22px; height: 22px; border-radius: 6px; background: rgb(59 123 246 / .18); color: #93b8ff; display: grid; place-items: center; }
+.ak-table .ak-row-icon svg { width: 13px; height: 13px; }
+.ak-table tr.is-hl td { background: rgb(52 213 153 / .07); }
+.ak-table-foot { padding: 12px 16px; color: var(--fg-muted); font-size: 13px; }
+
+/* ---------- chips + tags ---------- */
+.ak-id { font-family: "Geist Mono", monospace; font-variation-settings: normal; font-size: 12px; background: var(--bg-muted); color: var(--fg-secondary);
+  border-radius: 5px; padding: 2px 6px; }
+.ak-tag { display: inline-flex; align-items: center; gap: 5px; height: 21px; padding: 0 7px; border-radius: 5px; font-size: 12px; white-space: nowrap;
+  background: rgb(255 255 255 / .08); color: #c6c7cc; }
+.ak-tag svg { width: 11px; height: 11px; }
+.ak-tag.blue { background: rgb(59 123 246 / .18); color: #93b8ff; }
+.ak-tag.green { background: rgb(48 164 108 / .18); color: #6fd69f; }
+.ak-tag.yellow { background: rgb(240 180 40 / .16); color: #f5c451; }
+.ak-tag.orange { background: rgb(235 104 52 / .18); color: #ffa072; }
+.ak-tag.red { background: rgb(229 72 77 / .18); color: #ff8a8d; }
+.ak-tag.purple { background: rgb(143 107 255 / .2); color: #bba6ff; }
+.ak-tag.brand { background: rgb(52 213 153 / .14); color: #5fe3b1; }
+.ak-tag.pink { background: rgb(224 69 123 / .18); color: #ff8fba; }
+.ak-tag.teal { background: rgb(20 163 157 / .18); color: #62d6cf; }
+.ak-more { color: var(--fg-muted); font-size: 12px; }
+
+/* ---------- cards, stats, meters ---------- */
+.ak-card { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; }
+.ak-card-head { height: 46px; display: flex; align-items: center; padding: 0 16px; border-bottom: 1px solid var(--border); font-weight: 500; font-size: 14px; }
+.ak-card-body { padding: 16px; }
+.ak-elevated { background: var(--bg-elevated); border: 1px solid var(--border-strong); border-radius: 12px; box-shadow: var(--shadow-lg); }
+.ak-stat-strip { display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+.ak-stat { padding: 16px 18px; border-right: 1px solid var(--border); }
+.ak-stat:last-child { border-right: 0; }
+.ak-stat-label { display: flex; align-items: center; gap: 7px; font-size: 13px; color: var(--fg-secondary); }
+.ak-stat-label svg { width: 13px; height: 13px; color: var(--fg-icon); }
+.ak-stat-value { font-size: 26px; font-weight: 600; margin-top: 8px; font-variant-numeric: tabular-nums; font-variation-settings: "GEOM" 50; }
+.ak-stat-sub { font-size: 12px; color: var(--fg-muted); margin-top: 4px; }
+.ak-meter { height: 8px; border-radius: 4px; background: var(--bg-active); overflow: hidden; }
+.ak-meter > i { display: block; height: 100%; width: 0; border-radius: 4px; background: var(--brand-gradient); }
+.ak-meter.is-warn > i { background: linear-gradient(90deg, #f0a020, #e5484d); }
+.ak-bar-row { position: relative; height: 30px; border-radius: 6px; display: flex; align-items: center; padding: 0 10px; font-size: 13.5px; }
+.ak-bar-row > b { position: absolute; inset: 0 auto 0 0; border-radius: 6px; background: linear-gradient(90deg, rgb(52 213 153 / .32), rgb(44 192 222 / .22)); font-weight: 400; }
+.ak-bar-row > span { position: relative; }
+.ak-bar-row > .ak-bar-val { margin-left: auto; color: var(--fg-secondary); font-variant-numeric: tabular-nums; }
+
+/* ---------- code block (site CodeBlock look) ---------- */
+.ak-code { background: #131315; border: 1px solid var(--border); border-radius: 14px; overflow: hidden; box-shadow: var(--shadow-lg); }
+.ak-code-bar { height: 40px; display: flex; align-items: center; gap: 8px; padding: 0 14px; border-bottom: 1px solid var(--border); color: var(--fg-muted); font-size: 13px; }
+.ak-code-bar .ak-dots { display: flex; gap: 6px; margin-right: 6px; }
+.ak-code-bar .ak-dots i { width: 10px; height: 10px; border-radius: 50%; background: var(--bg-active); }
+.ak-code pre { margin: 0; padding: 18px 20px; font-family: "Geist Mono", monospace; font-variation-settings: normal; font-size: 15px; line-height: 1.65; color: var(--fg-secondary); white-space: pre; }
+.ak-code .k { color: var(--code-keyword); } .ak-code .s { color: var(--code-string); } .ak-code .p { color: var(--code-key); }
+.ak-code .n { color: var(--code-number); } .ak-code .c { color: var(--code-comment); } .ak-code .f { color: #ececee; }
+.ak-code .del { background: rgb(229 72 77 / .14); } .ak-code .add { background: rgb(48 164 108 / .14); }
+
+/* ---------- feedback ---------- */
+.ak-toast { position: absolute; display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 10px; background: var(--bg-elevated);
+  border: 1px solid var(--border-strong); box-shadow: var(--shadow-lg); font-size: 13.5px; white-space: nowrap; }
+.ak-toast svg { width: 15px; height: 15px; }
+.ak-toast.is-ok svg { color: var(--success-fg); }
+.ak-toast.is-warn svg { color: var(--warning-fg); }
+.ak-toast.is-bad svg { color: var(--danger-fg); }
+.ak-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--success); display: inline-block; }
+.ak-dot.is-warn { background: var(--warning); } .ak-dot.is-bad { background: var(--danger); }
+.ak-cursor { position: absolute; width: 22px; height: 22px; z-index: 50; pointer-events: none; filter: drop-shadow(0 2px 4px rgb(0 0 0 / .6)); }
+.ak-ripple { position: absolute; width: 36px; height: 36px; margin: -18px 0 0 -18px; border-radius: 50%; border: 2px solid var(--accent-fg); z-index: 49; opacity: 0; }
+
+/* ---------- avatars + misc ---------- */
+.ak-av { width: 22px; height: 22px; border-radius: 6px; display: grid; place-items: center; font-size: 9.5px; font-weight: 600; background: rgb(52 213 153 / .14); color: #5fe3b1; }
+.ak-av.round { border-radius: 50%; }
+.ak-kv { display: flex; justify-content: space-between; font-size: 13px; padding: 7px 0; border-bottom: 1px solid var(--border); color: var(--fg-muted); }
+.ak-kv b { font-weight: 400; color: var(--fg); }
+.ak-divider { height: 1px; background: var(--border); }
+
+/* ---------- frame 05-say-yes ---------- */
+#root { position: absolute; inset: 0; width: 1920px; height: 1080px; overflow: hidden; }
+[id="05-say-yes-bg"] { position: absolute; inset: 0; width: 1920px; height: 1080px; background: #0f0f11; overflow: hidden; }
+[id="05-say-yes-art"] { position: absolute; inset: 0; width: 1920px; height: 1080px; object-fit: cover; opacity: 0.45; transform-origin: 50% 46%; }
+/* canvas radial fade behind the card row + soft edge vignette */
+[id="05-say-yes-fade"] { position: absolute; inset: 0;
+  background: radial-gradient(ellipse 58% 50% at 50% 45%, rgba(15,15,17,0.9) 0%, rgba(15,15,17,0.62) 52%, rgba(15,15,17,0) 100%); }
+[id="05-say-yes-vignette"] { position: absolute; inset: 0;
+  background: radial-gradient(ellipse 80% 78% at 50% 46%, rgba(15,15,17,0) 55%, rgba(15,15,17,0.8) 100%); }
+[id="05-say-yes-glow"] { position: absolute; left: 160px; top: 130px; width: 1600px; height: 720px;
+  background: radial-gradient(closest-side, rgba(52,213,153,0.2), transparent); }
+
+[id="05-say-yes-stage"] { position: absolute; inset: 0; width: 1920px; height: 1080px; }
+[id="05-say-yes-cam"] { position: absolute; inset: 0; width: 1920px; height: 1080px; transform-origin: 960px 480px; }
+[class~="05-say-yes-defs"] { position: absolute; left: 0; top: 0; width: 0; height: 0; overflow: hidden; }
+
+/* use-case cards, site style: hairline box, a neon line illustration up top, then the two-tone Cal Sans line
+   (bright lead + dimmed continuation), one mono detail chip; the neon "No code" stamp lands bottom-right. No icons. */
+[class~="05-say-yes-card"] { position: absolute; top: 208px; width: 560px; height: 544px; padding: 34px 40px 40px;
+  background: #151517; border: 1px solid #2a2a2f; border-radius: 18px; display: flex; flex-direction: column;
+  box-shadow: 0 34px 80px -26px rgba(0,0,0,0.9), 0 2px 10px -2px rgba(0,0,0,0.5); transform-origin: 50% 60%; }
+[id="05-say-yes-card1"] { left: 70px; }
+[id="05-say-yes-card2"] { left: 680px; }
+[id="05-say-yes-card3"] { left: 1290px; }
+
+/* line illustrations: hairline neon strokes that draw themselves + glowing node dots, no fills */
+[class~="05-say-yes-ill"] { position: relative; flex: none; display: block; width: 480px; height: 200px; overflow: visible; margin-bottom: 26px; }
+[class~="05-say-yes-hot"] { fill: none; stroke: #34d599; stroke-opacity: 0.9; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+[class~="05-say-yes-mid"] { fill: none; stroke: #34d599; stroke-opacity: 0.55; stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; }
+[class~="05-say-yes-dim"] { fill: none; stroke: #34d599; stroke-opacity: 0.22; stroke-width: 1.3; stroke-linecap: round; }
+[class~="05-say-yes-cy"] { fill: none; stroke: #2cc0de; stroke-opacity: 0.5; stroke-width: 1.3; stroke-linecap: round; stroke-linejoin: round; }
+[class~="05-say-yes-dots"] { fill: none; stroke: #2cc0de; stroke-opacity: 0.45; stroke-width: 1.8; stroke-linecap: round; stroke-dasharray: 0.01 7; }
+[class~="05-say-yes-dr"] { stroke-dasharray: 1 2; }
+[class~="05-say-yes-node"] { fill: #5fe3b1; }
+[class~="05-say-yes-node"].is-cy { fill: #6fe2f4; }
+[class~="05-say-yes-hollow"] { fill: #151517; stroke: #5fe3b1; stroke-width: 1.7; }
+[class~="05-say-yes-lbl"] { font-family: "Geist Mono", ui-monospace, monospace; font-variation-settings: normal; font-size: 14px; letter-spacing: 0.01em; fill: rgba(95,227,177,0.82); }
+
+/* neon "approved" ring + flash wash, lit by the No-code stamp */
+[class~="05-say-yes-lit"] { position: absolute; inset: -1px; border-radius: 18px; pointer-events: none; opacity: 0;
+  box-shadow: inset 0 0 0 1.5px rgba(52,213,153,0.9), inset 0 0 30px -10px rgba(52,213,153,0.45), 0 0 36px -8px rgba(52,213,153,0.55); }
+[class~="05-say-yes-wash"] { position: absolute; inset: 0; border-radius: 18px; pointer-events: none; opacity: 0;
+  background: radial-gradient(ellipse 90% 80% at 82% 86%, rgba(52,213,153,0.22), rgba(52,213,153,0.04) 70%, rgba(52,213,153,0)); }
+
+/* two-tone statement: lead in text, continuation in muted text, same size + weight */
+[class~="05-say-yes-text"] { position: relative; margin: 0; font-size: 42px; line-height: 1.14; font-weight: 500; letter-spacing: -0.015em;
+  font-variation-settings: "GEOM" 50; color: #ececee; text-wrap: pretty; }
+[class~="05-say-yes-text"] span { color: rgba(236,236,238,0.5); }
+[id="05-say-yes-text2a"], [id="05-say-yes-text2b"] { display: block; font-weight: inherit; }
+
+[class~="05-say-yes-foot"] { position: relative; margin-top: auto; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+
+[class~="05-say-yes-chip"] { position: relative; height: 58px; padding: 0 20px; border: 1px solid #323238; border-radius: 10px;
+  background: #1c1c1f; display: inline-flex; align-items: center; gap: 12px; white-space: nowrap; transform-origin: 0% 50%;
+  font-family: "Geist Mono", ui-monospace, monospace; font-variation-settings: normal; font-size: 24px; color: rgba(236,236,238,0.9); }
+[class~="05-say-yes-chip"].is-ab { padding: 0 6px 0 20px; gap: 14px; }
+[class~="05-say-yes-chip"] em { font-style: normal; color: #6f7178; margin-right: 10px; }
+[class~="05-say-yes-sep"] { width: 1px; height: 30px; background: #37373d; }
+[class~="05-say-yes-segb"] { position: relative; height: 44px; padding: 0 14px; border-radius: 7px; display: inline-flex; align-items: center;
+  background: rgba(52,213,153,0.12); color: #5fe3b1; box-shadow: inset 0 0 0 1px rgba(52,213,153,0.45); transform-origin: 50% 50%; }
+[class~="05-say-yes-segb"] em { color: rgba(95,227,177,0.6); }
+[class~="05-say-yes-bflash"] { position: absolute; inset: -10px; border-radius: 14px; opacity: 0; filter: blur(8px);
+  background: radial-gradient(closest-side, rgba(52,213,153,0.75), rgba(52,213,153,0)); z-index: -1; }
+
+/* the neon "No code" stamp (bottom-right of each card) — a text pill, no check icon */
+[class~="05-say-yes-stamp"] { position: relative; flex: none; height: 56px; }
+[class~="05-say-yes-burst"] { position: absolute; left: -16px; right: -16px; top: -12px; bottom: -12px; border-radius: 999px;
+  background: radial-gradient(closest-side, rgba(52,213,153,0.95), rgba(52,213,153,0)); filter: blur(16px); opacity: 0; z-index: 1; }
+[class~="05-say-yes-pill"] { position: relative; z-index: 2; height: 56px; padding: 0 24px; border-radius: 999px;
+  background: rgba(52,213,153,0.1); color: #5fe3b1; opacity: 0;
+  box-shadow: inset 0 0 0 1.5px rgba(52,213,153,0.9), inset 0 0 16px -6px rgba(52,213,153,0.45), 0 0 22px -6px rgba(52,213,153,0.6);
+  display: inline-flex; align-items: center; font-size: 25px; font-weight: 500; white-space: nowrap;
+  font-variation-settings: "GEOM" 50; transform-origin: 50% 50%; }
+  </style>
+
+<div id="root" data-composition-id="05-say-yes" data-width="1920" data-height="1080" data-start="0" data-duration="6.66">
+
+  <!-- full-bleed ground: canvas + neon section art (low) + radial fade + one green glow -->
+  <div id="05-say-yes-bg" class="clip" data-start="0" data-duration="6.66" data-track-index="0">
+    <img id="05-say-yes-art" src="assets/section-bg-neon.webp" alt="" />
+    <div id="05-say-yes-fade"></div>
+    <div id="05-say-yes-vignette"></div>
+    <div id="05-say-yes-glow"></div>
+  </div>
+
+  <!-- the shot -->
+  <div id="05-say-yes-stage" class="clip ak" data-start="0" data-duration="6.66" data-track-index="1">
+    <!-- shared SVG defs: neon glow + green->cyan stroke gradients (user-space so straight lines keep them) -->
+    <svg class="05-say-yes-defs" width="0" height="0" aria-hidden="true">
+      <defs>
+        <filter id="05-say-yes-gl" filterUnits="userSpaceOnUse" x="-40" y="-40" width="560" height="280">
+          <feGaussianBlur stdDeviation="3" result="b" />
+          <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
+        </filter>
+        <filter id="05-say-yes-gl2" filterUnits="userSpaceOnUse" x="-40" y="-40" width="560" height="280">
+          <feGaussianBlur stdDeviation="5" result="b" />
+          <feMerge><feMergeNode in="b" /><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
+        </filter>
+        <linearGradient id="05-say-yes-g1" gradientUnits="userSpaceOnUse" x1="240" y1="16" x2="240" y2="184">
+          <stop offset="0" stop-color="#34d599" /><stop offset="1" stop-color="#2cc0de" />
+        </linearGradient>
+        <linearGradient id="05-say-yes-g2" gradientUnits="userSpaceOnUse" x1="250" y1="0" x2="420" y2="0">
+          <stop offset="0" stop-color="#34d599" /><stop offset="1" stop-color="#2cc0de" />
+        </linearGradient>
+      </defs>
+    </svg>
+
+    <div id="05-say-yes-cam">
+
+      <!-- card 1: Black Friday promo — a price tag inside a countdown ring -->
+      <div id="05-say-yes-card1" class="05-say-yes-card">
+        <div id="05-say-yes-wash1" class="05-say-yes-wash"></div>
+        <svg id="05-say-yes-ill1" class="05-say-yes-ill" viewBox="0 0 480 200" width="480" height="200" fill="none" aria-hidden="true">
+          <g id="05-say-yes-c1guides">
+            <path class="05-say-yes-dots" d="M30 100 H128" />
+            <path class="05-say-yes-dots" d="M352 100 H450" />
+            <circle class="05-say-yes-node is-cy" cx="26" cy="100" r="3" />
+            <circle class="05-say-yes-node is-cy" cx="454" cy="100" r="3" />
+          </g>
+          <g id="05-say-yes-c1ticks" class="05-say-yes-cy"></g>
+          <path id="05-say-yes-c1track" class="05-say-yes-dim 05-say-yes-dr" pathLength="1" d="M240 16 A84 84 0 1 1 240 184 A84 84 0 1 1 240 16" />
+          <g filter="url(#05-say-yes-gl)">
+            <path id="05-say-yes-c1arc" class="05-say-yes-dr" pathLength="1" d="M240 16 A84 84 0 1 1 240 184 A84 84 0 1 1 240 16"
+              stroke="url(#05-say-yes-g1)" stroke-width="2.6" stroke-linecap="round" fill="none" />
+            <g transform="translate(244 102) rotate(-22)">
+              <path id="05-say-yes-c1tag" class="05-say-yes-hot 05-say-yes-dr" pathLength="1"
+                d="M-60 0 L-36 -29 L42 -29 Q51 -29 51 -20 L51 20 Q51 29 42 29 L-36 29 Z" />
+              <circle id="05-say-yes-c1hole" class="05-say-yes-hot" cx="-34" cy="0" r="5.5" />
+              <path id="05-say-yes-c1pct" class="05-say-yes-hot 05-say-yes-dr" pathLength="1"
+                d="M25 -15 L-1 15 M-1.5 -9 a5.5 5.5 0 1 0 11 0 a5.5 5.5 0 1 0 -11 0 M14.5 9 a5.5 5.5 0 1 0 11 0 a5.5 5.5 0 1 0 -11 0" />
+            </g>
+          </g>
+          <g filter="url(#05-say-yes-gl2)">
+            <circle id="05-say-yes-c1start" class="05-say-yes-hollow" cx="240" cy="16" r="5" />
+            <g id="05-say-yes-c1head"><circle id="05-say-yes-c1headdot" class="05-say-yes-node" cx="240" cy="16" r="5.5" /></g>
+          </g>
+        </svg>
+        <p id="05-say-yes-text1" class="05-say-yes-text">Black Friday deal. <span>Ends&nbsp;Sunday at midnight.</span></p>
+        <div class="05-say-yes-foot">
+          <div id="05-say-yes-chip1" class="05-say-yes-chip">+1,000 AI credits</div>
+          <div class="05-say-yes-stamp">
+            <div id="05-say-yes-burst1" class="05-say-yes-burst"></div>
+            <div id="05-say-yes-pill1" class="05-say-yes-pill">No code</div>
+          </div>
+        </div>
+        <div id="05-say-yes-lit1" class="05-say-yes-lit"></div>
+      </div>
+
+      <!-- card 2: influencer bundle — a package snaps into its slot, links to her node, her audience lights up -->
+      <div id="05-say-yes-card2" class="05-say-yes-card">
+        <div id="05-say-yes-wash2" class="05-say-yes-wash"></div>
+        <svg id="05-say-yes-ill2" class="05-say-yes-ill" viewBox="0 0 480 200" width="480" height="200" fill="none" aria-hidden="true">
+          <!-- placeholders laid down when the card opens: the bundle's slot, the link, her spot -->
+          <g id="05-say-yes-c2ghost">
+            <path class="05-say-yes-dots" d="M56 124 L112 156 L168 124 L112 92 Z" />
+            <path class="05-say-yes-dots" d="M166 100 H224" />
+            <circle class="05-say-yes-dots" cx="250" cy="100" r="26" />
+          </g>
+          <!-- her audience: rows of dots fanned out from her node (built in script) -->
+          <g id="05-say-yes-c2fan"></g>
+          <g filter="url(#05-say-yes-gl)">
+            <path id="05-say-yes-c2link" class="05-say-yes-hot 05-say-yes-dr" pathLength="1" d="M160 100 H230" />
+            <!-- the bundle: an isometric box in three faces + a tape line -->
+            <g id="05-say-yes-c2box">
+              <path id="05-say-yes-c2left" class="05-say-yes-hot" d="M70.4 76 L112 100 L112 148 L70.4 124 Z" />
+              <path id="05-say-yes-c2right" class="05-say-yes-hot" d="M112 100 L153.6 76 L153.6 124 L112 148 Z" />
+              <path id="05-say-yes-c2top" class="05-say-yes-hot" d="M112 52 L153.6 76 L112 100 L70.4 76 Z" />
+              <path id="05-say-yes-c2tape" class="05-say-yes-cy 05-say-yes-dr" pathLength="1" d="M91.2 64 L132.8 88 L132.8 136" style="stroke-opacity:0.9;stroke-width:1.7" />
+            </g>
+            <path id="05-say-yes-c2snap" class="05-say-yes-hot" d="M56 124 L112 156 L168 124 L112 92 Z" style="stroke-opacity:0.7" />
+            <!-- @sarahbuilds -->
+            <circle id="05-say-yes-c2halo" cx="250" cy="100" r="18" fill="none" stroke="#5fe3b1" stroke-width="1.6" />
+            <circle id="05-say-yes-c2halo2" cx="250" cy="100" r="18" fill="none" stroke="#5fe3b1" stroke-width="1.6" />
+            <path id="05-say-yes-c2ring" class="05-say-yes-hot 05-say-yes-dr" pathLength="1" d="M250 82 A18 18 0 1 1 250 118 A18 18 0 1 1 250 82" />
+          </g>
+          <g filter="url(#05-say-yes-gl2)">
+            <circle id="05-say-yes-c2dot" class="05-say-yes-node" cx="250" cy="100" r="6.5" />
+            <g id="05-say-yes-c2dots"></g>
+          </g>
+          <text id="05-say-yes-c2label" class="05-say-yes-lbl" x="250" y="150" text-anchor="middle">@sarahbuilds</text>
+        </svg>
+        <p id="05-say-yes-text2" class="05-say-yes-text"><b id="05-say-yes-text2a">Bundle for @sarahbuilds.</b><span id="05-say-yes-text2b">Her audience gets its own link.</span></p>
+        <div class="05-say-yes-foot">
+          <div id="05-say-yes-chip2" class="05-say-yes-chip">offer.to/sarah</div>
+          <div class="05-say-yes-stamp">
+            <div id="05-say-yes-burst2" class="05-say-yes-burst"></div>
+            <div id="05-say-yes-pill2" class="05-say-yes-pill">No code</div>
+          </div>
+        </div>
+        <div id="05-say-yes-lit2" class="05-say-yes-lit"></div>
+      </div>
+
+      <!-- card 3: price test — one line forks into A and B; B's bar ends taller and lit -->
+      <div id="05-say-yes-card3" class="05-say-yes-card">
+        <div id="05-say-yes-wash3" class="05-say-yes-wash"></div>
+        <svg id="05-say-yes-ill3" class="05-say-yes-ill" viewBox="0 0 480 200" width="480" height="200" fill="none" aria-hidden="true">
+          <g id="05-say-yes-c3base">
+            <path class="05-say-yes-dots" d="M72 190 H408" />
+            <path class="05-say-yes-dots" d="M150 112 V184" style="stroke-opacity:0.28" />
+            <path class="05-say-yes-dots" d="M330 112 V184" style="stroke-opacity:0.28" />
+            <circle class="05-say-yes-node is-cy" cx="68" cy="190" r="3" />
+            <circle class="05-say-yes-node is-cy" cx="412" cy="190" r="3" />
+          </g>
+          <path id="05-say-yes-c3level" class="05-say-yes-dots" d="M96 146 H384" style="stroke-opacity:0.3" />
+          <rect id="05-say-yes-c3barA" class="05-say-yes-mid" x="118" y="146" width="64" height="44" rx="3" />
+          <rect id="05-say-yes-c3barB" class="05-say-yes-mid" x="298" y="146" width="64" height="44" rx="3" />
+          <g filter="url(#05-say-yes-gl)">
+            <path id="05-say-yes-c3stem" class="05-say-yes-hot 05-say-yes-dr" pathLength="1" d="M240 21 V56" />
+            <path id="05-say-yes-c3brA" class="05-say-yes-mid 05-say-yes-dr" pathLength="1" d="M240 56 C240 84 150 72 150 100" />
+            <path id="05-say-yes-c3brB" class="05-say-yes-mid 05-say-yes-dr" pathLength="1" d="M240 56 C240 84 330 72 330 100" />
+          </g>
+          <g id="05-say-yes-c3hot" filter="url(#05-say-yes-gl2)">
+            <path id="05-say-yes-c3brBhot" class="05-say-yes-dr" pathLength="1" d="M240 56 C240 84 330 72 330 100" fill="none" stroke="#5fe3b1" stroke-width="2.2" stroke-linecap="round" />
+            <rect id="05-say-yes-c3barBhot" x="298" y="146" width="64" height="44" rx="3" fill="none" stroke="#5fe3b1" stroke-width="2.2" />
+          </g>
+          <g filter="url(#05-say-yes-gl2)">
+            <circle id="05-say-yes-c3origin" class="05-say-yes-hollow" cx="240" cy="15" r="5" />
+            <circle id="05-say-yes-c3fork" class="05-say-yes-node" cx="240" cy="56" r="3.5" />
+            <circle id="05-say-yes-c3nodeA" class="05-say-yes-hollow" cx="150" cy="100" r="5" style="stroke-opacity:0.7" />
+            <circle id="05-say-yes-c3nodeB" class="05-say-yes-node" cx="330" cy="100" r="5.5" />
+            <circle id="05-say-yes-c3haloB" cx="330" cy="100" r="6" fill="none" stroke="#5fe3b1" stroke-width="1.6" />
+          </g>
+          <text id="05-say-yes-c3lblA" class="05-say-yes-lbl" x="135" y="106" text-anchor="end" style="fill:rgba(236,236,238,0.55);font-size:17px">A</text>
+          <text id="05-say-yes-c3lblB" class="05-say-yes-lbl" x="345" y="106" text-anchor="start" style="font-size:17px">B</text>
+        </svg>
+        <p id="05-say-yes-text3" class="05-say-yes-text">Price test. <span>See which price sells more.</span></p>
+        <div class="05-say-yes-foot">
+          <div id="05-say-yes-chip3" class="05-say-yes-chip is-ab"><span><em>A</em>$29</span><i class="05-say-yes-sep"></i><span id="05-say-yes-segb" class="05-say-yes-segb"><i id="05-say-yes-bflash" class="05-say-yes-bflash"></i><em>B</em>$35</span></div>
+          <div class="05-say-yes-stamp">
+            <div id="05-say-yes-burst3" class="05-say-yes-burst"></div>
+            <div id="05-say-yes-pill3" class="05-say-yes-pill">No code</div>
+          </div>
+        </div>
+        <div id="05-say-yes-lit3" class="05-say-yes-lit"></div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+  <script>
+    (function () {
+      var $ = function (id) { return document.getElementById("05-say-yes-" + id); };
+      var NS = "http://www.w3.org/2000/svg";
+      var f = function (v) { return Math.round(v * 100) / 100; };
+      var RAD = Math.PI / 180;
+
+      // ---- deterministic line-art built once, before the timeline ----
+      // card 1: tick ring around the countdown, clockwise from 12 o'clock (majors every 30deg)
+      var ticks = [];
+      for (var i = 0; i < 60; i++) {
+        var a = (-90 + i * 6) * RAD, r1 = 92, r2 = i % 5 === 0 ? 100 : 96;
+        var tk = document.createElementNS(NS, "path");
+        tk.setAttribute("d", "M" + f(240 + r1 * Math.cos(a)) + " " + f(100 + r1 * Math.sin(a)) + " L" + f(240 + r2 * Math.cos(a)) + " " + f(100 + r2 * Math.sin(a)));
+        if (i % 5 === 0) tk.setAttribute("stroke-opacity", "0.75");
+        $("c1ticks").appendChild(tk); ticks.push(tk);
+      }
+
+      // card 2: her audience — her node reaches 5 inner dots, each passes it on to the outer crowd
+      var SX = 250, SY = 100;
+      function mkLine(parent, x1, y1, x2, y2, stroke, op) {
+        var ln = document.createElementNS(NS, "path");
+        ln.setAttribute("d", "M" + f(x1) + " " + f(y1) + " L" + f(x2) + " " + f(y2));
+        ln.setAttribute("pathLength", "1");
+        ln.setAttribute("class", "05-say-yes-dr");
+        ln.setAttribute("stroke", stroke); ln.setAttribute("stroke-opacity", op);
+        ln.setAttribute("stroke-width", "1.3"); ln.setAttribute("stroke-linecap", "round");
+        parent.appendChild(ln); return ln;
+      }
+      function mkDot(x, y, r, cy) {
+        var dt = document.createElementNS(NS, "circle");
+        dt.setAttribute("cx", f(x)); dt.setAttribute("cy", f(y)); dt.setAttribute("r", r);
+        dt.setAttribute("class", "05-say-yes-node" + (cy ? " is-cy" : ""));
+        $("c2dots").appendChild(dt); return dt;
+      }
+      var inner = [-32, -16, 0, 16, 32].map(function (d) {
+        var a = d * RAD; return { x: SX + 92 * Math.cos(a), y: SY + 92 * Math.sin(a), c: Math.cos(a), s: Math.sin(a) };
+      });
+      var outerAt = [[-60, 0], [-45, 0], [-30, 1], [-15, 1], [0, 2], [15, 3], [30, 3], [45, 4], [60, 4]];   // [angle, parent]
+      var inLines = [], inDots = [], outLines = [], outDots = [];
+      inner.forEach(function (p) {
+        inLines.push(mkLine($("c2fan"), SX + 24 * p.c, SY + 24 * p.s, p.x - 7 * p.c, p.y - 7 * p.s, "url(#05-say-yes-g2)", "0.75"));
+        inDots.push(mkDot(p.x, p.y, "5", false));
+      });
+      outerAt.forEach(function (o) {
+        var a = o[0] * RAD, x = SX + 168 * Math.cos(a), y = SY + 92 * Math.sin(a), p = inner[o[1]];
+        var dx = x - p.x, dy = y - p.y, L = Math.sqrt(dx * dx + dy * dy);
+        outLines.push(mkLine($("c2fan"), p.x + 7 * dx / L, p.y + 7 * dy / L, x - 6 * dx / L, y - 6 * dy / L, "#2cc0de", "0.5"));
+        outDots.push(mkDot(x, y, "4", true));
+      });
+
+      var tl = gsap.timeline({ paused: true });
+
+      // helpers — every entrance is a fromTo so seeking anywhere is safe
+      function draw(el, at, dur, ease) {
+        // attr (not CSS): CSSPlugin rounds px, which would snap a pathLength=1 draw to 0/1
+        tl.fromTo(el, { attr: { "stroke-dashoffset": 1.02 } }, { attr: { "stroke-dashoffset": 0 }, duration: dur, ease: ease || "power3.out" }, at);
+      }
+      function pop(el, at, dur) {
+        tl.fromTo(el, { scale: 0, opacity: 0, transformOrigin: "50% 50%" },
+          { scale: 1, opacity: 1, duration: dur || 0.34, ease: "expo.out" }, at);
+      }
+      function fade(el, at, dur, to) {
+        tl.fromTo(el, { opacity: 0 }, { opacity: to == null ? 1 : to, duration: dur || 0.3, ease: "power2.out" }, at);
+      }
+      function rise(el, at, dy) {
+        tl.fromTo(el, { y: dy || 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: "expo.out" }, at);
+      }
+      function card(n, at) {
+        tl.fromTo($("card" + n), { y: 40, scale: 0.92, opacity: 0 },
+          { y: 0, scale: 1, opacity: 1, duration: 0.42, ease: "expo.out" }, at);
+      }
+      function chip(el, at) {
+        tl.fromTo(el, { scale: 0.85, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.36, ease: "expo.out" }, at);
+      }
+      function pulse(el, at, r0, r1) {   // one expanding ring: flash on, fade out while it grows
+        tl.fromTo(el, { attr: { r: r0 } }, { attr: { r: r1 }, duration: 0.6, ease: "power2.out" }, at);
+        tl.fromTo(el, { opacity: 0 }, { opacity: 0.85, duration: 0.05, ease: "none" }, at);
+        tl.to(el, { opacity: 0, duration: 0.55, ease: "power2.out" }, at + 0.05);
+      }
+
+      // ---- ground + camera: moving from frame 0, settled by 5.6s ----
+      tl.fromTo($("art"), { scale: 1.08 }, { scale: 1, duration: 5.6, ease: "power2.out" }, 0);
+      tl.fromTo($("glow"), { opacity: 0 }, { opacity: 0.5, duration: 0.8, ease: "power2.out" }, 0.04);
+      tl.fromTo($("cam"), { scale: 1 }, { scale: 1.03, duration: 5.6, ease: "power2.inOut" }, 0);
+
+      // ================= CARD 1 — "Black" 0.62 · "Friday" 1.12 · "deal" 1.22 =================
+      card(1, 0.56);
+      rise($("text1"), 0.64);
+      pop($("c1start"), 0.62);
+      draw($("c1track"), 0.62, 0.55, "power2.out");
+      tl.fromTo(ticks, { opacity: 0 }, { opacity: 1, duration: 0.14, ease: "power2.out", stagger: 0.008 }, 0.64);
+      draw($("c1tag"), 0.70, 0.46);
+      fade($("c1guides"), 0.76, 0.4);
+      pop($("c1hole"), 0.98, 0.3);
+      // "Friday": the countdown ring sweeps clockwise, a glowing head riding its tip
+      tl.fromTo($("c1arc"), { attr: { "stroke-dashoffset": 1 } }, { attr: { "stroke-dashoffset": 0.28 }, duration: 1.15, ease: "power2.out" }, 1.12);
+      tl.fromTo($("c1head"), { rotation: 0, svgOrigin: "240 100" }, { rotation: 259.2, svgOrigin: "240 100", duration: 1.15, ease: "power2.out" }, 1.12);
+      pop($("c1headdot"), 1.12, 0.26);
+      // "deal": the % lands on the tag, the credits chip pops
+      draw($("c1pct"), 1.22, 0.34);
+      chip($("chip1"), 1.22);
+
+      // ================= CARD 2 — "give" 1.66 · "influencer" 1.98 · "bundle" 2.74 · "audience" 3.07 =================
+      card(2, 1.62);
+      fade($("c2ghost"), 1.72, 0.4);
+      // "influencer": her node lands, ring draws, handle rises, one pulse
+      pop($("c2dot"), 1.98, 0.36);
+      draw($("c2ring"), 1.98, 0.38);
+      pulse($("c2halo"), 2.0, 18, 40);
+      rise($("c2label"), 2.04, 10);
+      // "bundle": three faces converge into the slot and snap, tape seals it, the link draws to her
+      tl.fromTo($("c2left"), { x: -26, y: 14, opacity: 0 }, { x: 0, y: 0, opacity: 1, duration: 0.36, ease: "expo.out" }, 2.62);
+      tl.fromTo($("c2right"), { x: 26, y: 14, opacity: 0 }, { x: 0, y: 0, opacity: 1, duration: 0.36, ease: "expo.out" }, 2.67);
+      tl.fromTo($("c2top"), { y: -30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.34, ease: "expo.out" }, 2.72);
+      tl.fromTo($("c2snap"), { opacity: 0 }, { opacity: 1, duration: 0.08, ease: "power2.out" }, 2.78);
+      tl.to($("c2snap"), { opacity: 0.18, duration: 0.5, ease: "power2.out" }, 2.86);
+      draw($("c2tape"), 2.8, 0.26, "power2.out");
+      draw($("c2link"), 2.84, 0.3);
+      rise($("text2a"), 2.74);
+      // "audience": lines radiate from her node, the crowd lights in a quick stagger
+      pulse($("c2halo2"), 3.05, 18, 46);
+      var DOFF = { attr: { "stroke-dashoffset": 1.02 } };
+      tl.fromTo(inLines, DOFF, { attr: { "stroke-dashoffset": 0 }, duration: 0.2, ease: "power2.out", stagger: 0.04 }, 3.07);
+      tl.fromTo(inDots, { scale: 0, opacity: 0, transformOrigin: "50% 50%" },
+        { scale: 1, opacity: 1, duration: 0.3, ease: "expo.out", stagger: 0.04 }, 3.19);
+      tl.fromTo(outLines, DOFF, { attr: { "stroke-dashoffset": 0 }, duration: 0.18, ease: "power2.out", stagger: 0.03 }, 3.2);
+      tl.fromTo(outDots, { scale: 0, opacity: 0, transformOrigin: "50% 50%" },
+        { scale: 1, opacity: 1, duration: 0.3, ease: "expo.out", stagger: 0.03 }, 3.3);
+      rise($("text2b"), 3.09);
+      chip($("chip2"), 3.4);
+
+      // ================= CARD 3 — "test" 3.61 · "new" 3.93 · "price" 4.13 =================
+      card(3, 3.56);
+      rise($("text3"), 3.64);
+      fade($("c3base"), 3.66, 0.4);
+      pop($("c3origin"), 3.66);
+      // "new": the line drops and forks into A and B; both bars rise level
+      draw($("c3stem"), 3.93, 0.12, "power2.in");
+      pop($("c3fork"), 4.02, 0.28);
+      draw([$("c3brA"), $("c3brB")], 4.02, 0.24, "power2.out");
+      tl.fromTo([$("c3barA"), $("c3barB"), $("c3barBhot")], { attr: { y: 190, height: 0 } },
+        { attr: { y: 146, height: 44 }, duration: 0.3, ease: "expo.out" }, 3.96);
+      fade($("c3level"), 4.1, 0.3);
+      pop($("c3nodeA"), 4.12, 0.28);
+      pop($("c3nodeB"), 4.12, 0.28);
+      fade($("c3lblA"), 4.08, 0.25);
+      fade($("c3lblB"), 4.08, 0.25, 0.6);
+      chip($("chip3"), 3.95);
+      // "price": B's branch and bar light neon, B grows taller, A steps back
+      fade($("c3hot"), 4.13, 0.16);
+      draw($("c3brBhot"), 4.13, 0.24, "power2.out");
+      tl.to([$("c3barB"), $("c3barBhot")], { attr: { y: 112, height: 78 }, duration: 0.45, ease: "expo.out" }, 4.14);
+      tl.to($("c3lblB"), { opacity: 1, duration: 0.2, ease: "power2.out" }, 4.14);
+      tl.to([$("c3barA"), $("c3brA")], { opacity: 0.7, duration: 0.3, ease: "power2.out" }, 4.14);
+      pulse($("c3haloB"), 4.16, 6, 26);
+      tl.fromTo($("segb"), { scale: 0.8, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.36, ease: "expo.out" }, 4.13);
+      tl.fromTo($("bflash"), { opacity: 0 }, { opacity: 1, duration: 0.12, ease: "power2.out" }, 4.16);
+      tl.to($("bflash"), { opacity: 0, duration: 0.4, ease: "power2.in" }, 4.28);
+
+      // ---- "all without any code": the neon No-code pill stamps onto each card, left -> right ----
+      // press-release (linear press, expo release, no overshoot) + burst + card ring lights neon
+      var PRESS = 0.1;
+      [4.70, 4.83, 4.96].forEach(function (T, i) {
+        var n = i + 1, R = T + PRESS;
+        tl.fromTo($("pill" + n), { scale: 1.6, rotation: -9, opacity: 0 },
+          { scale: 0.92, rotation: 0, opacity: 1, duration: PRESS, ease: "power1.in" }, T);
+        tl.to($("pill" + n), { scale: 1, duration: 0.42, ease: "expo.out" }, R);
+        tl.fromTo($("burst" + n), { scale: 0.6, opacity: 0 }, { scale: 1.8, opacity: 0.9, duration: 0.16, ease: "power2.out" }, R);
+        tl.to($("burst" + n), { opacity: 0, duration: 0.4, ease: "power2.in" }, R + 0.16);
+        // the card takes the hit
+        tl.to($("card" + n), { scale: 0.975, duration: PRESS, ease: "power1.in" }, T + 0.02);
+        tl.to($("card" + n), { scale: 1, duration: 0.42, ease: "expo.out" }, T + 0.02 + PRESS);
+        // green glow flash, then the card stays lit neon
+        tl.fromTo($("wash" + n), { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "power2.out" }, R);
+        tl.to($("wash" + n), { opacity: 0, duration: 0.46, ease: "power2.in" }, R + 0.1);
+        tl.fromTo($("lit" + n), { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "power2.out" }, R);
+        tl.to($("lit" + n), { opacity: 0.6, duration: 0.46, ease: "power2.out" }, R + 0.1);
+      });
+      tl.to($("glow"), { opacity: 1, duration: 0.6, ease: "power2.out" }, 4.74);
+
+      window.__timelines = window.__timelines || {};
+      window.__timelines["05-say-yes"] = tl;
+    })();
+  </script>
+</template>

@@ -31,6 +31,8 @@ export const keys = {
   offers: (appId: string) => ["app", appId, "offers"] as const,
   offer: (appId: string, id: string) => ["app", appId, "offers", id] as const,
   paypal: (appId: string) => ["app", appId, "paypal"] as const,
+  cancelFlows: (appId: string) => ["app", appId, "cancel-flows"] as const,
+  cancelFlow: (appId: string, id: string) => ["app", appId, "cancel-flows", id] as const,
   accounts: (appId: string) => ["app", appId, "accounts"] as const,
   account: (appId: string, id: string) => ["app", appId, "accounts", "detail", id] as const,
   analytics: (appId: string) => ["app", appId, "analytics"] as const,
@@ -119,6 +121,34 @@ export function useOfferCheckouts(appId: string, id: string) {
   return useQuery({
     queryKey: [...keys.offer(appId, id), "checkouts"],
     queryFn: () => api.offers.checkouts(appId, { offer: id, limit: 50 }),
+  });
+}
+
+export function useCancelFlows(appId: string) {
+  return useQuery({ queryKey: keys.cancelFlows(appId), queryFn: () => api.cancelFlows.list(appId), enabled: Boolean(appId) });
+}
+
+export function useCancelFlow(appId: string, id: string | null | undefined) {
+  return useQuery({
+    queryKey: keys.cancelFlow(appId, id ?? ""),
+    queryFn: () => api.cancelFlows.get(appId, id!),
+    enabled: Boolean(appId && id),
+  });
+}
+
+export function useCancelFlowStats(appId: string, id: string | null | undefined, days = 30) {
+  return useQuery({
+    queryKey: [...keys.cancelFlow(appId, id ?? ""), "stats", days],
+    queryFn: () => api.cancelFlows.stats(appId, id!, days),
+    enabled: Boolean(appId && id),
+  });
+}
+
+export function useCancelSessions(appId: string, opts: { flow?: string; account?: string; limit?: number }) {
+  return useQuery({
+    queryKey: [...keys.cancelFlows(appId), "sessions", opts],
+    queryFn: () => api.cancelFlows.sessions(appId, opts),
+    enabled: Boolean(appId && (opts.flow || opts.account)),
   });
 }
 

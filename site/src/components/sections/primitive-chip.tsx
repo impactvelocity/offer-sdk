@@ -4,8 +4,8 @@ export type Primitive = "Plans" | "Entitlements" | "Add-ons" | "Incentives" | "O
 
 // Same tone per primitive as the Platform diagrams.
 const tones: Record<Primitive, MarkerTone> = {
-  Plans: "violet",
-  Entitlements: "teal",
+  Plans: "green",
+  Entitlements: "violet",
   "Add-ons": "orange",
   Incentives: "pink",
   Offers: "blue",

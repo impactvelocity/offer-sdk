@@ -1,129 +1,145 @@
-import { ArrowRight, Check, Clock, FlaskConical, Handshake, LifeBuoy, Megaphone, TrendingUp, Workflow } from "lucide-react";
-import type { ReactNode } from "react";
+import type { ComponentType, CSSProperties, ReactNode } from "react";
+import type { MarkerTone } from "@/components/diagrams/kit";
+import { DiagramReveal } from "@/components/diagrams/reveal";
+import {
+  AbTestDiagram,
+  ChurnDiagram,
+  FunnelDiagram,
+  PartnerDiagram,
+  PromoDiagram,
+  UpsellDiagram,
+} from "@/components/diagrams/use-cases";
+import { SectionArt } from "@/components/section-art";
 import { SectionHeading } from "@/components/section-heading";
-import { Badge, IconTile, type BadgeColor } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
-const funnel: { step: string; offer: string; price: string; grants: string[]; color: BadgeColor }[] = [
-  { step: "Front-end offer", offer: "Pro plan", price: "$29/mo", grants: ["Pro features", "1,000 credits"], color: "purple" },
-  { step: "Order bump", offer: "Resource pack", price: "+$19", grants: ["Templates add-on", "Instant delivery"], color: "orange" },
-  { step: "Upsell", offer: "Go yearly", price: "$249/yr", grants: ["2 months free", "+2,000 credits"], color: "pink" },
-  { step: "Downsell", offer: "Starter", price: "$9/mo", grants: ["Core features", "200 credits"], color: "blue" },
+const funnel: { step: string; offer: string; price: string; grants: string[] }[] = [
+  { step: "Front-end offer", offer: "Pro plan", price: "$29/mo", grants: ["Pro features", "1,000 credits"] },
+  { step: "Order bump", offer: "Resource pack", price: "+$19", grants: ["Templates add-on", "Instant delivery"] },
+  { step: "Upsell", offer: "Go yearly", price: "$249/yr", grants: ["2 months free", "+2,000 credits"] },
+  { step: "Downsell", offer: "Starter", price: "$9/mo", grants: ["Core features", "200 credits"] },
 ];
 
-const cases: { icon: ReactNode; color: BadgeColor; title: string; body: string; detail: ReactNode; wide?: boolean }[] = [
+const cases: { title: string; body: string; tone: MarkerTone; Diagram: ComponentType; detail: ReactNode }[] = [
   {
-    icon: <TrendingUp />,
-    color: "green",
     title: "Upsells at the limit",
     body: "When an account runs low on credits, show the next plan up and take payment through PayPal.",
-    detail: <Detail icon={<TrendingUp />}>Upgrade shown at 90% of the credit limit</Detail>,
+    tone: "green",
+    Diagram: UpsellDiagram,
+    detail: <Detail>Upgrade shown at 90% of the credit limit</Detail>,
   },
   {
-    icon: <LifeBuoy />,
-    color: "pink",
     title: "Churn saves",
     body: "Give more instead of discounting. Add credits or seats the moment someone clicks cancel.",
-    detail: <Detail icon={<Check />}>+500 credits and 5 seats granted</Detail>,
+    tone: "pink",
+    Diagram: ChurnDiagram,
+    detail: <Detail>+500 credits and 5 seats granted</Detail>,
   },
   {
-    icon: <Handshake />,
-    color: "blue",
     title: "Partner bundles",
     body: "Make a bundle for one partner. Buyers from their link are credited to them and get access on their own.",
-    detail: <Detail icon={<ArrowRight />}>offer.to/sarah · auto-credited</Detail>,
+    tone: "blue",
+    Diagram: PartnerDiagram,
+    detail: <Detail>offer.to/sarah · auto-credited</Detail>,
   },
   {
-    icon: <Megaphone />,
-    color: "orange",
     title: "Time-limited promos",
     body: "Launch a Black Friday price with an end date. When it passes, the link stops selling and there's no code to clean up.",
-    detail: <Detail icon={<Clock />}>BF24 ends Sunday at midnight</Detail>,
-    wide: true,
+    tone: "orange",
+    Diagram: PromoDiagram,
+    detail: <Detail>BF24 ends Sunday at midnight</Detail>,
   },
   {
-    icon: <FlaskConical />,
-    color: "teal",
     title: "Pricing tests",
     body: "Put two packages on two links and compare how many buyers check out on each.",
+    tone: "violet",
+    Diagram: AbTestDiagram,
     detail: (
-      <span className="flex w-full gap-1.5 text-xs">
-        <span className="flex-1 rounded-md border border-border bg-bg px-2 py-1.5 text-fg-secondary">A · Pro $29</span>
-        <span className="flex-1 rounded-md border border-border bg-bg px-2 py-1.5 text-fg-secondary">B · Pro + credits $35</span>
+      <span className="flex w-full flex-wrap gap-1.5">
+        <Detail>A · Pro $29</Detail>
+        <Detail>B · Pro + credits $35</Detail>
       </span>
     ),
-    wide: true,
   },
 ];
 
-/** Use cases: funnels across the full width (with a step-by-step flow), then five cards. */
+// Cards sit on the panel color, so the diagrams' faces fill with it too.
+export const cardStyle = (tone: MarkerTone) =>
+  ({ "--tone": `var(--marker-${tone})`, "--diagram-bg": "var(--panel)" }) as CSSProperties;
+
+/**
+ * Use cases on the section artwork: the funnel across the full width, then one card per case.
+ * Every card leads with its own line diagram (drawn on when scrolled into view, animated on hover).
+ */
 export function UseCasesSection() {
   return (
-    <section id="use-cases" className="mx-auto max-w-6xl scroll-mt-20 px-4 py-20 sm:px-6">
-      <SectionHeading title="Funnels, saves, partner deals and promos, without an engineering ticket" />
+    <SectionArt id="use-cases" artClassName="opacity-12">
+      <div className="mx-auto max-w-6xl px-4 py-24 sm:px-6 sm:py-32">
+        <SectionHeading
+          title="Funnels, partner deals and promos."
+          lead="Launch each one from the dashboard."
+        />
 
-      <div className="mt-12 grid gap-4 md:grid-cols-6">
-        <article className="rounded-2xl border border-border bg-panel p-6 md:col-span-6 sm:p-8">
-          <div className="max-w-md">
-            <IconTile color="purple">
-              <Workflow />
-            </IconTile>
-            <h3 className="mt-5 text-xl font-semibold">Funnels with bumps, upsells and downsells</h3>
-            <p className="mt-2 text-sm text-fg-muted">
-              Each step grants its own features, credits or add-ons. Change a step in the dashboard and the next
-              buyer gets the new access.
-            </p>
+        <article
+          style={cardStyle("green")}
+          className="diagram-cell group mt-16 grid items-center gap-8 rounded-2xl border border-border bg-panel p-6 shadow-lg sm:p-8 lg:grid-cols-[2fr_5fr]"
+        >
+          <DiagramReveal className="mx-auto w-full max-w-[280px]">
+            <FunnelDiagram />
+          </DiagramReveal>
+          <div>
+            <h3 className="max-w-xl text-xl">
+              <span className="text-fg">Funnels with bumps, upsells and downsells.</span>{" "}
+              <span className="text-fg-muted">
+                Each step grants its own features, credits or add-ons. Change a step in the dashboard and the next
+                buyer gets the new access.
+              </span>
+            </h3>
+            <ol className="mt-8 grid gap-px overflow-hidden rounded-xl border border-border bg-border sm:grid-cols-2 xl:grid-cols-4">
+              {funnel.map((s, i) => (
+                <li key={s.step} className="bg-bg p-4">
+                  <div className="flex items-baseline justify-between gap-2 text-xs">
+                    <span className="text-fg-tertiary">
+                      <span className="font-mono tabular">0{i + 1}</span> {s.step}
+                    </span>
+                    <span className="font-mono text-fg-secondary tabular">{s.price}</span>
+                  </div>
+                  <p className="mt-4 font-medium text-fg">{s.offer}</p>
+                  <p className="mt-1 text-xs text-fg-muted">{s.grants.join(" · ")}</p>
+                </li>
+              ))}
+            </ol>
           </div>
-
-          <ol className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            {funnel.map((s, i) => (
-              <li key={s.step} className="relative rounded-xl border border-border bg-bg p-4">
-                <div className="flex items-center justify-between gap-2">
-                  <span className="text-xs text-fg-tertiary tabular">
-                    {i + 1} · {s.step}
-                  </span>
-                  <Badge color={s.color}>{s.price}</Badge>
-                </div>
-                <p className="mt-3 font-medium text-fg">{s.offer}</p>
-                <ul className="mt-2 space-y-1">
-                  {s.grants.map((g) => (
-                    <li key={g} className="flex items-center gap-1.5 text-xs text-fg-secondary">
-                      <Check className="size-3 text-success-fg" strokeWidth={3} />
-                      {g}
-                    </li>
-                  ))}
-                </ul>
-                {i < funnel.length - 1 ? (
-                  <ArrowRight
-                    aria-hidden
-                    className="absolute top-1/2 -right-[13px] z-10 hidden size-4 -translate-y-1/2 rounded-full bg-panel text-fg-icon lg:block"
-                  />
-                ) : null}
-              </li>
-            ))}
-          </ol>
         </article>
 
-        {cases.map((c) => (
-          <article
-            key={c.title}
-            className={cn("flex flex-col rounded-2xl border border-border bg-panel p-6", c.wide ? "md:col-span-3" : "md:col-span-2")}
-          >
-            <IconTile color={c.color}>{c.icon}</IconTile>
-            <h3 className="mt-5 text-lg font-semibold">{c.title}</h3>
-            <p className="mt-1.5 text-sm text-fg-muted">{c.body}</p>
-            <div className="mt-auto flex pt-5">{c.detail}</div>
-          </article>
-        ))}
+        <div className="mt-4 grid gap-4 md:grid-cols-6">
+          {cases.map(({ title, body, tone, Diagram, detail }, i) => (
+            <article
+              key={title}
+              style={cardStyle(tone)}
+              className={cn(
+                "diagram-cell group flex flex-col rounded-2xl border border-border bg-panel p-6 shadow-lg",
+                // Three across, then two wider cards.
+                i < 3 ? "md:col-span-2" : "md:col-span-3",
+              )}
+            >
+              <DiagramReveal className="mx-auto mb-6 w-full max-w-[260px]">
+                <Diagram />
+              </DiagramReveal>
+              <h3 className="text-lg font-medium text-fg">{title}</h3>
+              <p className="mt-2 text-sm text-fg-muted">{body}</p>
+              <div className="mt-auto flex pt-6">{detail}</div>
+            </article>
+          ))}
+        </div>
       </div>
-    </section>
+    </SectionArt>
   );
 }
 
-function Detail({ icon, children }: { icon: ReactNode; children: ReactNode }) {
+function Detail({ children, className }: { children: ReactNode; className?: string }) {
   return (
-    <span className="inline-flex items-center gap-1.5 rounded-md border border-border bg-bg px-2 py-1.5 text-xs text-fg-secondary [&_svg]:size-3 [&_svg]:text-fg-icon">
-      {icon}
+    <span className={cn("inline-flex rounded-md border border-border bg-bg px-2 py-1.5 font-mono text-xs text-fg-secondary", className)}>
       {children}
     </span>
   );

@@ -137,10 +137,10 @@ export function ChurnDemo() {
       <AppWindow url="app.acmedocs.dev/settings/billing" className="h-[560px]">
         <div className="flex h-12 shrink-0 items-center gap-3 border-b border-border px-4">
           <span className="flex items-center gap-2 font-display text-sm font-semibold">
-            <span className="inline-flex size-6 items-center justify-center rounded-md bg-brand text-[11px] text-white">A</span>
+            <span className="inline-flex size-6 items-center justify-center rounded-md bg-brand text-[11px] text-accent-contrast">A</span>
             <span className="hidden sm:inline">Acme Docs</span>
           </span>
-          <Badge color={flow.step === "saved" && flow.offer.kind === "downgrade" ? "gray" : "purple"}>
+          <Badge color={flow.step === "saved" && flow.offer.kind === "downgrade" ? "gray" : "brand"}>
             {flow.step === "saved" && flow.offer.kind === "downgrade" ? "Starter" : "Pro"}
           </Badge>
           {flow.step === "canceled" ? <Badge color="orange">Canceling</Badge> : null}
@@ -348,7 +348,7 @@ function OfferCard({
         <button
           type="button"
           onClick={() => onAccept(offer)}
-          className="mt-4 inline-flex h-9 w-full items-center justify-center rounded-md bg-brand-vertical px-3 text-sm font-medium text-white shadow-[inset_0_0_0_1px_rgb(0_0_0/0.22),inset_0_0_0_2px_rgb(255_255_255/0.18)] hover:brightness-110"
+          className="mt-4 inline-flex h-9 w-full items-center justify-center rounded-md btn-neon px-3 text-sm font-medium"
         >
           {offer.cta}
         </button>

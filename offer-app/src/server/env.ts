@@ -38,8 +38,9 @@ const schema = z.object({
   BETTER_AUTH_SECRET: optional,
   BETTER_AUTH_URL: optional.pipe(z.url().optional()),
 
-  // Show "Explore the demo workspace" on the sign-in page with the hosted API (seed it
-  // first with `pnpm seed:demo`). The mock always has its demo. Defaults to on under `next dev`.
+  // Show "Explore the demo workspace" on the sign-in page with the hosted API. The first
+  // click builds the shared demo workspace (sample apps, accounts, usage history, an offer
+  // and a cancel flow). The mock always has its demo. Defaults to on under `next dev`.
   DEMO_ENABLED: optional.transform((value) => (value ?? (isDev ? "true" : "false")) === "true"),
 
   // Agent chat (AI SDK + Anthropic). Without it the Agent page explains how to enable it.

@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { Geist_Mono } from "next/font/google";
 import localFont from "next/font/local";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
@@ -11,6 +12,9 @@ const calSans = localFont({
   weight: "400 700",
   display: "swap",
 });
+
+// Mono for code and section numbers.
+const geistMono = Geist_Mono({ subsets: ["latin"], variable: "--font-geist-mono", display: "swap" });
 
 export const metadata: Metadata = {
   title: { default: "Offer SDK: plans, entitlements and offers for your app", template: "%s · Offer SDK" },
@@ -25,7 +29,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={calSans.variable}>
+    <html lang="en" data-scroll-behavior="smooth" className={`${calSans.variable} ${geistMono.variable}`}>
       <body className="flex min-h-dvh flex-col">
         <SiteHeader />
         <main className="flex-1">{children}</main>

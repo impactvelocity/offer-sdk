@@ -1,26 +1,25 @@
 import type { ReactNode } from "react";
-import { cn } from "@/lib/utils";
 
+/**
+ * Section opener, after neon.com: one large left-aligned statement where the title reads bright
+ * and the lead continues it in a quieter tone.
+ */
 export function SectionHeading({
-  eyebrow,
   title,
   lead,
-  align = "center",
   className,
 }: {
-  /** Optional small label above the title. */
-  eyebrow?: string;
   title: ReactNode;
-  /** Optional paragraph under the title. */
+  /** Continues the title in the same sentence size, dimmed. */
   lead?: ReactNode;
-  align?: "center" | "left";
   className?: string;
 }) {
   return (
-    <div className={cn(align === "center" && "text-center", className)}>
-      {eyebrow ? <p className="mb-2 text-sm font-medium text-accent-fg">{eyebrow}</p> : null}
-      <h2 className="font-display text-3xl font-semibold text-balance sm:text-4xl">{title}</h2>
-      {lead ? <p className={cn("mt-4 max-w-xl text-fg-muted", align === "center" && "mx-auto")}>{lead}</p> : null}
+    <div className={className}>
+      <h2 className="max-w-4xl font-display text-2xl font-medium tracking-wider text-balance sm:text-3xl lg:text-4xl">
+        <span className="text-fg">{title}</span>
+        {lead ? <span className="text-fg-muted"> {lead}</span> : null}
+      </h2>
     </div>
   );
 }

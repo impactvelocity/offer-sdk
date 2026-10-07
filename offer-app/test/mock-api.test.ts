@@ -301,3 +301,17 @@ describe("mock agent threads", () => {
     expect((await call("PUT", `${path()}/thr_4`, { user_id: "u1" })).status).toBe(400);
   });
 });
+
+describe("sample data", () => {
+  it("creates a catalog, backdated accounts with usage history, and saved reports", async () => {
+    const { addSampleData } = await import("@/server/offer-api");
+    const sample = (await call("POST", "/apps", { name: "Sample" }, null)).body;
+    await addSampleData(sample.id, "saas");
+
+    expect((await call("GET", `/apps/${sample.id}/plans`)).body).toHaveLength(5);
+    expect((await call("GET", `/apps/${sample.id}/namespaces/count`)).body.count).toBe(64);
+    const events = await call("GET", `/apps/${sample.id}/analytics/events?limit=5`);
+    expect(events.body).toHaveLength(5);
+    expect((await call("GET", `/apps/${sample.id}/analytics/reports`)).body).toHaveLength(2);
+  });
+});

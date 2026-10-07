@@ -35,7 +35,7 @@ export function EndpointIcon({ source, size = "sm" }: { source: WebhookEndpoint[
       <ZapierMark className={icon} />
     </span>
   ) : (
-    <span className={cn("flex shrink-0 items-center justify-center bg-tag-purple-bg text-tag-purple-fg", box)}>
+    <span className={cn("flex shrink-0 items-center justify-center bg-tag-brand-bg text-tag-brand-fg", box)}>
       <Webhook className={icon} />
     </span>
   );
@@ -102,7 +102,7 @@ export function HttpStatus({ status }: { status: number | null }) {
 }
 
 export function EventsSummary({ events }: { events: string[] }) {
-  if (events.includes(ALL_EVENTS)) return <Badge color="purple">All events</Badge>;
+  if (events.includes(ALL_EVENTS)) return <Badge color="brand">All events</Badge>;
   if (events.length === 1) return <code className="text-[13px] text-fg">{events[0]}</code>;
   return (
     <Tooltip

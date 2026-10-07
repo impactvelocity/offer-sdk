@@ -6,8 +6,10 @@
  * move between the two apps unchanged. Keep both files in sync when a value changes.
  *
  * Surfaces: the page sits on `canvas` (the app's outer shell), with cards on `bg` / `panel`,
- * same as the dashboard's page card on its canvas. Violet is the action color, and the
- * violet→pink brand gradient is the pop of color (primary buttons, highlights, glows).
+ * same as the dashboard's page card on its canvas. Neon green (#34d599) is the action color,
+ * and the green→cyan brand gradient is the pop of color (highlights, glows, charts). Primary
+ * buttons are neon-outline pills. Layout follows neon.com: left-aligned statements (bright title,
+ * dimmed lead), big section numbers, hairline grids and plain feature lists without icons.
  */
 :root {
   color-scheme: dark;
@@ -36,11 +38,13 @@
   --border-strong: #37373d;
   --border-input: #323238;
 
-  --accent: #8f6bff;
-  --accent-hover: #a083ff;
-  --accent-subtle: rgb(143 107 255 / 0.18);
-  --accent-fg: #bba6ff;
-  --ring: rgb(143 107 255 / 0.42);
+  --accent: #34d599;
+  --accent-hover: #5ce0b0;
+  --accent-subtle: rgb(52 213 153 / 0.13);
+  --accent-fg: #5fe3b1;
+  /* Ink on solid green fills (never white). */
+  --accent-contrast: #03140c;
+  --ring: rgb(52 213 153 / 0.4);
 
   --danger: #e5484d;
   --danger-subtle: rgb(229 72 77 / 0.15);
@@ -69,6 +73,8 @@
   --tag-red-fg: #ff8a8d;
   --tag-purple-bg: rgb(143 107 255 / 0.2);
   --tag-purple-fg: #bba6ff;
+  --tag-brand-bg: rgb(52 213 153 / 0.14);
+  --tag-brand-fg: #5fe3b1;
   --tag-pink-bg: rgb(224 69 123 / 0.18);
   --tag-pink-fg: #ff8fba;
   --tag-teal-bg: rgb(20 163 157 / 0.18);
@@ -76,7 +82,7 @@
 
   /* Code highlighting. */
   --code-comment: #7f828a;
-  --code-keyword: #b8a0ff;
+  --code-keyword: #5fe3b1;
   --code-string: #6fd69f;
   --code-key: #93b8ff;
   --code-number: #ffa072;
@@ -86,18 +92,23 @@
   --logo-mark: #18181b;
 
   /* Brand gradient: used sparingly as a pop of color. */
-  --brand-from: #8f6bff;
-  --brand-to: #e8558a;
+  --brand-from: #34d599;
+  --brand-to: #2cc0de;
   --brand-gradient: linear-gradient(90deg in oklch, var(--brand-from), var(--brand-to));
-  --brand-glow: rgb(143 107 255 / 0.14);
-  --brand-glow-2: rgb(232 85 138 / 0.1);
+  --brand-glow: rgb(52 213 153 / 0.12);
+  --brand-glow-2: rgb(44 192 222 / 0.08);
+
+  /* Primary buttons: neon hairline border over a faint green wash, with a soft glow. */
+  --btn-neon-bg: rgb(52 213 153 / 0.08);
+  --btn-neon-bg-hover: rgb(52 213 153 / 0.15);
+  --shadow-brand: inset 0 0 0 1px rgb(52 213 153 / 0.85), inset 0 0 14px -6px rgb(52 213 153 / 0.35), 0 0 16px -6px rgb(52 213 153 / 0.4);
 
   /* Line diagrams (src/components/diagrams): hairlines on the page color, one marker tone each. */
   --diagram-bg: var(--canvas);
   --diagram-line: rgb(236 236 238 / 0.5);
   --diagram-guide: rgb(236 236 238 / 0.34);
+  --marker-green: #34d599;
   --marker-violet: #9675ff;
-  --marker-teal: #3cc5bc;
   --marker-orange: #f07a4c;
   --marker-pink: #ec5f95;
   --marker-blue: #5aa8f5;
@@ -121,7 +132,7 @@
 
 @theme inline {
   --font-sans: var(--font-cal-sans), ui-sans-serif, system-ui, sans-serif;
-  --font-mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+  --font-mono: var(--font-geist-mono), ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
 
   /* Type scale: the app's scale up to 3xl, then display sizes for the landing page. */
   --text-2xs: 12px;
@@ -130,8 +141,8 @@
   --text-xs--line-height: 18px;
   --text-sm: 14px;
   --text-sm--line-height: 22px;
-  --text-base: 15px;
-  --text-base--line-height: 24px;
+  --text-base: 16px;
+  --text-base--line-height: 26px;
   --text-lg: 17px;
   --text-lg--line-height: 26px;
   --text-xl: 22px;
@@ -179,6 +190,8 @@
   --color-tag-red-fg: var(--tag-red-fg);
   --color-tag-purple-bg: var(--tag-purple-bg);
   --color-tag-purple-fg: var(--tag-purple-fg);
+  --color-tag-brand-bg: var(--tag-brand-bg);
+  --color-tag-brand-fg: var(--tag-brand-fg);
   --color-tag-pink-bg: var(--tag-pink-bg);
   --color-tag-pink-fg: var(--tag-pink-fg);
   --color-tag-teal-bg: var(--tag-teal-bg);
@@ -195,6 +208,7 @@
   --color-accent-hover: var(--accent-hover);
   --color-accent-subtle: var(--accent-subtle);
   --color-accent-fg: var(--accent-fg);
+  --color-accent-contrast: var(--accent-contrast);
   --color-ring: var(--ring);
   --color-danger: var(--danger);
   --color-danger-subtle: var(--danger-subtle);
@@ -211,6 +225,7 @@
   --shadow-md: var(--shadow-md);
   --shadow-lg: var(--shadow-lg);
   --shadow-soft: var(--shadow-soft);
+  --shadow-brand: var(--shadow-brand);
 
   --radius-sm: 4px;
   --radius-md: 6px;
@@ -232,8 +247,8 @@
     background: var(--canvas);
     color: var(--fg);
     font-family: var(--font-sans);
-    font-size: 15px;
-    line-height: 24px;
+    font-size: 16px;
+    line-height: 26px;
     font-optical-sizing: auto;
     font-variation-settings: var(--font-geom-ui);
     -webkit-font-smoothing: antialiased;
@@ -268,13 +283,31 @@
   background-image: var(--brand-gradient);
 }
 
-/* Primary buttons: same recipe as offer-app's. */
+/* Solid brand tiles (avatars, icon tiles): green with a hint of cyan, dark ink on top. */
 @utility bg-brand-vertical {
   background-image: linear-gradient(
     180deg in oklch,
-    color-mix(in oklch, color-mix(in oklch, var(--brand-from), var(--brand-to) 18%), black 2%),
-    color-mix(in oklch, var(--brand-from), black 14%)
+    color-mix(in oklch, color-mix(in oklch, var(--brand-from), var(--brand-to) 12%), white 8%),
+    color-mix(in oklch, var(--brand-from), black 8%)
   );
+}
+
+/* Primary button: neon border, faded inner wash, accent ink (same recipe as offer-app's). */
+@utility btn-neon {
+  background-color: var(--btn-neon-bg);
+  color: var(--accent-fg);
+  box-shadow: var(--shadow-brand);
+  &:hover {
+    background-color: var(--btn-neon-bg-hover);
+  }
+}
+
+/* Neon words in a headline: solid accent with a soft glow, after the primary button. Use sparingly. */
+@utility text-neon {
+  color: var(--accent);
+  text-shadow:
+    0 0 18px rgb(52 213 153 / 0.45),
+    0 0 42px rgb(52 213 153 / 0.2);
 }
 
 @utility bg-brand-soft {
@@ -510,6 +543,35 @@
   stroke-dashoffset: 0;
 }
 
+/* Hero jump links (src/app/page.tsx): the underline draws in from the left and the arrow nudges down. */
+.jump-link {
+  background: linear-gradient(currentColor, currentColor) left bottom / 0% 1px no-repeat;
+}
+
+.group:hover .jump-link,
+.group:focus-visible .jump-link {
+  background-size: 100% 1px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  .jump-link {
+    transition: background-size 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .jump-arrow {
+    transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .group:hover .jump-arrow,
+  .group:focus-visible .jump-arrow {
+    transform: translateY(2px);
+  }
+}
+
 /* Feature tabs (src/components/feature-tabs). */
 @keyframes tab-progress {
   from {
@@ -540,33 +602,6 @@
 }
 
 /* The visual for each tab sits in a framed panel lit in the tab's tone. */
-.feature-frame {
-  position: relative;
-  isolation: isolate;
-  overflow: hidden;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-2xl);
-  background: var(--panel);
-  padding: 20px;
-}
-
-.feature-frame::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  background:
-    radial-gradient(60% 50% at 80% 0%, color-mix(in oklch, var(--tone) 16%, transparent), transparent),
-    radial-gradient(circle, color-mix(in oklch, var(--tone) 22%, transparent) 1px, transparent 1.5px) 0 0 / 18px 18px;
-  mask-image: linear-gradient(to bottom, black, transparent 70%);
-}
-
-@media (min-width: 640px) {
-  .feature-frame {
-    padding: 28px;
-  }
-}
-
 @media (prefers-reduced-motion: no-preference) {
   .feature-in {
     animation: feature-in 0.5s cubic-bezier(0.22, 1, 0.36, 1);
@@ -597,7 +632,7 @@
   }
 }
 
-/* Story page (src/components/story). */
+/* Why Offer SDK page (src/components/why). */
 @keyframes story-line-in {
   from {
     opacity: 0;
@@ -622,7 +657,7 @@
   }
 }
 
-/* Demo page (src/components/demo): values flash when the simulated SDK changes them. */
+/* How it works page (src/components/demo): values flash when the simulated SDK changes them. */
 @keyframes demo-flash {
   from {
     background-color: var(--accent-subtle);
@@ -646,4 +681,196 @@
     transform-origin: left;
     animation: demo-grow 0.7s cubic-bezier(0.22, 1, 0.36, 1);
   }
+}
+
+/* Walkthrough video (src/components/walkthrough-video.tsx): a brand-gradient hairline circles the frame. */
+@property --video-angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+.video-frame {
+  background: conic-gradient(
+    from var(--video-angle),
+    var(--border-strong) 0% 55%,
+    var(--brand-from) 72%,
+    var(--brand-to) 82%,
+    var(--border-strong) 96%
+  );
+}
+
+@keyframes video-spin {
+  to {
+    --video-angle: 360deg;
+  }
+}
+
+@keyframes video-rec {
+  50% {
+    opacity: 0.25;
+  }
+}
+
+@keyframes video-ping {
+  from {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(1.9);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .video-frame {
+    animation: video-spin 8s linear infinite;
+  }
+
+  .video-rec {
+    animation: video-rec 1.6s ease-in-out infinite;
+  }
+
+  .video-ping {
+    animation: video-ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+  }
+}
+
+/*
+ * Docs pages (src/app/docs). The article's plain elements get their type and rhythm here, so
+ * pages can be written as ordinary JSX; the blocks in src/components/docs/prose.tsx carry `docs-block`.
+ */
+.docs-prose {
+  color: var(--fg-tertiary);
+  font-size: 16px;
+  line-height: 28px;
+}
+
+.docs-prose > * + * {
+  margin-top: 20px;
+}
+
+.docs-prose > header + * {
+  margin-top: 40px;
+}
+
+.docs-prose > h2 {
+  margin-top: 64px;
+}
+
+.docs-prose > h3,
+.docs-prose > * + .docs-block,
+.docs-prose > .docs-block + * {
+  margin-top: 28px;
+}
+
+.docs-prose > h2 + *,
+.docs-prose > h3 + * {
+  margin-top: 12px;
+}
+
+.docs-prose :is(p, li, dd, td) > a:not([class]),
+.docs-prose > p a:not([class]) {
+  color: var(--accent-fg);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in oklch, var(--accent) 40%, transparent);
+  text-underline-offset: 3px;
+  transition: text-decoration-color 0.15s ease;
+}
+
+.docs-prose :is(p, li, dd, td) > a:not([class]):hover {
+  text-decoration-color: var(--accent);
+}
+
+.docs-prose strong {
+  color: var(--fg);
+  font-weight: 500;
+}
+
+.docs-prose :not(pre) > code:not([class]) {
+  border-radius: 5px;
+  background: var(--bg-muted);
+  box-shadow: inset 0 0 0 1px var(--border);
+  padding: 1px 5px;
+  color: var(--fg);
+  font-size: 0.86em;
+  overflow-wrap: anywhere;
+}
+
+.docs-prose :is(ul, ol):not([class]) {
+  padding-left: 22px;
+}
+
+.docs-prose ul:not([class]) {
+  list-style: disc;
+}
+
+.docs-prose ol:not([class]) {
+  list-style: decimal;
+}
+
+.docs-prose :is(ul, ol):not([class]) > li + li {
+  margin-top: 8px;
+}
+
+.docs-prose :is(ul, ol):not([class]) > li::marker {
+  color: var(--fg-icon);
+}
+
+/* <Steps>: a counter on a hairline rail, each body indented under its h3. */
+.docs-steps {
+  counter-reset: docs-step;
+}
+
+.docs-step {
+  position: relative;
+  counter-increment: docs-step;
+  padding-left: 44px;
+  padding-bottom: 32px;
+}
+
+.docs-step:last-child {
+  padding-bottom: 0;
+}
+
+.docs-step::before {
+  content: counter(docs-step);
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  width: 28px;
+  height: 28px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: var(--canvas);
+  box-shadow: inset 0 0 0 1px var(--border-strong);
+  color: var(--fg-secondary);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.docs-step:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  top: 36px;
+  bottom: 8px;
+  left: 14px;
+  width: 1px;
+  background: var(--border);
+}
+
+.docs-step > h3 {
+  line-height: 28px;
+}
+
+.docs-step-body {
+  margin-top: 8px;
+}
+
+.docs-step-body > * + * {
+  margin-top: 16px;
 }

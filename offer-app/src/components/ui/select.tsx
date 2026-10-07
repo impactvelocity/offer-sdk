@@ -79,7 +79,7 @@ export function Select<V extends string = string>({
                     {o.description ? <div className="truncate text-xs text-fg-tertiary">{o.description}</div> : null}
                   </div>
                   <BaseSelect.ItemIndicator className="absolute right-2 flex">
-                    <Check className="!text-accent" />
+                    <Check className="!text-accent-fg" />
                   </BaseSelect.ItemIndicator>
                 </BaseSelect.Item>
               ))}

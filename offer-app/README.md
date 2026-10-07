@@ -8,14 +8,14 @@ pnpm dev     # http://localhost:3001
 pnpm test    # vitest: API routes, SDK client, mock Offer API
 ```
 
-`pnpm dev` connects to the API on `http://localhost:6767` with its development key, so no `.env` is needed. Start the API with `pnpm dev:api` from the repo root (Postgres and the API in Docker). Then sign up, or run `pnpm seed:demo` and use **Explore the demo workspace**.
+`pnpm dev` connects to the API on `http://localhost:6767` with its development key, so no `.env` is needed. Start the API with `pnpm dev:api` from the repo root (Postgres and the API in Docker). Then sign up, or use **Explore the demo workspace**.
 
 ### Demo workspace
 
-`pnpm seed:demo` (from the root or here) creates the shared demo login (`demo@offersdk.dev` / `demo-password`) and its Acme Labs workspace. The workspace holds two sample apps, Notebook AI (SaaS) and Course Hub (course), with catalogs, accounts that signed up over six months, months of usage and saved reports. It drives the dashboard like a browser, so it only needs `APP_URL` (default `http://localhost:6768`). The catalog comes from the dashboard's "Start with sample data". The script generates the history and sends it to the API's admin-only `POST /apps/:appId/import` through the BFF.
+With `DEMO_ENABLED=true` (the default under `next dev`, and set in `render.yaml`), the sign-in page shows **Explore the demo workspace**. The first click builds the shared demo login (`demo@offersdk.dev` / `demo-password`) and its Acme Labs workspace (`POST /api/demo-workspace`, `src/server/demo.ts`), which takes a few seconds. The workspace holds two sample apps, Notebook AI (SaaS) and Course Hub (course), with catalogs, accounts that signed up over six months, months of usage, saved reports, and on Notebook AI a draft offer and a live cancel flow. The catalog is the dashboard's "Start with sample data", which also imports the generated history through the API's admin-only `POST /apps/:appId/import`.
 
-- It's safe to re-run. It leaves existing demo apps alone, and `pnpm seed:demo --reset` rebuilds them after visitors have changed things.
-- `DEMO_ENABLED=true` shows the demo button on the sign-in page. It's on by default under `next dev`, and the mock always has its own in-memory demo.
+- The demo is built again whenever its workspace has no apps. `pnpm seed:demo --reset` (from the root or here) deletes them and rebuilds them after visitors have changed things. `pnpm seed:demo` alone builds the demo ahead of the first click. The script drives the dashboard like a browser, so it only needs `APP_URL` (default `http://localhost:6768`).
+- The mock always has its own in-memory demo (no offers or cancel flow, which the mock doesn't have).
 - The API stops the shared account from changing its profile, password or sessions, and from managing the workspace or its members. Everything inside the apps stays editable.
 
 To work without the API, set `OFFER_API_URL=mock` in `.env.local`. The app then runs on an in-memory mock. Sign in with **Explore the demo workspace** (`demo@offersdk.dev` / `demo-password`), which is seeded with two sample apps (a SaaS and an online course) and three months of usage history. Builds and tests always use the mock unless `OFFER_API_URL` is set.
@@ -85,7 +85,7 @@ src/
 | `OFFER_API_URL` | Offer API public URL (shown in snippets). Defaults to `http://localhost:6767` under `next dev`. `mock`, or unset elsewhere, uses the mock. |
 | `OFFER_API_ADMIN_KEY` | The API's `ADMIN_API_KEY`, required with `OFFER_API_URL` (defaults to `dev-admin-key` under `next dev`). It authenticates the BFF and the auth proxy. In mock mode, it's the admin key `/api/mock` accepts; when unset, that key is random per process. |
 | `OFFER_API_INTERNAL_URL` | Optional private address this server uses to reach the API, such as Render's `host:port`. Defaults to `OFFER_API_URL`. |
-| `DEMO_ENABLED` | Show **Explore the demo workspace** on sign-in with the hosted API (seed it with `pnpm seed:demo`). Defaults to `true` under `next dev`. |
+| `DEMO_ENABLED` | Show **Explore the demo workspace** on sign-in with the hosted API. The first click builds the demo workspace. Defaults to `true` under `next dev`. |
 | `BETTER_AUTH_SECRET` | Mock mode only: session signing secret (a dev fallback is used locally). With the hosted API, set it on the API. |
 | `BETTER_AUTH_URL` | Mock mode only: public URL of this app. When unset, it's inferred from the request. |
 | `CORS_ORIGINS` | Origins allowed to call the public `/api/*` routes. |

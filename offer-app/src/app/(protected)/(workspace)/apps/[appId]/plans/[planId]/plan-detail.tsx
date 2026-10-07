@@ -6,6 +6,7 @@ import {
   Copy,
   DollarSign,
   Ellipsis,
+  ExternalLink,
   FileText,
   Hash,
   KeyRound,
@@ -26,6 +27,7 @@ import { InlineEdit } from "@/components/catalog/inline-edit";
 import { LinkedAccounts } from "@/components/catalog/linked-accounts";
 import { MetaEditor } from "@/components/catalog/meta-editor";
 import { PricingEditor } from "@/components/catalog/pricing-editor";
+import { planLink } from "@/components/offers/format";
 import { PanelSection, RecordHeader, RecordIcon, RecordLayout } from "@/components/catalog/record";
 import { PageHeader } from "@/components/shell/page";
 import { Badge, IdTag } from "@/components/ui/badge";
@@ -39,7 +41,7 @@ import { Property, PropertyList } from "@/components/ui/property-list";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tab, Tabs, TabsList, TabsPanel } from "@/components/ui/tabs";
 import { api } from "@/lib/api/client";
-import { useAddons, useApiMutation, useAppId, useEntitlements, usePlan, usePlanAccounts } from "@/lib/api/hooks";
+import { useAddons, useApiMutation, useApp, useAppId, useEntitlements, usePlan, usePlanAccounts } from "@/lib/api/hooks";
 import type { Entitlement, Plan } from "@/lib/api/types";
 import { formatDate, pluralize } from "@/lib/utils";
 
@@ -142,6 +144,7 @@ export function PlanDetail({ planId }: { planId: string }) {
   }
 
   const price = formatPrice(plan.pricingCard, plan.isFree);
+  const sellable = !plan.isFree && price !== null && price !== "Free";
 
   return (
     <>
@@ -190,7 +193,7 @@ export function PlanDetail({ planId }: { planId: string }) {
               badges={
                 <>
                   {plan.isFree ? <Badge color="green">Free</Badge> : null}
-                  {plan.pricingCard?.featured ? <Badge color="purple">Featured</Badge> : null}
+                  {plan.pricingCard?.featured ? <Badge color="brand">Featured</Badge> : null}
                 </>
               }
               subtitle={
@@ -277,6 +280,11 @@ export function PlanDetail({ planId }: { planId: string }) {
                 </Property>
               </PropertyList>
             </PanelSection>
+            {sellable ? (
+              <PanelSection title="Checkout link">
+                <CheckoutLink appId={appId} planId={plan.id} />
+              </PanelSection>
+            ) : null}
             <PanelSection title="Internal note">
               <div className="flex gap-2">
                 <StickyNote className="mt-1.5 size-3.5 shrink-0 text-fg-tertiary" />
@@ -302,5 +310,30 @@ export function PlanDetail({ planId }: { planId: string }) {
       />
       <PlanDialog appId={appId} open={duplicating} onOpenChange={setDuplicating} source={duplicating ? plan : null} />
     </>
+  );
+}
+
+/** Sells this plan at its list price through the default offer. */
+function CheckoutLink({ appId, planId }: { appId: string; planId: string }) {
+  const { data: app } = useApp(appId);
+  if (!app) return <Skeleton className="h-16" />;
+  const url = planLink(app, planId, typeof window === "undefined" ? "" : window.location.origin);
+  return (
+    <div className="flex flex-col gap-2">
+      <div className="flex items-center gap-1 rounded-md border border-border bg-bg-subtle px-2 py-1.5">
+        <code className="min-w-0 flex-1 truncate text-xs text-fg-secondary">{url}</code>
+        <CopyButton value={url} label="Copy link" />
+        <a href={url} target="_blank" rel="noreferrer" aria-label="Open checkout" className={buttonVariants({ variant: "ghost", size: "xs", icon: true })}>
+          <ExternalLink />
+        </a>
+      </div>
+      <p className="text-xs text-fg-tertiary">
+        Regular price, no offer needed. For a sale price, extras or bumps,{" "}
+        <Link href={`/apps/${appId}/offers/new`} className="text-accent-fg hover:underline">
+          create an offer
+        </Link>
+        .{app.checkout_url ? null : " Points at the demo checkout until you set your own page in App settings."}
+      </p>
+    </div>
   );
 }

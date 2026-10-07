@@ -504,3 +504,51 @@
   font-size: 13px;
   overflow-x: auto;
 }
+
+/* Account page: the SDK's cancel flow in Scrapely's colours. */
+.cancelLink {
+  justify-self: start;
+  margin-top: 8px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ink-2);
+  font: inherit;
+  font-size: 14px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.dialog {
+  position: fixed;
+  inset: 0;
+  margin: auto;
+  height: fit-content;
+  width: min(460px, calc(100vw - 32px));
+  padding: 24px;
+  border: 0;
+  border-radius: 16px;
+  background: var(--card);
+  box-shadow: 0 24px 60px rgb(18 21 28 / 0.25);
+  color: var(--ink);
+}
+.dialog::backdrop {
+  background: rgb(18 21 28 / 0.45);
+}
+
+/* Scoped under .dialog so it wins over the base flow styles' defaults. */
+.dialog .cancelFlow {
+  --cf-fg: var(--ink);
+  --cf-fg-2: var(--ink-2);
+  --cf-fg-3: var(--ink-2);
+  --cf-bg: var(--card);
+  --cf-bg-2: var(--ground);
+  --cf-line: var(--line);
+  --cf-line-strong: #c9ced8;
+  --cf-accent: var(--accent);
+  --cf-ring: var(--accent-soft);
+  --cf-primary-bg: var(--accent);
+  --cf-danger: var(--bad);
+  font-family: inherit;
+}

@@ -8,19 +8,20 @@ import {
 } from "@/components/diagrams/primitives";
 import type { MarkerTone } from "@/components/diagrams/kit";
 import { DiagramReveal } from "@/components/diagrams/reveal";
+import type { Primitive } from "@/components/sections/primitive-chip";
 import { cn } from "@/lib/utils";
 
-export const primitives: { title: string; body: string; tone: MarkerTone; Diagram: ComponentType }[] = [
+export const primitives: { title: Primitive; body: string; tone: MarkerTone; Diagram: ComponentType }[] = [
   {
     title: "Plans",
     body: "The tiers that set a customer's baseline. Every account always sits on one core plan.",
-    tone: "violet",
+    tone: "green",
     Diagram: PlansDiagram,
   },
   {
     title: "Entitlements",
     body: "The features and limits a plan unlocks, resolved into one answer your app can check.",
-    tone: "teal",
+    tone: "violet",
     Diagram: EntitlementsDiagram,
   },
   {
@@ -43,36 +44,40 @@ export const primitives: { title: string; body: string; tone: MarkerTone; Diagra
   },
 ];
 
+// Plans and Offers lead (what you sell), then the three pieces that shape them.
+const top: Primitive[] = ["Plans", "Offers"];
+
 /**
- * Modal-style cells: the four building blocks in a 2×2 grid, then Offers (which packages them)
- * across the full width. Each has a number, its line diagram (drawn on when scrolled into view,
- * animated on hover), title and copy.
+ * Plans and Offers side by side, then Entitlements, Add-ons and Incentives in a row of three.
+ * Each cell has its name as a badge floating at the top left, its line diagram (drawn on when
+ * scrolled into view, animated on hover), and a one-line statement of what it does.
  */
 export function PlatformPrimitives({ className }: { className?: string }) {
+  const ordered = [
+    ...primitives.filter((p) => top.includes(p.title)),
+    ...primitives.filter((p) => !top.includes(p.title)),
+  ];
   return (
-    <div className={cn("grid gap-y-16 md:grid-cols-2", className)}>
-      {primitives.map(({ title, body, tone, Diagram }, i) => {
-        const wide = i === primitives.length - 1;
-        return (
-          <article
-            key={title}
-            style={toneStyle(tone)}
-            className={cn(
-              "diagram-cell group flex flex-col border-l border-border px-6 pt-1",
-              wide && "md:col-span-2 md:flex-row md:items-center md:gap-12",
-            )}
-          >
-            <span className={cn("text-xs text-fg-tertiary tabular", wide && "md:self-start")}>{i + 1}</span>
-            <DiagramReveal className={cn("mx-auto my-8 w-full max-w-[380px]", wide && "md:mx-0 md:shrink-0")}>
-              <Diagram />
-            </DiagramReveal>
-            <div>
-              <h3 className="text-lg font-medium text-fg">{title}</h3>
-              <p className="mt-2 max-w-md text-sm text-fg-muted">{body}</p>
-            </div>
-          </article>
-        );
-      })}
+    <div className={cn("grid gap-y-16 md:grid-cols-2 lg:grid-cols-6", className)}>
+      {ordered.map(({ title, body, tone, Diagram }) => (
+        <article
+          key={title}
+          style={toneStyle(tone)}
+          className={cn(
+            "diagram-cell group relative flex flex-col border-l border-border px-6 pt-1",
+            top.includes(title) ? "lg:col-span-3" : "lg:col-span-2",
+          )}
+        >
+          {/* Neon badge in the cell's tone, after the primary button's recipe. */}
+          <span className="absolute top-0 left-6 z-10 inline-flex h-8 items-center rounded-full bg-[color-mix(in_oklch,var(--tone)_14%,transparent)] px-3.5 text-sm font-medium text-(--tone) shadow-[inset_0_0_0_1px_var(--tone),0_0_18px_-4px_var(--tone)]">
+            {title}
+          </span>
+          <DiagramReveal className="mx-auto my-8 w-full max-w-[380px]">
+            <Diagram />
+          </DiagramReveal>
+          <p className="max-w-md text-base text-pretty text-fg-secondary">{body}</p>
+        </article>
+      ))}
     </div>
   );
 }

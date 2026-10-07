@@ -76,7 +76,7 @@ const tagStyle: Record<LogTag, string> = {
   GET: "bg-tag-green-bg text-tag-green-fg",
   POST: "bg-tag-blue-bg text-tag-blue-fg",
   SDK: "bg-tag-gray-bg text-tag-gray-fg",
-  HOOK: "bg-tag-purple-bg text-tag-purple-fg",
+  HOOK: "bg-tag-brand-bg text-tag-brand-fg",
 };
 
 const toneStyle: Record<LogTone, string> = {

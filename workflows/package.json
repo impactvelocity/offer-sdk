@@ -1,0 +1,21 @@
+{
+  "name": "offersdk-workflows",
+  "private": true,
+  "type": "module",
+  "description": "Render Workflow tasks for the Offer API: subscription pauses.",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "start": "node src/index.ts",
+    "dev": "render workflows dev -- node src/index.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@renderinc/sdk": "^1.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "typescript": "^5.8.3"
+  }
+}

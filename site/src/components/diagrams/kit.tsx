@@ -163,13 +163,13 @@ export function Box({
 }
 
 export type MarkerShape = "square" | "diamond" | "hex" | "circle";
-export type MarkerTone = "violet" | "teal" | "orange" | "pink" | "blue";
+export type MarkerTone = "green" | "violet" | "orange" | "pink" | "blue";
 
 /** Colored vertex. A page-colored halo cuts the lines it sits on; `hollow` marks an "off" state. */
 export function Marker({
   at: [x, y],
   shape = "square",
-  tone = "violet",
+  tone = "green",
   hollow = false,
   unlock = false,
 }: {

@@ -6,6 +6,7 @@
     "node": ">=22"
   },
   "scripts": {
+    "prepare": "git config core.hooksPath .githooks || true",
     "dev": "pnpm -r --parallel dev",
     "dev:app": "pnpm --filter offer-app dev",
     "dev:web": "pnpm --filter web dev",

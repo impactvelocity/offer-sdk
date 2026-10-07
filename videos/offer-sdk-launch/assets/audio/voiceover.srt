@@ -1,0 +1,416 @@
+1
+00:00:00,040 --> 00:00:01,480
+Speaker:
+You launched your app.
+
+2
+00:00:01,480 --> 00:00:04,400
+Speaker:
+It started simple with just
+three plans.
+
+3
+00:00:04,400 --> 00:00:07,360
+Speaker:
+Then one customer asked for a
+longer trial.
+
+4
+00:00:07,360 --> 00:00:09,199
+Speaker:
+Another wanted more seats.
+
+5
+00:00:09,199 --> 00:00:11,679
+Speaker:
+An influencer wanted a deal for
+her audience.
+
+6
+00:00:11,679 --> 00:00:13,519
+Speaker:
+Live by Friday.
+
+7
+00:00:13,519 --> 00:00:17,719
+Speaker:
+Every yes meant more spaghetti
+code and another deploy a few
+
+8
+00:00:17,719 --> 00:00:21,440
+Speaker:
+months in your billing code is a
+pile of special cases.
+
+9
+00:00:21,440 --> 00:00:25,079
+Speaker:
+Nobody remembers which customer
+got which deal, and nobody can
+
+10
+00:00:25,079 --> 00:00:26,920
+Speaker:
+tell which features make money.
+
+11
+00:00:26,920 --> 00:00:29,920
+Speaker:
+Every yes was an expensive
+guess.
+
+12
+00:00:29,920 --> 00:00:34,399
+Speaker:
+Offer SDK takes plans, access,
+and promotions out of your code.
+
+13
+00:00:34,399 --> 00:00:36,479
+Speaker:
+Your app only asks one thing.
+
+14
+00:00:36,479 --> 00:00:40,240
+Speaker:
+What can this user do so you can
+run a Black Friday deal?
+
+15
+00:00:40,240 --> 00:00:43,439
+Speaker:
+Give that influencer a bundle
+for her audience, or test a new
+
+16
+00:00:43,439 --> 00:00:45,960
+Speaker:
+price, all without any code.
+
+17
+00:00:45,960 --> 00:00:48,880
+Speaker:
+Pricing changes shouldn't need a
+pull request.
+
+18
+00:00:48,880 --> 00:00:53,200
+Speaker:
+Offer SDK is self-hosted, so the
+API and the data are yours.
+
+19
+00:00:53,200 --> 00:00:55,280
+Speaker:
+Running on your own render
+account.
+
+20
+00:00:55,280 --> 00:00:58,520
+Speaker:
+PayPal handles checkout and the
+whole subscription lifecycle.
+
+21
+00:00:58,520 --> 00:01:02,280
+Speaker:
+Renewals, upgrades, pauses and
+cancellations.
+
+22
+00:01:02,280 --> 00:01:05,000
+Speaker:
+Deploy it to render dot com in a
+single click.
+
+23
+00:01:05,000 --> 00:01:07,280
+Speaker:
+Then open your new offer admin
+app.
+
+24
+00:01:07,280 --> 00:01:09,079
+Speaker:
+Start building your plans.
+
+25
+00:01:09,079 --> 00:01:10,560
+Speaker:
+Add your entitlements.
+
+26
+00:01:10,560 --> 00:01:13,040
+Speaker:
+Some are yes or no, like
+exports.
+
+27
+00:01:13,040 --> 00:01:16,959
+Speaker:
+Some are a number like AI
+credits or API calls.
+
+28
+00:01:16,959 --> 00:01:20,480
+Speaker:
+Offer SDK counts every call
+against those numbers so you can
+
+29
+00:01:20,480 --> 00:01:21,760
+Speaker:
+charge by usage.
+
+30
+00:01:21,760 --> 00:01:25,799
+Speaker:
+That's a good fit for selling
+APIs and tools to AI agents.
+
+31
+00:01:25,799 --> 00:01:28,400
+Speaker:
+When an agent hits its limit,
+the API answers.
+
+32
+00:01:28,400 --> 00:01:29,359
+Speaker:
+With an upgrade offer.
+
+33
+00:01:29,359 --> 00:01:33,400
+Speaker:
+It can act on and PayPal and
+offer SDK handle the rest.
+
+34
+00:01:33,400 --> 00:01:37,239
+Speaker:
+Add ons are extras on top of a
+plan, like a template pack or a
+
+35
+00:01:37,239 --> 00:01:38,439
+Speaker:
+credit top up.
+
+36
+00:01:38,439 --> 00:01:41,200
+Speaker:
+Incentives override what an
+account gets.
+
+37
+00:01:41,200 --> 00:01:44,519
+Speaker:
+Use one for a promo or as a
+package for an affiliate.
+
+38
+00:01:44,519 --> 00:01:46,560
+Speaker:
+An incentive can add usage or
+
+39
+00:01:46,560 --> 00:01:48,400
+Speaker:
+give or hide entitlements and
+
+40
+00:01:48,400 --> 00:01:49,359
+Speaker:
+add ons.
+
+41
+00:01:49,359 --> 00:01:52,200
+Speaker:
+Each plan gets its own checkout
+automatically.
+
+42
+00:01:52,200 --> 00:01:55,840
+Speaker:
+A customer buys, they get access
+and the rest is handled.
+
+43
+00:01:55,840 --> 00:01:58,120
+Speaker:
+Offers sit on top of a plan.
+
+44
+00:01:58,120 --> 00:02:01,430
+Speaker:
+An offer can give a better deal,
+change the price, attach
+
+45
+00:02:01,430 --> 00:02:03,590
+Speaker:
+incentives and add order bumps.
+
+46
+00:02:03,590 --> 00:02:07,310
+Speaker:
+You can build offers yourself or
+let the offer agent create them.
+
+47
+00:02:07,310 --> 00:02:09,110
+Speaker:
+For example, Tom hit his credit
+
+48
+00:02:09,110 --> 00:02:10,909
+Speaker:
+limit three months running, then
+
+49
+00:02:10,909 --> 00:02:12,150
+Speaker:
+clicked cancel.
+
+50
+00:02:12,150 --> 00:02:13,449
+Speaker:
+The cancel flow passed him to
+
+51
+00:02:13,449 --> 00:02:14,669
+Speaker:
+the agent, which skipped the
+
+52
+00:02:14,669 --> 00:02:15,969
+Speaker:
+discount and gave him five
+
+53
+00:02:15,969 --> 00:02:17,349
+Speaker:
+thousand credits at the same
+
+54
+00:02:17,349 --> 00:02:18,150
+Speaker:
+price.
+
+55
+00:02:18,150 --> 00:02:21,150
+Speaker:
+It saved the sale inside the
+limits you set.
+
+56
+00:02:21,150 --> 00:02:22,229
+Speaker:
+The dashboard shows your
+
+57
+00:02:22,229 --> 00:02:24,150
+Speaker:
+insights and every customer's
+
+58
+00:02:24,150 --> 00:02:26,870
+Speaker:
+usage, or connect the MCP server
+
+59
+00:02:26,870 --> 00:02:28,509
+Speaker:
+so your agent can review usage
+
+60
+00:02:28,509 --> 00:02:30,110
+Speaker:
+and create offers and incentives
+
+61
+00:02:30,110 --> 00:02:31,870
+Speaker:
+on the fly, so you can grow
+
+62
+00:02:31,870 --> 00:02:33,389
+Speaker:
+revenue without growing your
+
+63
+00:02:33,389 --> 00:02:33,870
+Speaker:
+team.
+
+64
+00:02:33,870 --> 00:02:35,629
+Speaker:
+The React Offer SDK gates
+
+65
+00:02:35,629 --> 00:02:37,430
+Speaker:
+features, triggers, checkouts,
+
+66
+00:02:37,430 --> 00:02:39,750
+Speaker:
+and runs cancel flows, add the
+
+67
+00:02:39,750 --> 00:02:42,030
+Speaker:
+offer SDK agent skill, and one
+
+68
+00:02:42,030 --> 00:02:43,870
+Speaker:
+prompt installs it in your app,
+
+69
+00:02:43,870 --> 00:02:45,469
+Speaker:
+and every customer and billing
+
+70
+00:02:45,469 --> 00:02:47,110
+Speaker:
+event can trigger a zap or a
+
+71
+00:02:47,110 --> 00:02:47,909
+Speaker:
+webhook.
+
+72
+00:02:47,909 --> 00:02:49,590
+Speaker:
+So you can send a personal email
+
+73
+00:02:49,590 --> 00:02:51,330
+Speaker:
+when someone hits their limit or
+
+74
+00:02:51,330 --> 00:02:52,789
+Speaker:
+ping slack when a cancel is
+
+75
+00:02:52,789 --> 00:02:53,550
+Speaker:
+saved.
+
+76
+00:02:53,550 --> 00:02:57,349
+Speaker:
+Go to offer SDK dot com and
+deploy your own Agentic offer
+
+77
+00:02:57,349 --> 00:02:59,349
+Speaker:
+API for your app today.

@@ -1,32 +1,20 @@
-// Seeds the shared demo workspace for previews (judges, prospects): the demo login,
-// its "Acme Labs" workspace, and two sample apps (a SaaS and an online course) with
-// their catalogs, ~6 months of accounts and usage history, and saved reports.
+// Builds the shared demo workspace on a dashboard ahead of time, or rebuilds it: the demo
+// login, its "Acme Labs" workspace and two sample apps (a SaaS and an online course) with
+// their catalogs, ~6 months of accounts and usage history, saved reports, an offer and a
+// cancel flow. The dashboard builds it on its own the first time someone clicks "Explore
+// the demo workspace" (DEMO_ENABLED=true), so this is for warming it up and for --reset.
 //
 //   pnpm seed:demo                                          # local dashboard (http://localhost:6768)
 //   APP_URL=https://offer-app.onrender.com pnpm seed:demo   # a deployed dashboard
 //   pnpm seed:demo --reset                                  # rebuild the apps, undoing visitors' changes
 //
-// It goes through the dashboard like a browser (sign in, then the /api/admin BFF), so it
-// needs nothing but the dashboard's URL. The dashboard must use the real API: with
-// OFFER_API_URL=mock it seeds its own demo in memory. To show "Explore the demo
-// workspace" on the sign-in page, set DEMO_ENABLED=true on the dashboard.
+// It goes through the dashboard like a browser (POST /api/demo-workspace; --reset signs in
+// and deletes the apps through the /api/admin BFF first), so it only needs the dashboard's URL.
 
-import {
-  COURSE_TEMPLATE,
-  DEMO_APPS,
-  DEMO_USER,
-  SAAS_TEMPLATE,
-  rng,
-  sampleSignupDate,
-  sampleUsageHistory,
-  type SeededAccount,
-} from "../src/server/offer-api/sample-data.ts";
+import { DEMO_USER } from "../src/server/offer-api/sample-data.ts";
 
 const APP_URL = (process.env.APP_URL ?? "http://localhost:6768").replace(/\/+$/, "");
 const RESET = process.argv.includes("--reset");
-const WORKSPACE_SLUG = "offer-sdk-demo";
-const IMPORT_CHUNK = 5000;
-const TEMPLATES = { saas: { template: SAAS_TEMPLATE, seed: 1007 }, course: { template: COURSE_TEMPLATE, seed: 1011 } };
 
 const cookies = new Map<string, string>();
 
@@ -58,69 +46,25 @@ async function call<T = unknown>(method: string, path: string, body?: unknown, o
   return { status: res.status, data: data as T };
 }
 
-// 1. The demo login.
-const { email, password, name } = DEMO_USER;
-const signIn = await call("POST", "/api/auth/sign-in/email", { email, password }, [401]);
-if (signIn.status === 401) {
-  const signUp = await call("POST", "/api/auth/sign-up/email", { name, email, password }, [422]);
-  if (signUp.status === 422) throw new Error(`${email} exists with a different password. Delete that user or change DEMO_USER.`);
-  console.log(`Created ${email}`);
-}
+const { email, password } = DEMO_USER;
 
-// 2. Its workspace.
-const workspaces = (await call<{ id: string; slug: string }[]>("GET", "/api/auth/organization/list")).data;
-let workspace = workspaces.find((w) => w.slug === WORKSPACE_SLUG) ?? workspaces[0];
-if (!workspace) {
-  workspace = (await call<{ id: string; slug: string }>("POST", "/api/auth/organization/create", { name: DEMO_USER.workspace, slug: WORKSPACE_SLUG })).data;
-  console.log(`Created the ${DEMO_USER.workspace} workspace`);
-}
-await call("POST", "/api/auth/organization/set-active", { organizationId: workspace.id });
-
-const { mode } = (await call<{ mode: string }>("GET", "/api/admin/workspace")).data;
-if (mode === "mock") {
-  throw new Error("This dashboard runs on the mock API (OFFER_API_URL=mock), which seeds its own demo. Point it at the real API.");
-}
-
-// 3. Its apps: left alone if they exist, unless --reset.
-const existing = (await call<{ id: string; name: string }[]>("GET", "/api/admin/workspace/apps")).data;
-if (existing.length && !RESET) {
-  console.log(`Already seeded (${existing.map((a) => a.name).join(", ")}). Run with --reset to rebuild the apps.`);
-  process.exit(0);
-}
-for (const app of existing) {
-  await call("DELETE", `/api/admin/apps/${app.id}`);
-  console.log(`Deleted ${app.name}`);
-}
-
-for (const { name: appName, sample } of DEMO_APPS) {
-  // The dashboard creates the catalog, accounts and saved reports (same as "Start with sample data").
-  const app = (await call<{ id: string }>("POST", "/api/admin/workspace/apps", { name: appName, sample })).data;
-  const base = `/api/admin/apps/${app.id}`;
-
-  const accounts: { id: string; plan: string; incentive: string | null }[] = [];
-  for (let page = 1; ; page++) {
-    const { data } = await call<{ data: typeof accounts; total: number }>("GET", `${base}/namespaces?per_page=100&page=${page}`);
-    accounts.push(...data.data);
-    if (accounts.length >= data.total || !data.data.length) break;
+// --reset: delete the demo apps (if the demo exists yet); the dashboard then builds them again.
+if (RESET) {
+  const signIn = await call("POST", "/api/auth/sign-in/email", { email, password }, [401]);
+  if (signIn.status === 200) {
+    const { mode } = (await call<{ mode: string }>("GET", "/api/admin/workspace")).data;
+    if (mode === "mock") throw new Error("This dashboard runs on the in-memory mock (OFFER_API_URL=mock). Restart it to reset the demo.");
+    for (const app of (await call<{ id: string; name: string }[]>("GET", "/api/admin/workspace/apps")).data) {
+      await call("DELETE", `/api/admin/apps/${app.id}`);
+      console.log(`Deleted ${app.name}`);
+    }
   }
-
-  // History the API can't produce live: sign-up dates and months of usage.
-  const { template, seed } = TEMPLATES[sample];
-  const random = rng(seed);
-  const seeded: SeededAccount[] = accounts.map((a) => ({ ...a, createdAt: sampleSignupDate(random) }));
-  const events = sampleUsageHistory(template, seeded, random);
-
-  await call("POST", `${base}/import`, {
-    namespaces: seeded.map((a) => ({ id: a.id, created_at: a.createdAt.toISOString() })),
-  });
-  for (let i = 0; i < events.length; i += IMPORT_CHUNK) {
-    await call("POST", `${base}/import`, { usage_events: events.slice(i, i + IMPORT_CHUNK) });
-  }
-  console.log(`Created ${appName} (${app.id}): ${accounts.length} accounts, ${events.length} usage events`);
 }
+
+const ready = await call("POST", "/api/demo-workspace", undefined, [404]);
+if (ready.status === 404) throw new Error("This dashboard has the demo turned off. Set DEMO_ENABLED=true on it.");
 
 console.log(`
 Demo workspace ready at ${APP_URL}
   Email:    ${email}
-  Password: ${password}
-Set DEMO_ENABLED=true on the dashboard to show "Explore the demo workspace" on the sign-in page.`);
+  Password: ${password}`);

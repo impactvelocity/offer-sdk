@@ -32,6 +32,10 @@ DATABASE_URL=postgres://…/offersdk_test bun test   # end-to-end, truncates eve
 bun run typecheck
 ```
 
+## Postman
+
+[`postman/`](postman) holds a Postman collection with a request for every route, plus an environment for a deployed API. Import the collection and run its Quickstart folder; the docs page is `/docs/sponsors/postman` on the site. Requests are defined in `postman/requests.ts`. After changing routes, run `bun run postman` to rebuild the JSON. `test/postman.test.ts` fails when a route has no request or the JSON is stale.
+
 ## Dashboard sign-in
 
 The dashboard's users, sessions and workspaces live here too: [better-auth](https://better-auth.com) with email/password and the organization plugin, stored in the `auth_*` tables (`src/lib/dashboard-auth.ts`). Browsers never call it directly. The dashboard forwards its `/api/auth/*` requests with the admin key, and `/api/auth/*` returns `401` without that key. Because of the forwarding, cookies are issued for the dashboard's domain (`APP_URL`), and only that origin is trusted.

@@ -514,7 +514,7 @@ function PlansEditor({
             {entry ? (
               <div className="flex flex-col gap-4 border-t border-border bg-bg-subtle px-4 py-4 pl-11">
                 <div className="grid gap-2">
-                  <span className="text-xs font-medium uppercase tracking-wide text-fg-tertiary">Price</span>
+                  <span className="eyebrow text-fg-tertiary">Price</span>
                   {draft.intervals.map((interval) => {
                     const list = cardPrice(plan, interval);
                     const sale = shown?.prices[interval];
@@ -576,7 +576,7 @@ function PlansEditor({
                 </div>
 
                 <div className="grid gap-2">
-                  <span className="text-xs font-medium uppercase tracking-wide text-fg-tertiary">Extras</span>
+                  <span className="eyebrow text-fg-tertiary">Extras</span>
                   {entry.entitlements.map((e, index) => {
                     const ent = entitlements.find((x) => x.id === e.id);
                     const planMax = plan.entitlements.find((x) => x.id === e.id)?.max;

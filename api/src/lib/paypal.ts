@@ -296,6 +296,15 @@ export async function cancelSubscription(conn: Credentials, id: string, reason: 
   await request(conn, "POST", `/v1/billing/subscriptions/${encodeURIComponent(id)}/cancel`, { reason });
 }
 
+// Stops billing without cancelling; `activateSubscription` resumes it.
+export async function suspendSubscription(conn: Credentials, id: string, reason: string) {
+  await request(conn, "POST", `/v1/billing/subscriptions/${encodeURIComponent(id)}/suspend`, { reason });
+}
+
+export async function activateSubscription(conn: Credentials, id: string, reason: string) {
+  await request(conn, "POST", `/v1/billing/subscriptions/${encodeURIComponent(id)}/activate`, { reason });
+}
+
 // ─── Orders (one-time prices) ──────────────────────────
 
 export async function createOrder(

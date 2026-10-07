@@ -11,3 +11,16 @@ coverage
 
 # Copywriting working notes (local only)
 copywriting/
+
+# Demo video / brag output. The walkthrough is hosted on YouTube, so renders, mixes and
+# scratch frames stay local. Sources (compositions, storyboard, screenshots, mp3/m4a) are tracked.
+*.mp4
+*.mov
+*.webm
+*.wav
+brag-output/
+videos/**/renders/
+videos/**/work/
+videos/**/snapshots/
+videos/**/capture/
+videos/**/assets/assets

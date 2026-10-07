@@ -7,6 +7,9 @@
 //     <Offer.Bumps>{(bump) => <Offer.Bump bump={bump} />}</Offer.Bumps>
 //     <Offer.Summary /> <Offer.Email /> <Offer.Checkout onSuccess={…} />
 //   </OfferProvider>
+//
+// Without `offerId` it sells the plans at their regular prices; `plan` and
+// `interval` preselect one (e.g. from `?plan=pro` on a plan's checkout link).
 export { CheckoutClient, getOffer } from "./client";
 export { Offer, type BumpRenderProps, type PlanRenderProps } from "./components";
 export { OfferProvider, useOffer, type CheckoutPhase, type OfferContextValue, type OfferProviderProps } from "./provider";

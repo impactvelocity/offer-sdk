@@ -72,7 +72,7 @@ export function ToolGroup({ count, states, children }: { count: number; states: 
 function Section({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div className="flex flex-col gap-1.5">
-      <h4 className="text-2xs font-medium uppercase tracking-wide text-fg-tertiary">{label}</h4>
+      <h4 className="eyebrow text-fg-tertiary">{label}</h4>
       {children}
     </div>
   );

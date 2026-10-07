@@ -1,9 +1,10 @@
 // Sample catalogs used to seed the demo workspace and the "Start with sample data"
 // option when creating an app. Everything is created through ordinary API calls, so
-// it works against the mock and the hosted API alike. Usage history is generated here
-// too: the mock applies it in memory, and `pnpm seed:demo` imports it into the API.
+// it works against the mock and the hosted API alike (offers and cancel flows only on
+// the hosted API: the mock has neither). Usage history is generated here too: the
+// mock applies it in memory, and the hosted API gets it through its import route.
 //
-// Also imported by scripts/seed-demo.ts under plain Node, so imports must stay type-only.
+// Also imported by scripts/seed-demo.mts under plain Node, so imports must stay type-only.
 
 import type { OfferApiCall } from "./index";
 
@@ -44,6 +45,10 @@ export interface SampleTemplate {
   plans: PlanSeed[];
   incentives: IncentiveSeed[];
   accounts: { count: number; planWeights: Record<string, number>; incentiveRate: number };
+  /** Draft offers (POST /apps/:appId/offers bodies). Publishing one needs PayPal. */
+  offers?: Record<string, unknown>[];
+  /** An active cancel flow with the API's template questions. */
+  cancelFlow?: { name: string };
 }
 
 export const SAAS_TEMPLATE: SampleTemplate = {
@@ -216,6 +221,32 @@ export const SAAS_TEMPLATE: SampleTemplate = {
     planWeights: { free: 0.46, starter: 0.24, pro: 0.18, enterprise: 0.05, lifetime: 0.07 },
     incentiveRate: 0.18,
   },
+  offers: [
+    {
+      id: "launch_week",
+      name: "Launch week",
+      copy: {
+        headline: "30% off Notebook AI for 3 months",
+        subhead: "Pick a plan. Pro also gets 1,000 extra AI credits a month.",
+        bullets: ["Cancel anytime", "Keep your projects if you downgrade"],
+      },
+      discount: { percent: 30, cycles: 3 },
+      intervals: ["month"],
+      plans: [{ plan_id: "starter" }, { plan_id: "pro", entitlements: [{ id: "ai_credits", max: 3500 }] }],
+      default_plan: "pro",
+      bumps: [
+        {
+          id: "ai_boost",
+          label: "Add AI boost",
+          description: "Faster models and higher rate limits.",
+          price: { amount: 9 },
+          grant: { addons: ["ai_boost"] },
+          applies_to: { plans: ["starter"] },
+        },
+      ],
+    },
+  ],
+  cancelFlow: { name: "Cancel flow" },
 };
 
 export const COURSE_TEMPLATE: SampleTemplate = {

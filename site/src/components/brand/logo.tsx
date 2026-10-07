@@ -8,7 +8,7 @@ export function LogoMark({ className }: { className?: string }) {
 export function Logo({ className }: { className?: string }) {
   return (
     <span className={cn("inline-flex items-center gap-2", className)}>
-      <LogoMark />
+      <LogoMark className="size-[18px]" />
       <span className="font-display text-[18px] font-semibold tracking-tight text-fg">Offer SDK</span>
     </span>
   );

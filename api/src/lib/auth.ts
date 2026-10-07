@@ -1,5 +1,6 @@
 import type { Context, Next } from "hono";
 import sql from "../db/client.ts";
+import { ACCOUNT_TOKEN_PREFIX, verifyAccountToken } from "./account-tokens.ts";
 
 const unauthorized = (c: Context) => c.json({ error: "Unauthorized" }, 401);
 
@@ -14,6 +15,7 @@ const isAdminKey = (key: string) => !!process.env.ADMIN_API_KEY && key === proce
 const PUBLIC_CHECKOUT_ROUTES: [string, RegExp][] = [
   ["GET", /^\/apps\/[^/]+\/offers\/[^/]+\/public$/],
   ["POST", /^\/apps\/[^/]+\/offers\/[^/]+\/checkout$/],
+  ["POST", /^\/apps\/[^/]+\/plans\/[^/]+\/checkout$/],
   ["GET", /^\/apps\/[^/]+\/checkouts\/[^/]+$/],
   ["POST", /^\/apps\/[^/]+\/checkouts\/[^/]+\/complete$/],
 ];
@@ -29,14 +31,38 @@ function publicKeyAllowed(c: Context) {
   return isNamespacePlan || isUsage || isPricing || isCheckout;
 }
 
-// Guards /apps/:appId/*: admin key, the app's secret key, or (for a few
-// read/usage routes) the app's public key.
+declare module "hono" {
+  interface ContextVariableMap {
+    /** Set when the caller used an account token: the only account it may act for. */
+    accountId: string;
+  }
+}
+
+// Routes an account token may call. Each handler also checks that the account
+// it touches is the token's (see cancel-sessions.ts and namespaces.ts).
+function accountTokenAllowed(c: Context, accountId: string) {
+  const path = c.req.path;
+  if (/^\/apps\/[^/]+\/cancel-sessions(\/[^/]+(\/[a-z-]+)?)?$/.test(path)) return true;
+  const own = path.match(/^\/apps\/[^/]+\/namespaces\/([^/]+)\/(plan|full-plan|subscription)$/);
+  return c.req.method === "GET" && own !== null && decodeURIComponent(own[1]) === accountId;
+}
+
+// Guards /apps/:appId/*: admin key, the app's secret key, an account token
+// (customer-facing flows for one account), or (for a few read/usage routes)
+// the app's public key.
 export async function appAuth(c: Context, next: Next) {
   const key = bearer(c);
   if (!key) return unauthorized(c);
   if (isAdminKey(key)) return next();
 
   const appId = c.req.param("appId");
+  if (key.startsWith(ACCOUNT_TOKEN_PREFIX)) {
+    const accountId = appId ? await verifyAccountToken(key, appId) : null;
+    if (!accountId || !accountTokenAllowed(c, accountId)) return unauthorized(c);
+    c.set("accountId", accountId);
+    return next();
+  }
+
   const [row] = await sql`
     select api_key = ${key} as secret
     from apps

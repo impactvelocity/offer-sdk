@@ -65,7 +65,7 @@ export function NavItem({
   );
   const className = cn(
     itemClass,
-    active && "bg-accent-subtle text-accent-fg hover:bg-accent-subtle hover:text-accent-fg [&>svg]:text-accent",
+    active && "bg-accent-subtle text-accent-fg hover:bg-accent-subtle hover:text-accent-fg [&>svg]:text-accent-fg",
   );
   if (href) {
     return (

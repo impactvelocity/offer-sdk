@@ -71,7 +71,7 @@ export function McpView() {
       <PageHeader
         icon={<Plug />}
         title="MCP server"
-        badge={<Badge color="purple">Preview</Badge>}
+        badge={<Badge color="brand">Preview</Badge>}
         actions={
           <Link href={`/apps/${ctx.appId}/developers/api`} className={buttonVariants()}>
             <Braces />
@@ -172,7 +172,7 @@ function ServerCard({
   return (
     <Card className="overflow-hidden">
       <div className="flex flex-col gap-4 bg-brand-glow p-5 sm:flex-row sm:items-start">
-        <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-brand text-white shadow-sm [&_svg]:size-5">
+        <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-brand text-accent-contrast shadow-sm [&_svg]:size-5">
           <Plug />
         </span>
         <div className="min-w-0 flex-1">

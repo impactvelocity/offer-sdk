@@ -1,0 +1,211 @@
+/* Styles for the cancel flow SDK's headless markup (data-cancel-* attributes).
+   The variables default to dashboard tokens; a page can set them to its own
+   brand (see the demo account page). */
+.flow {
+  --cf-fg: var(--fg);
+  --cf-fg-2: var(--fg-secondary);
+  --cf-fg-3: var(--fg-tertiary);
+  --cf-bg: var(--bg);
+  --cf-bg-2: var(--bg-subtle);
+  --cf-line: var(--border);
+  --cf-line-strong: var(--border-strong);
+  --cf-accent: var(--accent);
+  --cf-ring: var(--ring);
+  --cf-primary-bg: var(--brand-gradient, var(--accent));
+  --cf-primary-fg: #fff;
+  --cf-danger: var(--danger);
+  --cf-danger-fg: #fff;
+  --cf-radius: 12px;
+
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  color: var(--cf-fg);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.flow :global([data-cancel-step]) {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.flow h2 {
+  margin: 0;
+  padding-right: 28px;
+  font-family: var(--font-geom-display, inherit);
+  font-size: 19px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.flow p {
+  margin: 0;
+  color: var(--cf-fg-2);
+}
+
+.flow :global([data-cancel-close]) {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  display: flex;
+  width: 28px;
+  height: 28px;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--cf-fg-3);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+}
+.flow :global([data-cancel-close]:hover) {
+  background: var(--cf-bg-2);
+  color: var(--cf-fg);
+}
+
+.flow :global([data-cancel-progress]) {
+  display: flex;
+  gap: 4px;
+}
+.flow :global([data-cancel-progress] span) {
+  height: 3px;
+  flex: 1;
+  border-radius: 2px;
+  background: var(--cf-line);
+}
+.flow :global([data-cancel-progress] span[data-done]),
+.flow :global([data-cancel-progress] span[data-current]) {
+  background: var(--cf-accent);
+}
+
+.flow :global([data-cancel-answers]) {
+  display: grid;
+  gap: 6px;
+}
+.flow :global([data-cancel-answers] button) {
+  padding: 10px 12px;
+  border: 1px solid var(--cf-line);
+  border-radius: 10px;
+  background: var(--cf-bg);
+  color: var(--cf-fg);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.1s, box-shadow 0.1s;
+}
+.flow :global([data-cancel-answers] button:hover) {
+  border-color: var(--cf-line-strong);
+}
+.flow :global([data-cancel-answers] button[data-selected]) {
+  border-color: var(--cf-accent);
+  box-shadow: 0 0 0 3px var(--cf-ring);
+}
+
+.flow :global([data-cancel-text]) {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--cf-line);
+  border-radius: 10px;
+  background: var(--cf-bg);
+  color: var(--cf-fg);
+  font: inherit;
+  resize: vertical;
+}
+.flow :global([data-cancel-text]:focus) {
+  border-color: var(--cf-accent);
+  outline: none;
+  box-shadow: 0 0 0 3px var(--cf-ring);
+}
+
+.flow :global([data-cancel-actions]) {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 4px;
+}
+.flow :global([data-cancel-step="offer"] [data-cancel-actions]),
+.flow :global([data-cancel-step="confirm"] [data-cancel-actions]) {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.flow :global([data-cancel-primary]),
+.flow :global([data-cancel-secondary]),
+.flow :global([data-cancel-danger]),
+.flow :global([data-cancel-back]) {
+  display: inline-flex;
+  height: 38px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 14px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  font: inherit;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+}
+.flow :global([data-cancel-primary]) {
+  background: var(--cf-primary-bg);
+  color: var(--cf-primary-fg);
+}
+.flow :global([data-cancel-danger]) {
+  background: var(--cf-danger);
+  color: var(--cf-danger-fg);
+}
+.flow :global([data-cancel-secondary]) {
+  border-color: var(--cf-line);
+  background: var(--cf-bg);
+  color: var(--cf-fg);
+}
+.flow :global([data-cancel-back]) {
+  height: 30px;
+  align-self: flex-start;
+  margin-right: auto;
+  padding: 0 4px;
+  background: transparent;
+  color: var(--cf-fg-3);
+}
+.flow :global([data-cancel-step="offer"] > [data-cancel-back]),
+.flow :global([data-cancel-step="confirm"] > [data-cancel-back]) {
+  align-self: center;
+  margin: 0;
+}
+.flow :global(button:disabled) {
+  cursor: default;
+  opacity: 0.55;
+}
+
+.flow :global([data-cancel-eyebrow]) {
+  color: var(--cf-accent);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.flow :global([data-cancel-offer-summary]) {
+  padding: 10px 12px;
+  border: 1px dashed var(--cf-line-strong);
+  border-radius: 10px;
+  background: var(--cf-bg-2);
+  color: var(--cf-fg);
+  font-weight: 500;
+}
+.flow :global([data-cancel-note]) {
+  color: var(--cf-fg-3);
+  font-size: 12px;
+}
+.flow :global([data-cancel-error]) {
+  color: var(--cf-danger);
+  font-size: 13px;
+}
+.flow :global([data-cancel-loading]) {
+  color: var(--cf-fg-3);
+}

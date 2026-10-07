@@ -2,7 +2,8 @@ import type { NextRequest } from "next/server";
 import { z } from "zod";
 import { getSession } from "@/server/auth";
 import {
-  addSampleData,
+  backendOrg,
+  createWorkspaceApp,
   offerApi,
   OfferApiError,
   offerApiFetch,
@@ -21,24 +22,7 @@ export const dynamic = "force-dynamic";
 //   POST /api/admin/workspace/apps       create an app (optionally with sample data)
 //   *    /api/admin/apps/:appId/...      passthrough to the Offer API
 
-interface BackendOrg {
-  id: string;
-  app_ids: string[];
-}
-
 const err = (status: number, error: string) => Response.json({ error }, { status });
-
-/** The workspace's record in the Offer API, created on first use. */
-async function backendOrg(orgId: string): Promise<BackendOrg> {
-  try {
-    return await offerApi<BackendOrg>("GET", `/orgs/${encodeURIComponent(orgId)}`);
-  } catch (e) {
-    if (e instanceof OfferApiError && e.status === 404) {
-      return offerApi<BackendOrg>("POST", "/orgs", { id: orgId, app_ids: [] });
-    }
-    throw e;
-  }
-}
 
 const createAppBody = z.object({
   name: z.string().trim().min(1, "Name is required").max(80),
@@ -71,15 +55,12 @@ async function handle(req: NextRequest, ctx: RouteContext<"/api/admin/[...path]"
     }
 
     if (path === "/workspace/apps") {
-      const org = await backendOrg(orgId);
-      if (method === "GET") return Response.json(await offerApi("GET", `/orgs/${encodeURIComponent(orgId)}/apps`));
+      if (method === "GET") {
+        await backendOrg(orgId);
+        return Response.json(await offerApi("GET", `/orgs/${encodeURIComponent(orgId)}/apps`));
+      }
       if (method === "POST") {
-        const { name, sample } = createAppBody.parse(await readBody(req));
-        const app = await offerApi<{ id: string }>("POST", "/apps", { name });
-        // Read-modify-write of app_ids: fine for one admin at a time; move server-side with the real API.
-        await offerApi("PATCH", `/orgs/${encodeURIComponent(orgId)}`, { app_ids: [...org.app_ids, app.id] });
-        if (sample) await addSampleData(app.id, sample);
-        return Response.json(app, { status: 201 });
+        return Response.json(await createWorkspaceApp(orgId, createAppBody.parse(await readBody(req))), { status: 201 });
       }
       return err(405, "Method not allowed");
     }

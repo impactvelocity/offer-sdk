@@ -551,7 +551,7 @@ describe("webhooks", () => {
   test("event types are public", async () => {
     const res = await call("GET", "/event-types", { key: null });
     expect(res.status).toBe(200);
-    expect(res.json).toHaveLength(18);
+    expect(res.json).toHaveLength(22);
     expect(res.json[0]).toMatchObject({ type: "account.created", category: "account", title: "Account created" });
     expect(res.json[0].sample.object.app_id).toBe("app_123");
   });

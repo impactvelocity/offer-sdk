@@ -4,7 +4,9 @@ import { searchNamespaces } from "../db/search.ts";
 import { attachmentRoutes } from "../lib/attachments.ts";
 import { type Json, omit, pagination, readJson, readObject } from "../lib/http.ts";
 import { slugify } from "../lib/slugify.ts";
+import { DEFAULT_OFFER_ID, INTERVALS, listPrice } from "../lib/offers.ts";
 import { emit, emitUpdated } from "../lib/webhooks.ts";
+import { createCheckout } from "./offers.ts";
 
 const plans = new Hono();
 
@@ -69,6 +71,18 @@ plans.get("/:planId/pricing", async (c) => {
   if (!doc) return c.json(notFound, 404);
   if (!doc.pricingCard) return c.json({ error: "No pricing card set" }, 404);
   return c.json(pricingCard(doc));
+});
+
+// POST /apps/:appId/plans/:planId/checkout
+// Body: { interval?, account? | email?, ref?, return_url?, cancel_url? }.
+// Buys the plan at its list price: a shortcut for POST /offers/default/checkout
+// with `plan` set. `interval` defaults to the first one the plan has a price for.
+plans.post("/:planId/checkout", async (c) => {
+  const doc = await getDoc("plans", c.req.param("appId")!, c.req.param("planId"));
+  if (!doc) return c.json(notFound, 404);
+  const body = await readObject(c);
+  const interval = body.interval ?? INTERVALS.find((i) => listPrice(doc, i) !== null);
+  return createCheckout(c, DEFAULT_OFFER_ID, { ...body, plan: doc.id, interval, bumps: undefined });
 });
 
 // GET /apps/:appId/plans/:planId/namespaces?page=1&per_page=20

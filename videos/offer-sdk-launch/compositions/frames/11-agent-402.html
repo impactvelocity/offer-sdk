@@ -1,0 +1,800 @@
+<template>
+<style>
+/* ==========================================================================
+   Offer SDK app kit — the offer-app dashboard (dark theme), rebuilt for video.
+   Values are copied from offer-app/src/app/globals.css (data-theme="dark") and
+   measured from the real screens in capture/assets/app/*.png.
+
+   HOW TO USE IN A FRAME
+   1. Paste this whole file inside the style block that lives inside your frame template.
+      (Template transport: styles must live inside the frame template.)
+   2. Build the window from shell.html. Author it at its LOGICAL size
+      (.ak-window is 1366×800 — a real laptop viewport, real 14px UI text) and
+      scale the wrapper with GSAP (scale ≈ 1.08–1.12 to fill the top 83%;
+      punch in to 1.5–1.9 on the region the VO is talking about).
+   3. Copy icons from icons.html (Lucide, the icon set the app uses).
+   All classes are prefixed ak- so they never collide with frame-local names.
+   ========================================================================== */
+
+@font-face { font-family: "Cal Sans"; src: url("assets/fonts/CalSansVF.woff2") format("woff2"); font-weight: 400 700; font-display: block; }
+@font-face { font-family: "Geist Mono"; src: url("assets/fonts/geist-mono-latin.woff2") format("woff2"); font-weight: 400 600; font-display: block; }
+
+.ak {
+  --canvas: #0f0f11; --panel: #161618; --bg: #18181b; --bg-subtle: #1c1c1f; --bg-muted: #222226;
+  --bg-hover: #27272c; --bg-active: #2e2e34; --bg-elevated: #202024; --bg-inverse: #f1f1f3;
+  --fg: #ececee; --fg-secondary: rgb(236 236 238 / .93); --fg-tertiary: rgb(236 236 238 / .86);
+  --fg-muted: rgb(236 236 238 / .68); --fg-placeholder: #6f7178; --fg-icon: #9c9ea5;
+  --border: #2a2a2f; --border-strong: #37373d; --border-input: #323238;
+  --accent: #34d599; --accent-hover: #5ce0b0; --accent-subtle: rgb(52 213 153 / .13); --accent-fg: #5fe3b1; --accent-contrast: #03140c; --ring: rgb(52 213 153 / .4);
+  --btn-neon-bg: rgb(52 213 153 / .08); --shadow-brand: inset 0 0 0 1px rgb(52 213 153 / .85), inset 0 0 14px -6px rgb(52 213 153 / .35), 0 0 16px -6px rgb(52 213 153 / .4);
+  --brand-vertical: linear-gradient(180deg, #4fe0b0, #2fc48c);
+  --success: #30a46c; --success-subtle: rgb(48 164 108 / .16); --success-fg: #5ed29a;
+  --danger: #e5484d; --danger-subtle: rgb(229 72 77 / .15); --danger-fg: #ff8a8d;
+  --warning: #f0a020; --warning-subtle: rgb(240 160 32 / .14); --warning-fg: #ffc35f;
+  --brand-from: #34d599; --brand-to: #2cc0de; --brand-gradient: linear-gradient(90deg, #34d599, #2cc0de);
+  --code-comment: #7f828a; --code-keyword: #5fe3b1; --code-string: #6fd69f; --code-key: #93b8ff; --code-number: #ffa072;
+  --zapier: #ff5f1f; --paypal: #0070e0;
+  --shadow-soft: 0 14px 36px -14px rgb(0 0 0 / .75), 0 2px 8px -2px rgb(0 0 0 / .45);
+  --shadow-lg: 0 18px 44px -10px rgb(0 0 0 / .7), 0 4px 12px -4px rgb(0 0 0 / .5);
+  font-family: "Cal Sans", ui-sans-serif, system-ui, sans-serif;
+  font-variation-settings: "GEOM" 25;           /* the app's UI geometry */
+  color: var(--fg); -webkit-font-smoothing: antialiased; font-size: 14px; line-height: 1.4;
+}
+.ak * { box-sizing: border-box; }
+.ak .ak-display { font-variation-settings: "GEOM" 50; letter-spacing: -0.01em; }
+/* Neon-style eyebrow: small mono caps (site + app section kickers). */
+.ak .ak-eyebrow { font-family: "Geist Mono", monospace; font-variation-settings: normal; font-size: 11px; line-height: 16px; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; color: var(--fg-muted); }
+.ak .ak-mono, .ak code { font-family: "Geist Mono", ui-monospace, monospace; font-variation-settings: normal; }
+.ak svg { display: block; flex-shrink: 0; }
+
+/* ---------- window + shell ---------- */
+.ak-window { position: absolute; width: 1366px; height: 800px; background: var(--canvas); border-radius: 18px;
+  border: 1px solid var(--border); box-shadow: 0 40px 120px -30px rgb(0 0 0 / .9), 0 0 0 1px rgb(255 255 255 / .03);
+  overflow: hidden; display: flex; padding: 6px 6px 6px 0; transform-origin: 50% 50%; }
+.ak-rail { width: 52px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; gap: 10px; padding-top: 8px; }
+.ak-rail .ak-rail-logo { width: 30px; height: 30px; border-radius: 8px; display: grid; place-items: center; color: var(--fg); }
+.ak-rail .ak-rail-logo svg { width: 18px; height: 18px; }
+.ak-rail .ak-rail-sep { width: 22px; height: 1px; background: var(--border); }
+.ak-rail .ak-app-tile { width: 28px; height: 28px; border-radius: 7px; display: grid; place-items: center; font-size: 11px; font-weight: 600; color: var(--accent-contrast);
+  background: var(--brand-vertical); }
+.ak-rail .ak-app-tile.is-active { box-shadow: 0 0 0 2px var(--canvas), 0 0 0 3.5px var(--accent); }
+.ak-rail .ak-app-tile.alt { opacity: .8; }
+.ak-rail .ak-rail-plus { color: var(--fg-icon); width: 16px; height: 16px; }
+.ak-rail .ak-rail-foot { margin-top: auto; padding-bottom: 6px; display: flex; flex-direction: column; align-items: center; gap: 14px; color: var(--fg-icon); }
+.ak-rail .ak-rail-foot svg { width: 15px; height: 15px; }
+.ak-rail .ak-avatar { width: 26px; height: 26px; border-radius: 50%; background: var(--bg-muted); color: var(--fg-secondary); font-size: 10px; display: grid; place-items: center; }
+
+.ak-nav { width: 222px; flex-shrink: 0; background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
+  margin-right: 6px; display: flex; flex-direction: column; padding: 12px 10px; box-shadow: var(--shadow-soft); }
+.ak-nav-title { font-size: 15px; font-weight: 600; padding: 2px 6px 10px; font-variation-settings: "GEOM" 50; }
+.ak-quick { height: 30px; border: 1px solid var(--border-input); border-radius: 8px; display: flex; align-items: center; gap: 8px; padding: 0 8px;
+  color: var(--fg-muted); font-size: 13px; margin-bottom: 10px; }
+.ak-quick svg { width: 14px; height: 14px; color: var(--fg-icon); }
+.ak-quick .ak-kbd { margin-left: auto; font-size: 10.5px; border: 1px solid var(--border); border-radius: 4px; padding: 0 4px; color: var(--fg-placeholder); }
+.ak-nav-group { display: flex; flex-direction: column; gap: 1px; padding: 6px 0; border-top: 1px solid var(--border); }
+.ak-nav-group:first-of-type { border-top: 0; padding-top: 0; }
+.ak-nav-item { height: 31px; border-radius: 7px; display: flex; align-items: center; gap: 10px; padding: 0 8px; font-size: 13.5px; color: var(--fg-secondary); }
+.ak-nav-item svg { width: 15px; height: 15px; color: var(--fg-icon); }
+.ak-nav-item .ak-count { margin-left: auto; font-size: 12px; color: var(--fg-muted); font-variant-numeric: tabular-nums; }
+.ak-nav-item.is-active { background: var(--accent-subtle); color: var(--accent-fg); }
+.ak-nav-item.is-active svg { color: var(--accent-fg); }
+.ak-nav-foot { margin-top: auto; }
+
+.ak-main { flex: 1; min-width: 0; background: var(--bg); border: 1px solid var(--border); border-radius: 12px; display: flex; flex-direction: column;
+  overflow: hidden; box-shadow: var(--shadow-soft); position: relative; }
+.ak-header { height: 50px; flex-shrink: 0; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; padding: 0 12px 0 16px; }
+.ak-header .ak-crumb { display: flex; align-items: center; gap: 9px; font-size: 14px; font-weight: 500; }
+.ak-header .ak-crumb svg { width: 15px; height: 15px; color: var(--fg-icon); }
+.ak-header .ak-crumb .ak-sep { color: var(--fg-placeholder); }
+.ak-header .ak-actions { margin-left: auto; display: flex; align-items: center; gap: 4px; }
+.ak-toolbar { height: 50px; flex-shrink: 0; display: flex; align-items: center; gap: 10px; padding: 0 16px; border-bottom: 1px solid var(--border); }
+.ak-body { flex: 1; min-height: 0; position: relative; overflow: hidden; }
+.ak-page { padding: 28px 40px; }
+.ak-page-title { font-size: 22px; font-weight: 600; font-variation-settings: "GEOM" 50; letter-spacing: -0.01em; }
+.ak-page-sub { color: var(--fg-muted); font-size: 13.5px; margin-top: 4px; }
+
+/* ---------- controls ---------- */
+.ak-btn { height: 30px; border-radius: 8px; display: inline-flex; align-items: center; gap: 7px; padding: 0 10px; font-size: 13.5px; color: var(--fg-secondary);
+  border: 1px solid transparent; white-space: nowrap; }
+.ak-btn svg { width: 14px; height: 14px; }
+.ak-btn.is-outline { border-color: var(--border-strong); background: var(--bg-subtle); }
+/* Primary = the app's neon button: hairline neon border, faint green wash, green ink. */
+.ak-btn.is-primary { background: var(--btn-neon-bg); color: var(--accent-fg); font-weight: 500; box-shadow: var(--shadow-brand); }
+.ak-btn.is-gradient { background: var(--btn-neon-bg); color: var(--accent-fg); font-weight: 500; box-shadow: var(--shadow-brand), 0 0 32px -8px rgb(52 213 153 / .55); }
+.ak-btn.is-solid { background: var(--brand-vertical); color: var(--accent-contrast); font-weight: 600; }
+.ak-btn.is-paypal { background: #ffc439; color: #111; font-weight: 600; }
+.ak-btn.is-lg { height: 40px; padding: 0 16px; font-size: 15px; border-radius: 10px; }
+.ak-input { height: 32px; border: 1px solid var(--border-input); background: var(--bg-subtle); border-radius: 8px; display: flex; align-items: center; gap: 8px;
+  padding: 0 10px; font-size: 13.5px; color: var(--fg); }
+.ak-input.is-placeholder { color: var(--fg-placeholder); }
+.ak-input.is-focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--ring); }
+.ak-input svg { width: 14px; height: 14px; color: var(--fg-icon); }
+.ak-label { font-size: 13px; color: var(--fg-secondary); font-weight: 500; margin-bottom: 6px; }
+.ak-seg { display: inline-flex; background: var(--bg-muted); border-radius: 8px; padding: 2px; gap: 2px; }
+.ak-seg > span { height: 26px; padding: 0 10px; border-radius: 6px; display: inline-flex; align-items: center; font-size: 13px; color: var(--fg-muted); }
+.ak-seg > span.is-on { background: var(--bg-active); color: var(--fg); }
+.ak-switch { width: 30px; height: 18px; border-radius: 9px; background: var(--bg-active); position: relative; flex-shrink: 0; }
+.ak-switch::after { content: ""; position: absolute; top: 2px; left: 2px; width: 14px; height: 14px; border-radius: 50%; background: #fff; }
+.ak-switch.is-on { background: var(--accent); }
+.ak-switch.is-on::after { background: var(--accent-contrast); }
+.ak-switch.is-on::after { left: 14px; }
+.ak-check { width: 16px; height: 16px; border-radius: 4px; border: 1px solid var(--border-strong); display: grid; place-items: center; }
+.ak-check.is-on { background: var(--accent); border-color: var(--accent); color: var(--accent-contrast); }
+.ak-check svg { width: 11px; height: 11px; }
+
+/* ---------- table (Plans / Entitlements / Add-ons / Incentives / Accounts) ---------- */
+.ak-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+.ak-table th { height: 42px; text-align: left; font-weight: 400; color: var(--fg-muted); padding: 0 14px; border-bottom: 1px solid var(--border); border-right: 1px solid var(--border); white-space: nowrap; }
+.ak-table th:last-child, .ak-table td:last-child { border-right: 0; }
+.ak-table th .ak-th { display: inline-flex; align-items: center; gap: 7px; }
+.ak-table th svg { width: 13px; height: 13px; color: var(--fg-icon); }
+.ak-table td { height: 46px; padding: 0 14px; border-bottom: 1px solid var(--border); border-right: 1px solid var(--border); white-space: nowrap; color: var(--fg-secondary); }
+.ak-table td.is-num { text-align: right; font-variant-numeric: tabular-nums; }
+.ak-table .ak-row-name { display: flex; align-items: center; gap: 9px; color: var(--fg); }
+.ak-table .ak-row-icon { width: 22px; height: 22px; border-radius: 6px; background: rgb(59 123 246 / .18); color: #93b8ff; display: grid; place-items: center; }
+.ak-table .ak-row-icon svg { width: 13px; height: 13px; }
+.ak-table tr.is-hl td { background: rgb(52 213 153 / .07); }
+.ak-table-foot { padding: 12px 16px; color: var(--fg-muted); font-size: 13px; }
+
+/* ---------- chips + tags ---------- */
+.ak-id { font-family: "Geist Mono", monospace; font-variation-settings: normal; font-size: 12px; background: var(--bg-muted); color: var(--fg-secondary);
+  border-radius: 5px; padding: 2px 6px; }
+.ak-tag { display: inline-flex; align-items: center; gap: 5px; height: 21px; padding: 0 7px; border-radius: 5px; font-size: 12px; white-space: nowrap;
+  background: rgb(255 255 255 / .08); color: #c6c7cc; }
+.ak-tag svg { width: 11px; height: 11px; }
+.ak-tag.blue { background: rgb(59 123 246 / .18); color: #93b8ff; }
+.ak-tag.green { background: rgb(48 164 108 / .18); color: #6fd69f; }
+.ak-tag.yellow { background: rgb(240 180 40 / .16); color: #f5c451; }
+.ak-tag.orange { background: rgb(235 104 52 / .18); color: #ffa072; }
+.ak-tag.red { background: rgb(229 72 77 / .18); color: #ff8a8d; }
+.ak-tag.purple { background: rgb(143 107 255 / .2); color: #bba6ff; }
+.ak-tag.brand { background: rgb(52 213 153 / .14); color: #5fe3b1; }
+.ak-tag.pink { background: rgb(224 69 123 / .18); color: #ff8fba; }
+.ak-tag.teal { background: rgb(20 163 157 / .18); color: #62d6cf; }
+.ak-more { color: var(--fg-muted); font-size: 12px; }
+
+/* ---------- cards, stats, meters ---------- */
+.ak-card { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; }
+.ak-card-head { height: 46px; display: flex; align-items: center; padding: 0 16px; border-bottom: 1px solid var(--border); font-weight: 500; font-size: 14px; }
+.ak-card-body { padding: 16px; }
+.ak-elevated { background: var(--bg-elevated); border: 1px solid var(--border-strong); border-radius: 12px; box-shadow: var(--shadow-lg); }
+.ak-stat-strip { display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+.ak-stat { padding: 16px 18px; border-right: 1px solid var(--border); }
+.ak-stat:last-child { border-right: 0; }
+.ak-stat-label { display: flex; align-items: center; gap: 7px; font-size: 13px; color: var(--fg-secondary); }
+.ak-stat-label svg { width: 13px; height: 13px; color: var(--fg-icon); }
+.ak-stat-value { font-size: 26px; font-weight: 600; margin-top: 8px; font-variant-numeric: tabular-nums; font-variation-settings: "GEOM" 50; }
+.ak-stat-sub { font-size: 12px; color: var(--fg-muted); margin-top: 4px; }
+.ak-meter { height: 8px; border-radius: 4px; background: var(--bg-active); overflow: hidden; }
+.ak-meter > i { display: block; height: 100%; width: 0; border-radius: 4px; background: var(--brand-gradient); }
+.ak-meter.is-warn > i { background: linear-gradient(90deg, #f0a020, #e5484d); }
+.ak-bar-row { position: relative; height: 30px; border-radius: 6px; display: flex; align-items: center; padding: 0 10px; font-size: 13.5px; }
+.ak-bar-row > b { position: absolute; inset: 0 auto 0 0; border-radius: 6px; background: linear-gradient(90deg, rgb(52 213 153 / .32), rgb(44 192 222 / .22)); font-weight: 400; }
+.ak-bar-row > span { position: relative; }
+.ak-bar-row > .ak-bar-val { margin-left: auto; color: var(--fg-secondary); font-variant-numeric: tabular-nums; }
+
+/* ---------- code block (site CodeBlock look) ---------- */
+.ak-code { background: #131315; border: 1px solid var(--border); border-radius: 14px; overflow: hidden; box-shadow: var(--shadow-lg); }
+.ak-code-bar { height: 40px; display: flex; align-items: center; gap: 8px; padding: 0 14px; border-bottom: 1px solid var(--border); color: var(--fg-muted); font-size: 13px; }
+.ak-code-bar .ak-dots { display: flex; gap: 6px; margin-right: 6px; }
+.ak-code-bar .ak-dots i { width: 10px; height: 10px; border-radius: 50%; background: var(--bg-active); }
+.ak-code pre { margin: 0; padding: 18px 20px; font-family: "Geist Mono", monospace; font-variation-settings: normal; font-size: 15px; line-height: 1.65; color: var(--fg-secondary); white-space: pre; }
+.ak-code .k { color: var(--code-keyword); } .ak-code .s { color: var(--code-string); } .ak-code .p { color: var(--code-key); }
+.ak-code .n { color: var(--code-number); } .ak-code .c { color: var(--code-comment); } .ak-code .f { color: #ececee; }
+.ak-code .del { background: rgb(229 72 77 / .14); } .ak-code .add { background: rgb(48 164 108 / .14); }
+
+/* ---------- feedback ---------- */
+.ak-toast { position: absolute; display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 10px; background: var(--bg-elevated);
+  border: 1px solid var(--border-strong); box-shadow: var(--shadow-lg); font-size: 13.5px; white-space: nowrap; }
+.ak-toast svg { width: 15px; height: 15px; }
+.ak-toast.is-ok svg { color: var(--success-fg); }
+.ak-toast.is-warn svg { color: var(--warning-fg); }
+.ak-toast.is-bad svg { color: var(--danger-fg); }
+.ak-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--success); display: inline-block; }
+.ak-dot.is-warn { background: var(--warning); } .ak-dot.is-bad { background: var(--danger); }
+.ak-cursor { position: absolute; width: 22px; height: 22px; z-index: 50; pointer-events: none; filter: drop-shadow(0 2px 4px rgb(0 0 0 / .6)); }
+.ak-ripple { position: absolute; width: 36px; height: 36px; margin: -18px 0 0 -18px; border-radius: 50%; border: 2px solid var(--accent-fg); z-index: 49; opacity: 0; }
+
+/* ---------- avatars + misc ---------- */
+.ak-av { width: 22px; height: 22px; border-radius: 6px; display: grid; place-items: center; font-size: 9.5px; font-weight: 600; background: rgb(52 213 153 / .14); color: #5fe3b1; }
+.ak-av.round { border-radius: 50%; }
+.ak-kv { display: flex; justify-content: space-between; font-size: 13px; padding: 7px 0; border-bottom: 1px solid var(--border); color: var(--fg-muted); }
+.ak-kv b { font-weight: 400; color: var(--fg); }
+.ak-divider { height: 1px; background: var(--border); }
+/* ---------------- frame 11 — agent hits its limit (neon) ---------------- */
+#root {
+  position: absolute;
+  inset: 0;
+  width: 1920px;
+  height: 1080px;
+  overflow: hidden;
+}
+.f11-bg {
+  position: absolute;
+  inset: 0;
+  background: #0f0f11;
+  overflow: hidden;
+}
+.f11-bg-art {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.55;
+}
+.f11-bg-fade {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 58% 64% at 47% 44%, rgba(15, 15, 17, 0.94) 0%, rgba(15, 15, 17, 0.72) 48%, rgba(15, 15, 17, 0) 100%);
+}
+.f11-glow {
+  position: absolute;
+  left: 180px;
+  top: 70px;
+  width: 1040px;
+  height: 760px;
+  background: radial-gradient(closest-side, rgba(52, 213, 153, 0.16), transparent);
+}
+.f11-stage {
+  position: absolute;
+  inset: 0;
+}
+.f11-world {
+  position: absolute;
+  inset: 0;
+}
+
+/* terminal */
+.f11-term {
+  position: absolute;
+  left: 120px;
+  top: 116px;
+  width: 1130px;
+  display: flex;
+  flex-direction: column;
+}
+.f11-term .ak-code-bar {
+  height: 52px;
+  flex-shrink: 0;
+  font-size: 18px;
+  gap: 10px;
+  padding: 0 20px;
+}
+.f11-term .ak-code-bar .ak-dots i {
+  width: 12px;
+  height: 12px;
+}
+.f11-bar-icon {
+  width: 20px;
+  height: 20px;
+  color: #5fe3b1;
+}
+.f11-bar-title {
+  color: #ececee;
+}
+.f11-bar-sep {
+  color: #6f7178;
+}
+.f11-bar-right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #6f7178;
+  font-size: 16px;
+}
+.f11-bar-right svg {
+  width: 16px;
+  height: 16px;
+}
+.f11-body {
+  position: relative;
+  padding: 26px 36px 26px 40px;
+  font-family: "Geist Mono", ui-monospace, monospace;
+  font-variation-settings: normal;
+  font-size: 25px;
+  color: rgba(236, 236, 238, 0.86);
+}
+.f11-row {
+  position: relative;
+  height: 40px;
+  line-height: 40px;
+  white-space: pre;
+}
+.f11-gap16 { height: 16px; }
+.f11-gap12 { height: 12px; }
+.f11-gap18 { height: 18px; }
+.f11-prompt {
+  color: #34d599;
+}
+.f11-caret {
+  display: inline-block;
+  width: 12px;
+  height: 27px;
+  margin-left: 3px;
+  vertical-align: -6px;
+  background: #34d599;
+  border-radius: 2px;
+  box-shadow: 0 0 12px rgba(52, 213, 153, 0.65);
+}
+.f11-term .s.f11-bad {
+  color: #ff8a8d;
+}
+.f11-status {
+  height: 46px;
+  display: flex;
+  align-items: center;
+}
+.f11-pill {
+  height: 42px;
+  display: inline-flex;
+  align-items: center;
+  gap: 11px;
+  padding: 0 18px;
+  border-radius: 999px;
+  font-family: "Geist Mono", ui-monospace, monospace;
+  font-size: 22px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.f11-pill i {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+.f11-pill.is-bad {
+  background: rgba(229, 72, 77, 0.16);
+  border: 1px solid rgba(229, 72, 77, 0.6);
+  color: #ff8a8d;
+  box-shadow: 0 0 22px -6px rgba(229, 72, 77, 0.55);
+}
+.f11-pill.is-bad i { background: #e5484d; }
+.f11-pill.is-ok {
+  background: rgba(52, 213, 153, 0.12);
+  border: 1px solid rgba(52, 213, 153, 0.65);
+  color: #5fe3b1;
+  box-shadow: 0 0 22px -6px rgba(52, 213, 153, 0.55);
+}
+.f11-pill.is-ok i { background: #34d599; }
+.f11-retry {
+  height: 46px;
+  display: flex;
+  align-items: center;
+  white-space: pre;
+}
+.f11-retry .f11-prompt {
+  margin-right: 15px;
+}
+.f11-retry .f11-pill {
+  margin-left: 22px;
+}
+
+/* offer block */
+.f11-offer {
+  position: relative;
+}
+.f11-offer-wash {
+  position: absolute;
+  left: -22px;
+  top: 2px;
+  bottom: 2px;
+  width: 720px;
+  border-radius: 8px;
+  background: linear-gradient(90deg, rgba(52, 213, 153, 0.11), rgba(52, 213, 153, 0.015));
+}
+.f11-offer-rule {
+  position: absolute;
+  left: -22px;
+  top: 2px;
+  bottom: 2px;
+  width: 3px;
+  border-radius: 2px;
+  background: #34d599;
+  box-shadow: 0 0 10px rgba(52, 213, 153, 0.7);
+}
+.f11-hl {
+  position: relative;
+  display: inline-block;
+}
+.f11-hl-bar {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: -6px;
+  right: -6px;
+  border-radius: 6px;
+  background: rgba(52, 213, 153, 0.22);
+  box-shadow: 0 0 0 1px rgba(52, 213, 153, 0.75), 0 0 22px -2px rgba(52, 213, 153, 0.5);
+}
+.f11-hl-text {
+  position: relative;
+}
+
+/* red flash over the terminal on the 402 */
+.f11-flash {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  border-radius: 14px;
+  background: rgba(229, 72, 77, 0.09);
+  box-shadow: inset 0 0 0 2px rgba(229, 72, 77, 0.9), inset 0 0 90px rgba(229, 72, 77, 0.3);
+  opacity: 0;
+}
+
+/* agent follows checkout_url */
+.f11-link {
+  position: absolute;
+  left: 774px;
+  top: 528px;
+  width: 576px;
+  height: 2px;
+  background: linear-gradient(90deg, rgba(95, 227, 177, 0.95), rgba(52, 213, 153, 0.45));
+  box-shadow: 0 0 10px rgba(52, 213, 153, 0.55);
+}
+.f11-link-dot {
+  position: absolute;
+  left: 768px;
+  top: 523px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #5fe3b1;
+  box-shadow: 0 0 0 4px rgba(52, 213, 153, 0.25), 0 0 14px rgba(52, 213, 153, 0.7);
+}
+.f11-link-head {
+  position: absolute;
+  left: 768px;
+  top: 523px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #eafff5;
+  box-shadow: 0 0 0 3px rgba(52, 213, 153, 0.45), 0 0 18px 2px rgba(52, 213, 153, 0.85);
+}
+
+/* PayPal approval card */
+.f11-pp {
+  position: absolute;
+  left: 1350px;
+  top: 368px;
+  width: 440px;
+  padding: 28px;
+  background: #202024;
+  border: 1px solid #37373d;
+  border-radius: 18px;
+  box-shadow: 0 30px 80px -24px rgba(0, 0, 0, 0.85), 0 4px 12px -4px rgba(0, 0, 0, 0.5);
+}
+.f11-pp-head {
+  display: flex;
+  align-items: center;
+  height: 40px;
+}
+.f11-pp-mark {
+  font-size: 36px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  font-variation-settings: "GEOM" 50;
+}
+.f11-pp-mark .f11-pay { color: #0070e0; }
+.f11-pp-mark .f11-pal { color: #009cde; }
+.f11-pp-lock {
+  margin-left: auto;
+  width: 20px;
+  height: 20px;
+  color: #9c9ea5;
+}
+.f11-pp-div {
+  height: 1px;
+  background: #2a2a2f;
+  margin: 18px 0;
+}
+.f11-pp-plan {
+  font-size: 22px;
+  color: rgba(236, 236, 238, 0.68);
+}
+.f11-pp-price {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-top: 2px;
+}
+.f11-pp-price b {
+  font-size: 68px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  font-variation-settings: "GEOM" 50;
+  color: #ececee;
+  line-height: 1.05;
+}
+.f11-pp-price span {
+  font-size: 26px;
+  color: rgba(236, 236, 238, 0.68);
+}
+.f11-pp-btnwrap {
+  position: relative;
+  margin-top: 22px;
+  height: 68px;
+}
+.f11-pp-burst {
+  position: absolute;
+  inset: 0;
+  border-radius: 14px;
+  background: radial-gradient(closest-side, rgba(52, 213, 153, 0.9), rgba(52, 213, 153, 0));
+  filter: blur(30px);
+  z-index: 0;
+  opacity: 0;
+}
+.f11-pp-btn {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: 12px;
+  background: #ffc439;
+  color: #111;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: 600;
+  overflow: hidden;
+  transform-origin: 50% 50%;
+  box-shadow: 0 14px 34px -10px rgba(255, 196, 57, 0.55);
+}
+.f11-pp-done {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, #4fe0b0, #2fc48c);
+  color: #03140c;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+.f11-pp-check {
+  width: 28px;
+  height: 28px;
+}
+.f11-pp-ring {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  border-radius: 12px;
+  box-shadow: 0 0 0 2px #5fe3b1, 0 0 24px rgba(52, 213, 153, 0.6);
+  opacity: 0;
+}
+
+/* Offer SDK confirmation toast */
+.f11-toast.ak-toast {
+  left: 1350px;
+  top: 728px;
+  gap: 12px;
+  padding: 14px 20px;
+  border-radius: 12px;
+  font-size: 21px;
+  border-color: rgba(52, 213, 153, 0.45);
+}
+.f11-toast.ak-toast svg {
+  width: 24px;
+  height: 24px;
+  color: #34d599;
+}
+</style>
+
+<div id="root" data-composition-id="11-agent-402" data-width="1920" data-height="1080" data-duration="6.37">
+
+  <!-- full-bleed ground -->
+  <div id="11-agent-402-bg" class="clip f11-bg" data-start="0" data-duration="6.37" data-track-index="0">
+    <img id="11-agent-402-art" class="f11-bg-art" src="assets/hero-bg-neon.webp" alt="" />
+    <div class="f11-bg-fade"></div>
+    <div class="f11-glow"></div>
+  </div>
+
+  <div id="11-agent-402-stage" class="clip f11-stage ak" data-start="0" data-duration="6.37" data-track-index="1">
+    <div id="11-agent-402-world" class="f11-world">
+
+      <!-- terminal -->
+      <div id="11-agent-402-term" class="ak-code f11-term">
+        <div class="ak-code-bar">
+          <span class="ak-dots"><i></i><i></i><i></i></span>
+          <svg class="f11-bar-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg>
+          <span class="f11-bar-title">agent</span>
+          <span class="f11-bar-sep">·</span>
+          <span>tool call</span>
+          <span class="f11-bar-right">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19h8"/><path d="m4 17 6-6-6-6"/></svg>
+            acct_42
+          </span>
+        </div>
+        <div class="f11-body">
+          <div class="f11-row"><span class="f11-prompt">›</span> <span id="11-agent-402-cmd1"></span><span id="11-agent-402-caret1" class="f11-caret"></span></div>
+          <div class="f11-gap16"></div>
+          <div class="f11-status">
+            <span id="11-agent-402-pill402" class="f11-pill is-bad"><i></i>402 Payment Required</span>
+          </div>
+          <div class="f11-gap12"></div>
+
+          <div id="11-agent-402-json">
+            <div id="11-agent-402-j0" class="f11-row">{</div>
+            <div id="11-agent-402-j1" class="f11-row">  <span class="p">"error"</span>: <span class="s f11-bad">"limit_reached"</span>,</div>
+            <div class="f11-offer">
+              <i id="11-agent-402-wash" class="f11-offer-wash"></i>
+              <i id="11-agent-402-rule" class="f11-offer-rule"></i>
+              <div id="11-agent-402-o0" class="f11-row">  <span class="p">"offer"</span>: {</div>
+              <div id="11-agent-402-o1" class="f11-row">    <span class="p">"plan"</span>: <span class="s">"Scale"</span>,</div>
+              <div id="11-agent-402-o2" class="f11-row">    <span class="p">"price"</span>: <span class="n">99</span>,</div>
+              <div id="11-agent-402-o3" class="f11-row">    <span class="p">"checkout_url"</span>: <span class="f11-hl"><i id="11-agent-402-hlbar" class="f11-hl-bar"></i><span id="11-agent-402-hltext" class="s f11-hl-text">"…/checkout?offer=…"</span></span></div>
+              <div id="11-agent-402-o4" class="f11-row">  },</div>
+            </div>
+            <div id="11-agent-402-j2" class="f11-row">  <span class="p">"retry_after_purchase"</span>: <span class="k">true</span></div>
+            <div id="11-agent-402-j3" class="f11-row">}</div>
+          </div>
+
+          <div class="f11-gap18"></div>
+          <div id="11-agent-402-retry" class="f11-retry"><span class="f11-prompt">›</span> <span id="11-agent-402-cmd2"></span><span id="11-agent-402-caret2" class="f11-caret" style="display:none"></span><span id="11-agent-402-pill200" class="f11-pill is-ok"><i></i>200 OK</span></div>
+        </div>
+        <div id="11-agent-402-flash" class="f11-flash"></div>
+      </div>
+
+      <!-- agent follows checkout_url -->
+      <div id="11-agent-402-link" class="f11-link"></div>
+      <div id="11-agent-402-linkdot" class="f11-link-dot"></div>
+      <div id="11-agent-402-linkhead" class="f11-link-head"></div>
+
+      <!-- PayPal approval -->
+      <div id="11-agent-402-pp" class="f11-pp">
+        <div class="f11-pp-head">
+          <span class="f11-pp-mark"><span class="f11-pay">Pay</span><span class="f11-pal">Pal</span></span>
+          <svg class="f11-pp-lock" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        </div>
+        <div class="f11-pp-div"></div>
+        <div class="f11-pp-plan">Scale plan</div>
+        <div class="f11-pp-price"><b>$99</b><span>/ mo</span></div>
+        <div class="f11-pp-btnwrap">
+          <div id="11-agent-402-burst" class="f11-pp-burst"></div>
+          <div id="11-agent-402-btn" class="f11-pp-btn">
+            <span>Approve</span>
+            <div id="11-agent-402-done" class="f11-pp-done" style="opacity:0">
+              <svg id="11-agent-402-check" class="f11-pp-check" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m16 9-5.5 5.5L8 12"/></svg>
+              <span id="11-agent-402-donelabel">Approved</span>
+            </div>
+          </div>
+          <div id="11-agent-402-ring" class="f11-pp-ring"></div>
+        </div>
+      </div>
+
+      <!-- Offer SDK confirms the upgrade -->
+      <div id="11-agent-402-toast" class="ak-toast is-ok f11-toast">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 13.74a2 2 0 0 1-2 0L2.5 8.87a1 1 0 0 1 0-1.74L11 2.26a2 2 0 0 1 2 0l8.5 4.87a1 1 0 0 1 0 1.74z"/><path d="m20 14.285 1.5.845a1 1 0 0 1 0 1.74L13 21.74a2 2 0 0 1-2 0l-8.5-4.87a1 1 0 0 1 0-1.74l1.5-.845"/></svg>
+        <span>Upgraded to Scale</span>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<script>
+(function () {
+  var FID = "11-agent-402";
+  var DURATION = 5.87;
+  var $ = function (name) { return document.getElementById(FID + "-" + name); };
+
+  var tl = gsap.timeline({ paused: true });
+
+  // ---------- typing (per-character tl.set steps — no callbacks, seek-safe) ----------
+  var CMD1 = [
+    { c: "k", t: "POST" },
+    { c: "f", t: " /namespaces/acct_42/usage  " },
+    { c: "", t: "{ " },
+    { c: "p", t: "\"entitlement\"" },
+    { c: "", t: ": " },
+    { c: "s", t: "\"api_calls\"" },
+    { c: "", t: " }" }
+  ];
+  var CMD2 = [
+    { c: "k", t: "POST" },
+    { c: "f", t: " …/usage" }
+  ];
+  function buildTyper(host, segs) {
+    var chars = [];
+    segs.forEach(function (seg) {
+      for (var i = 0; i < seg.t.length; i++) {
+        var sp = document.createElement("span");
+        if (seg.c) sp.className = seg.c;
+        sp.textContent = seg.t.charAt(i);
+        sp.style.display = "none";
+        host.appendChild(sp);
+        chars.push(sp);
+      }
+    });
+    return chars;
+  }
+  function typeOn(chars, from, to) {
+    var step = (to - from) / chars.length;
+    chars.forEach(function (sp, i) { tl.set(sp, { display: "inline" }, from + i * step); });
+  }
+
+  var GREEN_FLASH = "0 0 34px 4px rgba(52,213,153,0.85)";
+  var GREEN_REST = "0 0 22px -6px rgba(52,213,153,0.55)";
+  var RED_FLASH = "0 0 40px 6px rgba(229,72,77,0.85)";
+  var RED_REST = "0 0 22px -6px rgba(229,72,77,0.55)";
+
+  // ---------- camera: one slow push-in under the whole shot; backdrop drifts the other way ----------
+  tl.fromTo($("world"), { scale: 1, transformOrigin: "45% 48%" },
+    { scale: 1.035, transformOrigin: "45% 48%", duration: DURATION, ease: "power2.out" }, 0);
+  tl.fromTo($("art"), { scale: 1.06 }, { scale: 1, duration: DURATION, ease: "power1.out" }, 0);
+
+  // ---------- "When an agent hits its limit" — terminal up, the call types fast ----------
+  tl.fromTo($("term"), { opacity: 0, y: 28, scale: 0.985 },
+    { opacity: 1, y: 0, scale: 1, duration: 0.45, ease: "expo.out" }, 0);
+  typeOn(buildTyper($("cmd1"), CMD1), 0.1, 0.96);
+  var caret1 = $("caret1"), caret2 = $("caret2");
+  tl.set(caret1, { opacity: 0 }, 1.02);
+
+  // ---------- "limit," (1.24) — 402 slams in with a red flash ----------
+  tl.fromTo($("pill402"), { opacity: 0, scale: 1.55 },
+    { opacity: 1, scale: 1, duration: 0.34, ease: "power4.out", transformOrigin: "22% 50%" }, 1.08);
+  tl.fromTo($("pill402"), { boxShadow: RED_FLASH }, { boxShadow: RED_REST, duration: 0.6, ease: "power2.out" }, 1.08);
+  tl.set($("flash"), { opacity: 1 }, 1.1);
+  tl.to($("flash"), { opacity: 0, duration: 0.5, ease: "power2.out" }, 1.12);
+
+  // ---------- "the API answers" — the body starts ----------
+  tl.fromTo($("j0"), { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.4, ease: "expo.out" }, 1.42);
+  tl.fromTo($("j1"), { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.4, ease: "expo.out" }, 1.5);
+
+  // ---------- "upgrade offer" (2.35–2.45) — the offer block cascades in ----------
+  tl.fromTo($("rule"), { scaleY: 0, transformOrigin: "50% 0%" },
+    { scaleY: 1, transformOrigin: "50% 0%", duration: 0.45, ease: "power4.out" }, 2.14);
+  tl.fromTo($("wash"), { opacity: 0, scaleX: 0.55, transformOrigin: "0% 50%" },
+    { opacity: 1, scaleX: 1, transformOrigin: "0% 50%", duration: 0.55, ease: "expo.out" }, 2.16);
+  ["o0", "o1", "o2", "o3", "o4", "j2", "j3"].forEach(function (id, i) {
+    tl.fromTo($(id), { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.4, ease: "expo.out" }, 2.16 + i * 0.055);
+  });
+
+  // ---------- "act on" (3.16) — neon highlight sweeps checkout_url ----------
+  tl.fromTo($("hlbar"), { scaleX: 0, transformOrigin: "0% 50%" },
+    { scaleX: 1, transformOrigin: "0% 50%", duration: 0.32, ease: "power3.out" }, 3.04);
+  tl.fromTo($("hltext"), { color: "#6fd69f" }, { color: "#eafff5", duration: 0.24, ease: "power1.out" }, 3.1);
+
+  // the agent follows the link: a pulse runs the wire to PayPal
+  tl.fromTo($("linkdot"), { opacity: 0, scale: 0.3 }, { opacity: 1, scale: 1, duration: 0.2, ease: "power3.out" }, 3.3);
+  tl.fromTo($("link"), { scaleX: 0, transformOrigin: "0% 50%" },
+    { scaleX: 1, transformOrigin: "0% 50%", duration: 0.32, ease: "power3.inOut" }, 3.34);
+  tl.fromTo($("linkhead"), { x: 0, opacity: 0 }, { x: 576, opacity: 1, duration: 0.32, ease: "power3.inOut" }, 3.34);
+
+  // ---------- "PayPal" (3.72) — approval card lands, button presses ----------
+  tl.fromTo($("pp"), { opacity: 0, x: 80, scale: 0.97 },
+    { opacity: 1, x: 0, scale: 1, duration: 0.5, ease: "expo.out" }, 3.42);
+  var PRESS = 3.94, RELEASE = 4.03;
+  tl.fromTo($("btn"), { scale: 1 }, { scale: 0.95, duration: RELEASE - PRESS, ease: "power1.in" }, PRESS);
+  tl.to($("btn"), { scale: 1, boxShadow: "0 14px 34px -10px rgba(52,213,153,0.55)", duration: 0.38, ease: "power3.out" }, RELEASE);
+  tl.set($("done"), { opacity: 1 }, RELEASE);
+  tl.fromTo($("donelabel"), { scale: 0.88 }, { scale: 1, duration: 0.35, ease: "expo.out" }, RELEASE);
+  tl.fromTo($("check"), { scale: 0.4, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.4, ease: "expo.out" }, RELEASE + 0.03);
+  tl.set($("ring"), { opacity: 1, scaleX: 1, scaleY: 1 }, RELEASE);
+  tl.to($("ring"), { opacity: 0, scaleX: 1.08, scaleY: 1.5, duration: 0.5, ease: "power2.out" }, RELEASE + 0.01);
+  tl.fromTo($("burst"), { opacity: 0, scale: 1 }, { opacity: 0.5, scale: 2.4, duration: 0.3, ease: "power2.out" }, RELEASE);
+  tl.to($("burst"), { opacity: 0, duration: 0.45, ease: "power2.in" }, RELEASE + 0.3);
+
+  // ---------- "Offer SDK" (4.30) — the upgrade lands ----------
+  tl.fromTo($("toast"), { opacity: 0, y: 14, scale: 0.85 },
+    { opacity: 1, y: 0, scale: 1, duration: 0.45, ease: "expo.out", transformOrigin: "0% 50%" }, 4.22);
+  tl.fromTo($("toast"), { boxShadow: "0 0 34px 2px rgba(52,213,153,0.7), 0 18px 44px -10px rgba(0,0,0,0.7)" },
+    { boxShadow: "0 0 0px 0px rgba(52,213,153,0), 0 18px 44px -10px rgba(0,0,0,0.7)", duration: 0.7, ease: "power2.out" }, 4.22);
+
+  // ---------- "handle the rest" (4.84) — retry returns 200 ----------
+  tl.fromTo($("retry"), { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.25, ease: "expo.out" }, 4.5);
+  tl.set(caret2, { display: "inline-block" }, 4.5);
+  typeOn(buildTyper($("cmd2"), CMD2), 4.56, 4.8);
+  tl.set(caret2, { display: "none" }, 4.86);
+  tl.fromTo($("pill200"), { opacity: 0, scale: 0.85 },
+    { opacity: 1, scale: 1, duration: 0.45, ease: "expo.out", transformOrigin: "0% 50%" }, 4.88);
+  tl.fromTo($("pill200"), { boxShadow: GREEN_FLASH }, { boxShadow: GREEN_REST, duration: 0.55, ease: "power2.out" }, 4.88);
+  // hold from ~5.35 to the end
+
+  window.__timelines = window.__timelines || {};
+  window.__timelines[FID] = tl;
+})();
+</script>
+</template>

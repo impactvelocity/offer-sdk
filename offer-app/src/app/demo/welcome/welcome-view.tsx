@@ -81,9 +81,14 @@ export function WelcomeView({ apiUrl, appId, publishableKey, account, overrides 
         <span className={styles.logo}>
           <span aria-hidden className={styles.mark} /> Scrapely
         </span>
-        <a className={styles.secure} href={checkoutHref}>
-          Plans
-        </a>
+        <span style={{ display: "flex", gap: 16 }}>
+          <a className={styles.secure} href={`/demo/account?${new URLSearchParams({ account, ...(overrides ? { app: overrides.app } : {}) })}`}>
+            Account
+          </a>
+          <a className={styles.secure} href={checkoutHref}>
+            Plans
+          </a>
+        </span>
       </header>
       <main className={styles.welcome}>
         {error && <p className={styles.error}>{error}</p>}

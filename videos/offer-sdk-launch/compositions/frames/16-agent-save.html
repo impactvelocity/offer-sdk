@@ -1,0 +1,648 @@
+<template id="16-agent-save-template">
+<div id="root" data-composition-id="16-agent-save" data-width="1920" data-height="1080" data-start="0" data-duration="11.14">
+<style>
+/* ==========================================================================
+   Offer SDK app kit — the offer-app dashboard (dark theme), rebuilt for video.
+   Values are copied from offer-app/src/app/globals.css (data-theme="dark") and
+   measured from the real screens in capture/assets/app/*.png.
+
+   HOW TO USE IN A FRAME
+   1. Paste this whole file inside the style block that lives inside your frame template.
+      (Template transport: styles must live inside the frame template.)
+   2. Build the window from shell.html. Author it at its LOGICAL size
+      (.ak-window is 1366×800 — a real laptop viewport, real 14px UI text) and
+      scale the wrapper with GSAP (scale ≈ 1.08–1.12 to fill the top 83%;
+      punch in to 1.5–1.9 on the region the VO is talking about).
+   3. Copy icons from icons.html (Lucide, the icon set the app uses).
+   All classes are prefixed ak- so they never collide with frame-local names.
+   ========================================================================== */
+
+@font-face { font-family: "Cal Sans"; src: url("assets/fonts/CalSansVF.woff2") format("woff2"); font-weight: 400 700; font-display: block; }
+@font-face { font-family: "Geist Mono"; src: url("assets/fonts/geist-mono-latin.woff2") format("woff2"); font-weight: 400 600; font-display: block; }
+
+.ak {
+  --canvas: #0f0f11; --panel: #161618; --bg: #18181b; --bg-subtle: #1c1c1f; --bg-muted: #222226;
+  --bg-hover: #27272c; --bg-active: #2e2e34; --bg-elevated: #202024; --bg-inverse: #f1f1f3;
+  --fg: #ececee; --fg-secondary: rgb(236 236 238 / .93); --fg-tertiary: rgb(236 236 238 / .86);
+  --fg-muted: rgb(236 236 238 / .68); --fg-placeholder: #6f7178; --fg-icon: #9c9ea5;
+  --border: #2a2a2f; --border-strong: #37373d; --border-input: #323238;
+  --accent: #34d599; --accent-hover: #5ce0b0; --accent-subtle: rgb(52 213 153 / .13); --accent-fg: #5fe3b1; --accent-contrast: #03140c; --ring: rgb(52 213 153 / .4);
+  --btn-neon-bg: rgb(52 213 153 / .08); --shadow-brand: inset 0 0 0 1px rgb(52 213 153 / .85), inset 0 0 14px -6px rgb(52 213 153 / .35), 0 0 16px -6px rgb(52 213 153 / .4);
+  --brand-vertical: linear-gradient(180deg, #4fe0b0, #2fc48c);
+  --success: #30a46c; --success-subtle: rgb(48 164 108 / .16); --success-fg: #5ed29a;
+  --danger: #e5484d; --danger-subtle: rgb(229 72 77 / .15); --danger-fg: #ff8a8d;
+  --warning: #f0a020; --warning-subtle: rgb(240 160 32 / .14); --warning-fg: #ffc35f;
+  --brand-from: #34d599; --brand-to: #2cc0de; --brand-gradient: linear-gradient(90deg, #34d599, #2cc0de);
+  --code-comment: #7f828a; --code-keyword: #5fe3b1; --code-string: #6fd69f; --code-key: #93b8ff; --code-number: #ffa072;
+  --zapier: #ff5f1f; --paypal: #0070e0;
+  --shadow-soft: 0 14px 36px -14px rgb(0 0 0 / .75), 0 2px 8px -2px rgb(0 0 0 / .45);
+  --shadow-lg: 0 18px 44px -10px rgb(0 0 0 / .7), 0 4px 12px -4px rgb(0 0 0 / .5);
+  font-family: "Cal Sans", ui-sans-serif, system-ui, sans-serif;
+  font-variation-settings: "GEOM" 25;           /* the app's UI geometry */
+  color: var(--fg); -webkit-font-smoothing: antialiased; font-size: 14px; line-height: 1.4;
+}
+.ak * { box-sizing: border-box; }
+.ak .ak-display { font-variation-settings: "GEOM" 50; letter-spacing: -0.01em; }
+/* Neon-style eyebrow: small mono caps (site + app section kickers). */
+.ak .ak-eyebrow { font-family: "Geist Mono", monospace; font-variation-settings: normal; font-size: 11px; line-height: 16px; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; color: var(--fg-muted); }
+.ak .ak-mono, .ak code { font-family: "Geist Mono", ui-monospace, monospace; font-variation-settings: normal; }
+.ak svg { display: block; flex-shrink: 0; }
+
+/* ---------- window + shell ---------- */
+.ak-window { position: absolute; width: 1366px; height: 800px; background: var(--canvas); border-radius: 18px;
+  border: 1px solid var(--border); box-shadow: 0 40px 120px -30px rgb(0 0 0 / .9), 0 0 0 1px rgb(255 255 255 / .03);
+  overflow: hidden; display: flex; padding: 6px 6px 6px 0; transform-origin: 50% 50%; }
+.ak-rail { width: 52px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; gap: 10px; padding-top: 8px; }
+.ak-rail .ak-rail-logo { width: 30px; height: 30px; border-radius: 8px; display: grid; place-items: center; color: var(--fg); }
+.ak-rail .ak-rail-logo svg { width: 18px; height: 18px; }
+.ak-rail .ak-rail-sep { width: 22px; height: 1px; background: var(--border); }
+.ak-rail .ak-app-tile { width: 28px; height: 28px; border-radius: 7px; display: grid; place-items: center; font-size: 11px; font-weight: 600; color: var(--accent-contrast);
+  background: var(--brand-vertical); }
+.ak-rail .ak-app-tile.is-active { box-shadow: 0 0 0 2px var(--canvas), 0 0 0 3.5px var(--accent); }
+.ak-rail .ak-app-tile.alt { opacity: .8; }
+.ak-rail .ak-rail-plus { color: var(--fg-icon); width: 16px; height: 16px; }
+.ak-rail .ak-rail-foot { margin-top: auto; padding-bottom: 6px; display: flex; flex-direction: column; align-items: center; gap: 14px; color: var(--fg-icon); }
+.ak-rail .ak-rail-foot svg { width: 15px; height: 15px; }
+.ak-rail .ak-avatar { width: 26px; height: 26px; border-radius: 50%; background: var(--bg-muted); color: var(--fg-secondary); font-size: 10px; display: grid; place-items: center; }
+
+.ak-nav { width: 222px; flex-shrink: 0; background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
+  margin-right: 6px; display: flex; flex-direction: column; padding: 12px 10px; box-shadow: var(--shadow-soft); }
+.ak-nav-title { font-size: 15px; font-weight: 600; padding: 2px 6px 10px; font-variation-settings: "GEOM" 50; }
+.ak-quick { height: 30px; border: 1px solid var(--border-input); border-radius: 8px; display: flex; align-items: center; gap: 8px; padding: 0 8px;
+  color: var(--fg-muted); font-size: 13px; margin-bottom: 10px; }
+.ak-quick svg { width: 14px; height: 14px; color: var(--fg-icon); }
+.ak-quick .ak-kbd { margin-left: auto; font-size: 10.5px; border: 1px solid var(--border); border-radius: 4px; padding: 0 4px; color: var(--fg-placeholder); }
+.ak-nav-group { display: flex; flex-direction: column; gap: 1px; padding: 6px 0; border-top: 1px solid var(--border); }
+.ak-nav-group:first-of-type { border-top: 0; padding-top: 0; }
+.ak-nav-item { height: 31px; border-radius: 7px; display: flex; align-items: center; gap: 10px; padding: 0 8px; font-size: 13.5px; color: var(--fg-secondary); }
+.ak-nav-item svg { width: 15px; height: 15px; color: var(--fg-icon); }
+.ak-nav-item .ak-count { margin-left: auto; font-size: 12px; color: var(--fg-muted); font-variant-numeric: tabular-nums; }
+.ak-nav-item.is-active { background: var(--accent-subtle); color: var(--accent-fg); }
+.ak-nav-item.is-active svg { color: var(--accent-fg); }
+.ak-nav-foot { margin-top: auto; }
+
+.ak-main { flex: 1; min-width: 0; background: var(--bg); border: 1px solid var(--border); border-radius: 12px; display: flex; flex-direction: column;
+  overflow: hidden; box-shadow: var(--shadow-soft); position: relative; }
+.ak-header { height: 50px; flex-shrink: 0; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; padding: 0 12px 0 16px; }
+.ak-header .ak-crumb { display: flex; align-items: center; gap: 9px; font-size: 14px; font-weight: 500; }
+.ak-header .ak-crumb svg { width: 15px; height: 15px; color: var(--fg-icon); }
+.ak-header .ak-crumb .ak-sep { color: var(--fg-placeholder); }
+.ak-header .ak-actions { margin-left: auto; display: flex; align-items: center; gap: 4px; }
+.ak-toolbar { height: 50px; flex-shrink: 0; display: flex; align-items: center; gap: 10px; padding: 0 16px; border-bottom: 1px solid var(--border); }
+.ak-body { flex: 1; min-height: 0; position: relative; overflow: hidden; }
+.ak-page { padding: 28px 40px; }
+.ak-page-title { font-size: 22px; font-weight: 600; font-variation-settings: "GEOM" 50; letter-spacing: -0.01em; }
+.ak-page-sub { color: var(--fg-muted); font-size: 13.5px; margin-top: 4px; }
+
+/* ---------- controls ---------- */
+.ak-btn { height: 30px; border-radius: 8px; display: inline-flex; align-items: center; gap: 7px; padding: 0 10px; font-size: 13.5px; color: var(--fg-secondary);
+  border: 1px solid transparent; white-space: nowrap; }
+.ak-btn svg { width: 14px; height: 14px; }
+.ak-btn.is-outline { border-color: var(--border-strong); background: var(--bg-subtle); }
+/* Primary = the app's neon button: hairline neon border, faint green wash, green ink. */
+.ak-btn.is-primary { background: var(--btn-neon-bg); color: var(--accent-fg); font-weight: 500; box-shadow: var(--shadow-brand); }
+.ak-btn.is-gradient { background: var(--btn-neon-bg); color: var(--accent-fg); font-weight: 500; box-shadow: var(--shadow-brand), 0 0 32px -8px rgb(52 213 153 / .55); }
+.ak-btn.is-solid { background: var(--brand-vertical); color: var(--accent-contrast); font-weight: 600; }
+.ak-btn.is-paypal { background: #ffc439; color: #111; font-weight: 600; }
+.ak-btn.is-lg { height: 40px; padding: 0 16px; font-size: 15px; border-radius: 10px; }
+.ak-input { height: 32px; border: 1px solid var(--border-input); background: var(--bg-subtle); border-radius: 8px; display: flex; align-items: center; gap: 8px;
+  padding: 0 10px; font-size: 13.5px; color: var(--fg); }
+.ak-input.is-placeholder { color: var(--fg-placeholder); }
+.ak-input.is-focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--ring); }
+.ak-input svg { width: 14px; height: 14px; color: var(--fg-icon); }
+.ak-label { font-size: 13px; color: var(--fg-secondary); font-weight: 500; margin-bottom: 6px; }
+.ak-seg { display: inline-flex; background: var(--bg-muted); border-radius: 8px; padding: 2px; gap: 2px; }
+.ak-seg > span { height: 26px; padding: 0 10px; border-radius: 6px; display: inline-flex; align-items: center; font-size: 13px; color: var(--fg-muted); }
+.ak-seg > span.is-on { background: var(--bg-active); color: var(--fg); }
+.ak-switch { width: 30px; height: 18px; border-radius: 9px; background: var(--bg-active); position: relative; flex-shrink: 0; }
+.ak-switch::after { content: ""; position: absolute; top: 2px; left: 2px; width: 14px; height: 14px; border-radius: 50%; background: #fff; }
+.ak-switch.is-on { background: var(--accent); }
+.ak-switch.is-on::after { background: var(--accent-contrast); }
+.ak-switch.is-on::after { left: 14px; }
+.ak-check { width: 16px; height: 16px; border-radius: 4px; border: 1px solid var(--border-strong); display: grid; place-items: center; }
+.ak-check.is-on { background: var(--accent); border-color: var(--accent); color: var(--accent-contrast); }
+.ak-check svg { width: 11px; height: 11px; }
+
+/* ---------- table (Plans / Entitlements / Add-ons / Incentives / Accounts) ---------- */
+.ak-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+.ak-table th { height: 42px; text-align: left; font-weight: 400; color: var(--fg-muted); padding: 0 14px; border-bottom: 1px solid var(--border); border-right: 1px solid var(--border); white-space: nowrap; }
+.ak-table th:last-child, .ak-table td:last-child { border-right: 0; }
+.ak-table th .ak-th { display: inline-flex; align-items: center; gap: 7px; }
+.ak-table th svg { width: 13px; height: 13px; color: var(--fg-icon); }
+.ak-table td { height: 46px; padding: 0 14px; border-bottom: 1px solid var(--border); border-right: 1px solid var(--border); white-space: nowrap; color: var(--fg-secondary); }
+.ak-table td.is-num { text-align: right; font-variant-numeric: tabular-nums; }
+.ak-table .ak-row-name { display: flex; align-items: center; gap: 9px; color: var(--fg); }
+.ak-table .ak-row-icon { width: 22px; height: 22px; border-radius: 6px; background: rgb(59 123 246 / .18); color: #93b8ff; display: grid; place-items: center; }
+.ak-table .ak-row-icon svg { width: 13px; height: 13px; }
+.ak-table tr.is-hl td { background: rgb(52 213 153 / .07); }
+.ak-table-foot { padding: 12px 16px; color: var(--fg-muted); font-size: 13px; }
+
+/* ---------- chips + tags ---------- */
+.ak-id { font-family: "Geist Mono", monospace; font-variation-settings: normal; font-size: 12px; background: var(--bg-muted); color: var(--fg-secondary);
+  border-radius: 5px; padding: 2px 6px; }
+.ak-tag { display: inline-flex; align-items: center; gap: 5px; height: 21px; padding: 0 7px; border-radius: 5px; font-size: 12px; white-space: nowrap;
+  background: rgb(255 255 255 / .08); color: #c6c7cc; }
+.ak-tag svg { width: 11px; height: 11px; }
+.ak-tag.blue { background: rgb(59 123 246 / .18); color: #93b8ff; }
+.ak-tag.green { background: rgb(48 164 108 / .18); color: #6fd69f; }
+.ak-tag.yellow { background: rgb(240 180 40 / .16); color: #f5c451; }
+.ak-tag.orange { background: rgb(235 104 52 / .18); color: #ffa072; }
+.ak-tag.red { background: rgb(229 72 77 / .18); color: #ff8a8d; }
+.ak-tag.purple { background: rgb(143 107 255 / .2); color: #bba6ff; }
+.ak-tag.brand { background: rgb(52 213 153 / .14); color: #5fe3b1; }
+.ak-tag.pink { background: rgb(224 69 123 / .18); color: #ff8fba; }
+.ak-tag.teal { background: rgb(20 163 157 / .18); color: #62d6cf; }
+.ak-more { color: var(--fg-muted); font-size: 12px; }
+
+/* ---------- cards, stats, meters ---------- */
+.ak-card { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; }
+.ak-card-head { height: 46px; display: flex; align-items: center; padding: 0 16px; border-bottom: 1px solid var(--border); font-weight: 500; font-size: 14px; }
+.ak-card-body { padding: 16px; }
+.ak-elevated { background: var(--bg-elevated); border: 1px solid var(--border-strong); border-radius: 12px; box-shadow: var(--shadow-lg); }
+.ak-stat-strip { display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+.ak-stat { padding: 16px 18px; border-right: 1px solid var(--border); }
+.ak-stat:last-child { border-right: 0; }
+.ak-stat-label { display: flex; align-items: center; gap: 7px; font-size: 13px; color: var(--fg-secondary); }
+.ak-stat-label svg { width: 13px; height: 13px; color: var(--fg-icon); }
+.ak-stat-value { font-size: 26px; font-weight: 600; margin-top: 8px; font-variant-numeric: tabular-nums; font-variation-settings: "GEOM" 50; }
+.ak-stat-sub { font-size: 12px; color: var(--fg-muted); margin-top: 4px; }
+.ak-meter { height: 8px; border-radius: 4px; background: var(--bg-active); overflow: hidden; }
+.ak-meter > i { display: block; height: 100%; width: 0; border-radius: 4px; background: var(--brand-gradient); }
+.ak-meter.is-warn > i { background: linear-gradient(90deg, #f0a020, #e5484d); }
+.ak-bar-row { position: relative; height: 30px; border-radius: 6px; display: flex; align-items: center; padding: 0 10px; font-size: 13.5px; }
+.ak-bar-row > b { position: absolute; inset: 0 auto 0 0; border-radius: 6px; background: linear-gradient(90deg, rgb(52 213 153 / .32), rgb(44 192 222 / .22)); font-weight: 400; }
+.ak-bar-row > span { position: relative; }
+.ak-bar-row > .ak-bar-val { margin-left: auto; color: var(--fg-secondary); font-variant-numeric: tabular-nums; }
+
+/* ---------- code block (site CodeBlock look) ---------- */
+.ak-code { background: #131315; border: 1px solid var(--border); border-radius: 14px; overflow: hidden; box-shadow: var(--shadow-lg); }
+.ak-code-bar { height: 40px; display: flex; align-items: center; gap: 8px; padding: 0 14px; border-bottom: 1px solid var(--border); color: var(--fg-muted); font-size: 13px; }
+.ak-code-bar .ak-dots { display: flex; gap: 6px; margin-right: 6px; }
+.ak-code-bar .ak-dots i { width: 10px; height: 10px; border-radius: 50%; background: var(--bg-active); }
+.ak-code pre { margin: 0; padding: 18px 20px; font-family: "Geist Mono", monospace; font-variation-settings: normal; font-size: 15px; line-height: 1.65; color: var(--fg-secondary); white-space: pre; }
+.ak-code .k { color: var(--code-keyword); } .ak-code .s { color: var(--code-string); } .ak-code .p { color: var(--code-key); }
+.ak-code .n { color: var(--code-number); } .ak-code .c { color: var(--code-comment); } .ak-code .f { color: #ececee; }
+.ak-code .del { background: rgb(229 72 77 / .14); } .ak-code .add { background: rgb(48 164 108 / .14); }
+
+/* ---------- feedback ---------- */
+.ak-toast { position: absolute; display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 10px; background: var(--bg-elevated);
+  border: 1px solid var(--border-strong); box-shadow: var(--shadow-lg); font-size: 13.5px; white-space: nowrap; }
+.ak-toast svg { width: 15px; height: 15px; }
+.ak-toast.is-ok svg { color: var(--success-fg); }
+.ak-toast.is-warn svg { color: var(--warning-fg); }
+.ak-toast.is-bad svg { color: var(--danger-fg); }
+.ak-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--success); display: inline-block; }
+.ak-dot.is-warn { background: var(--warning); } .ak-dot.is-bad { background: var(--danger); }
+.ak-cursor { position: absolute; width: 22px; height: 22px; z-index: 50; pointer-events: none; filter: drop-shadow(0 2px 4px rgb(0 0 0 / .6)); }
+.ak-ripple { position: absolute; width: 36px; height: 36px; margin: -18px 0 0 -18px; border-radius: 50%; border: 2px solid var(--accent-fg); z-index: 49; opacity: 0; }
+
+/* ---------- avatars + misc ---------- */
+.ak-av { width: 22px; height: 22px; border-radius: 6px; display: grid; place-items: center; font-size: 9.5px; font-weight: 600; background: rgb(52 213 153 / .14); color: #5fe3b1; }
+.ak-av.round { border-radius: 50%; }
+.ak-kv { display: flex; justify-content: space-between; font-size: 13px; padding: 7px 0; border-bottom: 1px solid var(--border); color: var(--fg-muted); }
+.ak-kv b { font-weight: 400; color: var(--fg); }
+.ak-divider { height: 1px; background: var(--border); }
+
+/* ======================= 16-agent-save — frame styles (neon) ======================= */
+#root { position: absolute; inset: 0; width: 1920px; height: 1080px; overflow: hidden; }
+.f16as-bg { position: absolute; inset: 0; background: #0f0f11; }
+.f16as-scene { position: absolute; inset: 0; }
+.f16as-cam { position: absolute; inset: 0; transform-origin: 580px 456px; }
+/* logical stage 1186×520, scaled 1.5 → 1779×780 on screen (never animated) */
+.f16as-stage { position: absolute; left: 70px; top: 66px; width: 1186px; height: 520px; transform: scale(1.5); transform-origin: 0 0; }
+
+/* glow-flash layer: sits on a chip/button, flashed 0 → 1 → 0 */
+.f16as-fx { position: absolute; inset: -1px; border-radius: inherit; pointer-events: none; opacity: 0; z-index: 3;
+  box-shadow: inset 0 0 0 1px rgb(52 213 153 / .95), 0 0 18px 2px rgb(52 213 153 / .55); }
+.f16as-fx.is-red { box-shadow: inset 0 0 0 1px rgb(255 138 141 / .9), 0 0 16px 1px rgb(229 72 77 / .5); }
+
+/* ---- Tom's customer app window ---- */
+.f16as-win { position: absolute; left: 0; top: 0; width: 680px; height: 520px; background: #161618; border: 1px solid var(--border);
+  border-radius: 14px; overflow: hidden; box-shadow: 0 40px 120px -30px rgb(0 0 0 / .9), 0 0 0 1px rgb(255 255 255 / .03); }
+.f16as-bar { height: 32px; display: flex; align-items: center; padding: 0 12px; background: #131315; border-bottom: 1px solid var(--border); }
+.f16as-bar .f16as-dots { display: flex; gap: 6px; width: 60px; }
+.f16as-bar .f16as-dots i { width: 9px; height: 9px; border-radius: 50%; background: var(--bg-active); }
+.f16as-url { flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 12px; color: var(--fg-muted); margin-right: 60px; }
+.f16as-url svg { width: 11px; height: 11px; color: var(--fg-icon); }
+.f16as-apphead { height: 46px; display: flex; align-items: center; gap: 10px; padding: 0 20px; border-bottom: 1px solid var(--border); }
+.f16as-tile { width: 24px; height: 24px; border-radius: 6px; display: grid; place-items: center; font-size: 10px; font-weight: 600; color: var(--accent-contrast);
+  background: var(--brand-vertical); }
+.f16as-appname { font-size: 14.5px; font-weight: 500; }
+.f16as-apphead .ak-tag { height: 20px; font-size: 11.5px; }
+.f16as-avatar { margin-left: auto; width: 26px; height: 26px; border-radius: 50%; background: var(--bg-muted); color: var(--fg-secondary); font-size: 11px; display: grid; place-items: center; }
+
+.f16as-ptitle { position: absolute; left: 24px; top: 96px; font-size: 18px; font-weight: 600; letter-spacing: -0.01em; }
+.f16as-billing { position: absolute; left: 24px; top: 134px; width: 632px; padding: 18px 20px; background: var(--bg-subtle); }
+.f16as-row { display: flex; align-items: baseline; justify-content: space-between; }
+.f16as-plan { font-size: 16px; font-weight: 500; }
+.f16as-price { font-size: 16px; font-weight: 500; font-variant-numeric: tabular-nums; }
+.f16as-usage { display: flex; gap: 30px; margin-top: 14px; padding-top: 16px; border-top: 1px solid var(--border); }
+.f16as-meterblock { flex: 1; }
+.f16as-meterlabel { display: flex; justify-content: space-between; font-size: 13.5px; color: var(--fg-secondary); margin-bottom: 10px; }
+.f16as-meterlabel b { font-weight: 500; color: var(--fg); font-variant-numeric: tabular-nums; }
+.f16as-stage .ak-meter { height: 10px; border-radius: 5px; }
+.f16as-stage .ak-meter > i { width: 100%; transform-origin: 0 50%; border-radius: 5px; }
+.f16as-limit { position: relative; margin-top: 14px; height: 24px; font-size: 12.5px; transform-origin: 0 50%; }
+.f16as-limit svg { width: 12px; height: 12px; }
+.f16as-hist { width: 168px; }
+.f16as-histlabel { font-size: 12.5px; color: var(--fg-muted); margin-bottom: 8px; }
+.f16as-cols { display: flex; gap: 14px; }
+.f16as-col { width: 40px; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.f16as-colbox { position: relative; width: 40px; height: 54px; border-radius: 6px; background: var(--bg-active); overflow: hidden; }
+.f16as-colfill { position: absolute; left: 0; right: 0; bottom: 0; height: 100%; transform-origin: 50% 100%;
+  background: linear-gradient(0deg, rgb(229 72 77 / .5), rgb(229 72 77 / .95)); }
+.f16as-colname { font-size: 12.5px; color: var(--fg-muted); }
+
+.f16as-cancelcard { position: absolute; left: 24px; top: 340px; width: 632px; height: 66px; display: flex; align-items: center; padding: 0 16px 0 20px;
+  background: var(--bg-subtle); }
+.f16as-cctitle { font-size: 14.5px; font-weight: 500; }
+.f16as-dangerbtn { margin-left: auto; height: 34px; padding: 0 14px; border-radius: 8px; border: 1px solid rgb(229 72 77 / .6);
+  color: var(--danger-fg); font-size: 13.5px; display: flex; align-items: center; transform-origin: 50% 50%; }
+
+/* ---- cancel flow overlay ---- */
+.f16as-scrim { position: absolute; left: 0; right: 0; top: 32px; bottom: 0; background: rgb(8 8 10 / .66); z-index: 5; }
+.f16as-glow { position: absolute; left: -10px; top: 20px; width: 700px; height: 520px; z-index: 6;
+  background: radial-gradient(closest-side, rgba(52,213,153,0.20), transparent); }
+.f16as-modal { position: absolute; left: 140px; top: 116px; width: 400px; padding: 20px; z-index: 7; transform-origin: 50% 50%; }
+.f16as-steps { display: flex; gap: 6px; margin-bottom: 14px; padding-right: 26px; }
+.f16as-steps i { position: relative; flex: 1; height: 3px; border-radius: 2px; background: var(--bg-active); overflow: hidden; }
+.f16as-steps i > b { position: absolute; inset: 0; background: var(--accent); transform-origin: 0 50%; }
+.f16as-x { position: absolute; top: 15px; right: 14px; width: 15px; height: 15px; color: var(--fg-icon); }
+.f16as-mtitle { font-size: 20px; line-height: 26px; font-weight: 600; }
+.f16as-answers { display: flex; flex-direction: column; gap: 6px; margin-top: 14px; }
+.f16as-ans { position: relative; height: 38px; border: 1px solid var(--border-strong); background: var(--bg-subtle); border-radius: 8px;
+  display: flex; align-items: center; padding: 0 12px; font-size: 14px; color: var(--fg-secondary); }
+.f16as-ans > span { position: relative; z-index: 1; }
+.f16as-sel { position: absolute; inset: -1px; border-radius: 8px; z-index: 0; background: var(--accent-subtle);
+  box-shadow: inset 0 0 0 1px rgb(52 213 153 / .9), 0 0 16px -4px rgb(52 213 153 / .5); }
+.f16as-selcheck { position: absolute; right: 12px; top: 11px; width: 15px; height: 15px; color: var(--accent-fg); z-index: 1; }
+.f16as-mfoot { display: flex; justify-content: flex-end; margin-top: 14px; }
+.f16as-continue { position: relative; height: 32px; padding: 0 14px; transform-origin: 50% 50%; }
+.f16as-continue > .f16as-fx { border-radius: 8px; }
+
+/* ---- the save offer (hero) ---- */
+.f16as-offer { position: absolute; left: 130px; top: 104px; width: 420px; padding: 24px; z-index: 7; transform-origin: 50% 50%;
+  box-shadow: 0 30px 80px -20px rgb(0 0 0 / .85), 0 0 0 1px rgb(52 213 153 / .28), 0 0 40px -12px rgb(52 213 153 / .35); }
+.f16as-otop { display: flex; align-items: center; gap: 12px; height: 40px; }
+.f16as-oicon { width: 40px; height: 40px; border-radius: 10px; display: grid; place-items: center; background: var(--accent-subtle); color: var(--accent-fg); }
+.f16as-oicon svg { width: 20px; height: 20px; }
+.f16as-otag { height: 24px; font-size: 12.5px; }
+.f16as-otag svg { width: 12px; height: 12px; }
+.f16as-ohead { margin-top: 16px; font-size: 27px; line-height: 32px; font-weight: 600; letter-spacing: -0.015em; white-space: nowrap; }
+.f16as-ohead em { font-style: normal; font-variant-numeric: tabular-nums; background: var(--brand-gradient); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.f16as-oprice { margin-top: 14px; height: 32px; display: flex; align-items: center; gap: 10px; }
+.f16as-oprice b { font-size: 24px; font-weight: 600; font-variation-settings: "GEOM" 50; font-variant-numeric: tabular-nums; }
+.f16as-same { position: relative; height: 24px; font-size: 12.5px; transform-origin: 0 50%; }
+.f16as-same svg { width: 12px; height: 12px; }
+.f16as-obtn { position: relative; margin-top: 18px; height: 44px; border-radius: 10px; transform-origin: 50% 50%;
+  background: var(--btn-neon-bg); color: var(--accent-fg); font-size: 15.5px; font-weight: 500;
+  box-shadow: var(--shadow-brand), 0 0 32px -8px rgb(52 213 153 / .55); }
+.f16as-obtn > span { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; gap: 8px; z-index: 2; }
+.f16as-obtn svg { width: 16px; height: 16px; }
+.f16as-obtn-fill { position: absolute; inset: 0; border-radius: 10px; background: rgb(52 213 153 / .16); z-index: 1;
+  box-shadow: inset 0 0 0 1px rgb(95 227 177 / 1), inset 0 0 18px -6px rgb(52 213 153 / .55), 0 0 40px -6px rgb(52 213 153 / .8); }
+#f16as-obtn-b { color: #7ff0c6; font-weight: 600; }
+.f16as-decline { margin-top: 12px; text-align: center; font-size: 13px; line-height: 18px; color: var(--fg-muted); }
+
+.f16as-toast { left: 0; right: 0; margin: 0 auto; width: max-content; top: 394px; z-index: 8; font-size: 16.5px; padding: 11px 18px; gap: 10px;
+  box-shadow: var(--shadow-lg), inset 0 0 0 1px rgb(52 213 153 / .55), 0 0 22px -6px rgb(52 213 153 / .45); border-color: transparent; }
+.f16as-toast svg { width: 18px; height: 18px; }
+.f16as-toast.is-ok svg { color: var(--accent-fg); }
+.f16as-toast b { font-weight: 500; }
+
+/* ---- agent trace ---- */
+.f16as-trace { position: absolute; left: 700px; top: 0; width: 486px; height: 520px; background: #161618; border: 1px solid var(--border);
+  border-radius: 14px; overflow: hidden; box-shadow: var(--shadow-lg); }
+.f16as-thead { height: 52px; display: flex; align-items: center; gap: 10px; padding: 0 16px; border-bottom: 1px solid var(--border); }
+.f16as-ticon { width: 28px; height: 28px; border-radius: 8px; display: grid; place-items: center; background: var(--accent-subtle); color: var(--accent-fg); }
+.f16as-ticon svg { width: 16px; height: 16px; }
+.f16as-ttitle { font-size: 15.5px; font-weight: 500; }
+.f16as-status { position: relative; margin-left: auto; width: 100px; height: 26px; }
+.f16as-pill { position: absolute; right: 0; top: 0; height: 26px; display: flex; align-items: center; gap: 7px; padding: 0 10px; border-radius: 999px;
+  border: 1px solid var(--border-strong); font-size: 13px; color: var(--fg-secondary); white-space: nowrap; transform-origin: 100% 50%; }
+.f16as-pill .ak-dot { background: var(--warning); }
+.f16as-pill.is-done { border-color: rgb(52 213 153 / .55); background: var(--accent-subtle); color: var(--accent-fg); }
+.f16as-pill.is-done .ak-dot { background: var(--accent); box-shadow: 0 0 8px rgb(52 213 153 / .8); }
+.f16as-tbody { padding: 18px 18px; }
+.f16as-step { display: flex; align-items: center; gap: 11px; height: 44px; padding: 0 14px; border-radius: 9px; background: var(--bg-subtle);
+  border: 1px solid var(--border); margin-bottom: 8px; font-size: 14.5px; }
+.f16as-sicon { position: relative; width: 20px; height: 20px; flex-shrink: 0; }
+.f16as-spin { position: absolute; inset: 0; width: 20px; height: 20px; color: var(--accent-fg); transform-origin: 50% 50%; }
+.f16as-done { position: absolute; inset: 0; width: 20px; height: 20px; border-radius: 50%; background: var(--brand-vertical); color: var(--accent-contrast);
+  display: grid; place-items: center; box-shadow: 0 0 10px -2px rgb(52 213 153 / .6); transform-origin: 50% 50%; }
+.f16as-done svg { width: 12px; height: 12px; }
+.f16as-slabel { font-weight: 500; color: var(--fg); }
+.f16as-smeta { margin-left: auto; font-size: 13.5px; color: var(--fg-muted); font-variant-numeric: tabular-nums; }
+.f16as-sect { margin: 18px 0 10px; }
+.f16as-ghost { position: relative; display: flex; align-items: center; gap: 10px; height: 42px; padding: 0 14px; border-radius: 9px;
+  border: 1px dashed var(--border-strong); font-size: 14.5px; color: var(--fg-secondary); }
+.f16as-ghost > svg { width: 17px; height: 17px; color: var(--fg-icon); }
+.f16as-gtext { position: relative; font-variant-numeric: tabular-nums; }
+.f16as-strike { position: absolute; left: -4px; right: -4px; top: 50%; height: 2px; margin-top: -1px; background: var(--danger-fg); transform-origin: 0 50%;
+  box-shadow: 0 0 6px rgb(229 72 77 / .6); }
+.f16as-skipped { position: relative; margin-left: auto; font-size: 12.5px; height: 22px; transform-origin: 100% 50%; }
+.f16as-pick { position: relative; display: flex; align-items: center; gap: 10px; height: 42px; padding: 0 14px; margin-top: 8px; border-radius: 9px;
+  background: var(--accent-subtle); font-size: 14.5px; transform-origin: 50% 50%;
+  box-shadow: inset 0 0 0 1px rgb(52 213 153 / .85), 0 0 18px -6px rgb(52 213 153 / .5); }
+.f16as-pick > svg { width: 17px; height: 17px; color: var(--accent-fg); }
+.f16as-pick .f16as-slabel { color: var(--accent-fg); }
+.f16as-pick .f16as-done { position: relative; inset: auto; margin-left: auto; }
+.f16as-pills { display: flex; gap: 8px; }
+.f16as-gpill { position: relative; height: 30px; display: flex; align-items: center; gap: 6px; padding: 0 11px; border-radius: 7px;
+  border: 1px solid var(--border-strong); background: var(--bg-muted); font-size: 13.5px; color: var(--fg-secondary); transform-origin: 50% 50%; }
+.f16as-gpill > span, .f16as-gpill > svg { position: relative; z-index: 2; }
+.f16as-gpill > svg { width: 13px; height: 13px; color: var(--fg-icon); }
+.f16as-hl { position: absolute; inset: -1px; border-radius: 7px; background: var(--accent-subtle); z-index: 1;
+  box-shadow: inset 0 0 0 1px rgb(52 213 153 / .9), 0 0 16px -4px rgb(52 213 153 / .55); }
+.f16as-gpill > .f16as-fx { border-radius: 7px; }
+
+.f16as-cursor { left: 0; top: 0; transform-origin: 18% 10%; }
+.f16as-stage .ak-ripple { left: 0; top: 0; }
+</style>
+
+<div class="clip f16as-bg" id="f16as-bg" data-start="0" data-duration="11.14" data-track-index="0"></div>
+
+<div class="clip ak f16as-scene" id="f16as-scene" data-start="0" data-duration="11.14" data-track-index="1">
+  <div class="f16as-cam" id="f16as-cam">
+    <div class="f16as-stage" id="f16as-stage">
+
+      <!-- Tom's customer app -->
+      <div class="f16as-win" id="f16as-win">
+        <div class="f16as-bar">
+          <div class="f16as-dots"><i></i><i></i><i></i></div>
+          <div class="f16as-url ak-mono"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>app.amazingapp.ai/settings/billing</div>
+        </div>
+        <div class="f16as-apphead">
+          <div class="f16as-tile">AA</div>
+          <div class="f16as-appname ak-display">AmazingApp AI</div>
+          <span class="ak-tag brand">Pro</span>
+          <div class="f16as-avatar">T</div>
+        </div>
+
+        <div class="f16as-ptitle ak-display f16as-in" id="f16as-ptitle">Billing</div>
+
+        <div class="ak-card f16as-billing f16as-in" id="f16as-billing">
+          <div class="f16as-row"><div class="f16as-plan">Pro plan</div><div class="f16as-price">$29/mo</div></div>
+          <div class="f16as-usage">
+            <div class="f16as-meterblock">
+              <div class="f16as-meterlabel"><span>AI credits</span><b><span id="f16as-used">2,500</span> / 2,500</b></div>
+              <div class="ak-meter is-warn"><i id="f16as-meterfill"></i></div>
+              <span class="ak-tag red f16as-limit" id="f16as-limit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>Limit reached<i class="f16as-fx is-red" id="f16as-limit-fx"></i></span>
+            </div>
+            <div class="f16as-hist">
+              <div class="f16as-histlabel">Credits used</div>
+              <div class="f16as-cols">
+                <div class="f16as-col"><div class="f16as-colbox"><div class="f16as-colfill" id="f16as-fill0"></div></div><div class="f16as-colname">Jul</div></div>
+                <div class="f16as-col"><div class="f16as-colbox"><div class="f16as-colfill" id="f16as-fill1"></div></div><div class="f16as-colname">Aug</div></div>
+                <div class="f16as-col"><div class="f16as-colbox"><div class="f16as-colfill" id="f16as-fill2"></div></div><div class="f16as-colname">Sep</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="ak-card f16as-cancelcard f16as-in" id="f16as-cancelcard">
+          <div class="f16as-cctitle">Cancel subscription</div>
+          <div class="f16as-dangerbtn" id="f16as-cancelbtn">Cancel subscription</div>
+        </div>
+
+        <!-- cancel flow overlay -->
+        <div class="f16as-scrim" id="f16as-scrim"></div>
+        <div class="f16as-glow" id="f16as-glow"></div>
+
+        <div class="ak-elevated f16as-modal" id="f16as-modal">
+          <div class="f16as-steps"><i><b></b></i><i><b id="f16as-step2bar"></b></i><i></i></div>
+          <svg class="f16as-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+          <div class="f16as-mbody" id="f16as-mbody">
+            <div class="f16as-mtitle ak-display">Why are you cancelling?</div>
+            <div class="f16as-answers">
+              <div class="f16as-ans f16as-ansrow"><span>It's too expensive</span></div>
+              <div class="f16as-ans f16as-ansrow" id="f16as-ans-pick"><div class="f16as-sel" id="f16as-sel"></div><span>I keep running out of credits</span><svg class="f16as-selcheck" id="f16as-selcheck" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div>
+              <div class="f16as-ans f16as-ansrow"><span>I'm not using it enough</span></div>
+              <div class="f16as-ans f16as-ansrow"><span>Something else</span></div>
+            </div>
+          </div>
+          <div class="f16as-mfoot"><span class="ak-btn is-primary f16as-continue" id="f16as-continue">Continue<i class="f16as-fx" id="f16as-continue-fx"></i></span></div>
+        </div>
+
+        <!-- the save offer (hero) -->
+        <div class="ak-elevated f16as-offer" id="f16as-offer">
+          <div class="f16as-otop f16as-oi">
+            <div class="f16as-oicon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 7v14"/><path d="M20 11v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-8"/><path d="M7.5 7a1 1 0 0 1 0-5A4.8 8 0 0 1 12 7a4.8 8 0 0 1 4.5-5 1 1 0 0 1 0 5"/><rect x="3" y="7" width="18" height="4" rx="1"/></svg></div>
+            <span class="ak-tag brand f16as-otag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z"/></svg>Picked by the agent</span>
+          </div>
+          <div class="f16as-ohead ak-display f16as-oi"><em id="f16as-ocount">5,000</em> more credits, on us</div>
+          <div class="f16as-oprice f16as-oi"><b>$29/mo</b><span class="ak-tag brand f16as-same" id="f16as-same"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>same price<i class="f16as-fx" id="f16as-same-fx"></i></span></div>
+          <div class="f16as-obtn f16as-oi" id="f16as-obtn">
+            <i class="f16as-obtn-fill" id="f16as-obtn-fill"></i>
+            <span id="f16as-obtn-a">Add the credits</span>
+            <span id="f16as-obtn-b"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Credits added</span>
+            <i class="f16as-fx" id="f16as-obtn-fx" style="border-radius:10px"></i>
+          </div>
+          <div class="f16as-decline f16as-oi">No thanks, cancel</div>
+        </div>
+
+        <div class="ak-toast is-ok f16as-toast" id="f16as-toast">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m16 9-5.5 5.5L8 12"/></svg>
+          <b>Sale saved</b>
+        </div>
+      </div>
+
+      <!-- agent trace -->
+      <div class="f16as-trace" id="f16as-trace">
+        <div class="f16as-thead">
+          <div class="f16as-ticon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg></div>
+          <div class="f16as-ttitle">Agent trace</div>
+          <div class="f16as-status">
+            <div class="f16as-pill" id="f16as-pill-work"><span class="ak-dot"></span>working</div>
+            <div class="f16as-pill is-done" id="f16as-pill-done"><span class="ak-dot"></span>saved</div>
+          </div>
+        </div>
+        <div class="f16as-tbody">
+          <div class="f16as-step" id="f16as-step0">
+            <div class="f16as-sicon"><svg class="f16as-spin" id="f16as-spin0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg><div class="f16as-done" id="f16as-done0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div></div>
+            <span class="f16as-slabel">Usage</span><span class="f16as-smeta" id="f16as-meta0">at limit 3 mo</span>
+          </div>
+          <div class="f16as-step" id="f16as-step1">
+            <div class="f16as-sicon"><svg class="f16as-spin" id="f16as-spin1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg><div class="f16as-done" id="f16as-done1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div></div>
+            <span class="f16as-slabel">Reason</span><span class="f16as-smeta" id="f16as-meta1">credits</span>
+          </div>
+          <div class="f16as-step" id="f16as-step2">
+            <div class="f16as-sicon"><svg class="f16as-spin" id="f16as-spin2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg><div class="f16as-done" id="f16as-done2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div></div>
+            <span class="f16as-slabel">Guardrails</span><span class="f16as-smeta" id="f16as-meta2">max 40%</span>
+          </div>
+
+          <div class="ak-eyebrow f16as-sect" id="f16as-sect-offer">Save offer</div>
+          <div class="f16as-ghost" id="f16as-ghost">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z"/><path d="m15 9-6 6"/><path d="M9 9h.01"/><path d="M15 15h.01"/></svg>
+            <span class="f16as-gtext">40% off<i class="f16as-strike" id="f16as-strike"></i></span>
+            <span class="ak-tag red f16as-skipped" id="f16as-skipped">skipped</span>
+          </div>
+          <div class="f16as-pick" id="f16as-pick">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13.744 17.736a6 6 0 1 1-7.48-7.48"/><path d="M15 6h1v4"/><path d="m6.134 14.768.866-.5 2 3.464"/><circle cx="16" cy="8" r="6"/></svg>
+            <span class="f16as-slabel">+5,000 credits</span>
+            <div class="f16as-done" id="f16as-pickok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div>
+            <i class="f16as-fx" id="f16as-pick-fx" style="border-radius:9px"></i>
+          </div>
+
+          <div class="ak-eyebrow f16as-sect" id="f16as-sect-guard">Guardrails</div>
+          <div class="f16as-pills">
+            <div class="f16as-gpill"><i class="f16as-hl"></i><span class="f16as-gtx">Max 40%</span><i class="f16as-fx"></i></div>
+            <div class="f16as-gpill"><i class="f16as-hl"></i><span class="f16as-gtx">Credits</span><svg class="f16as-gck" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg><i class="f16as-fx"></i></div>
+            <div class="f16as-gpill"><i class="f16as-hl"></i><span class="f16as-gtx">Pause</span><svg class="f16as-gck" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg><i class="f16as-fx"></i></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- cursor + click ripples (stage coordinates) -->
+      <div class="ak-ripple" id="f16as-rip0"></div>
+      <div class="ak-ripple" id="f16as-rip1"></div>
+      <div class="ak-ripple" id="f16as-rip2"></div>
+      <div class="ak-ripple" id="f16as-rip3"></div>
+      <svg class="ak-cursor f16as-cursor" id="f16as-cursor" viewBox="0 0 24 24"><path d="M4 2.5 L4 19 L8.6 14.8 L11.6 21.5 L14.4 20.3 L11.5 13.7 L17.8 13.4 Z" fill="#fff" stroke="#111" stroke-width="1.3" stroke-linejoin="round"/></svg>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<script>
+(function () {
+  window.__timelines = window.__timelines || {};
+  var tl = gsap.timeline({ paused: true });
+  var X = "expo.out", IO = "power3.inOut";
+
+  // click targets in stage coordinates (logical 1186×520 stage)
+  var P = {
+    enter:    [610, 480],
+    cancel:   [550, 376],
+    answer:   [300, 260],
+    cont:     [474, 397],
+    obtn:     [352, 306]
+  };
+  function cur(p) { return { x: p[0] - 4, y: p[1] - 2 }; }   // cursor tip sits ~(4,2) inside its box
+  function fmt(n) { n = Math.round(n); return n >= 1000 ? Math.floor(n / 1000) + "," + String(n % 1000).padStart(3, "0") : String(n); }
+  function flash(el, t) {
+    tl.fromTo(el, { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "power2.out" }, t);
+    tl.to(el, { opacity: 0, duration: 0.5, ease: "power2.out" }, t + 0.1);
+  }
+  function pop(el, t, from, fx) {
+    tl.fromTo(el, { opacity: 0, scale: from }, { opacity: 1, scale: 1, duration: 0.4, ease: X }, t);
+    if (fx) flash(fx, t + 0.03);
+  }
+  function click(t, p, rip, target, fx) {
+    tl.to("#f16as-cursor", { scale: 0.84, duration: 0.07, ease: "power2.out" }, t);
+    tl.to("#f16as-cursor", { scale: 1, duration: 0.22, ease: X }, t + 0.07);
+    tl.fromTo(rip, { x: p[0], y: p[1], scale: 0.4, opacity: 0 }, { x: p[0], y: p[1], scale: 0.9, opacity: 0.95, duration: 0.08, ease: "power2.out" }, t + 0.01);
+    tl.to(rip, { scale: 1.9, opacity: 0, duration: 0.4, ease: "power2.out" }, t + 0.09);
+    if (target) {
+      tl.to(target, { scale: 0.96, duration: 0.07, ease: "power2.out" }, t);
+      tl.to(target, { scale: 1, duration: 0.26, ease: X }, t + 0.07);
+    }
+    if (fx) flash(fx, t + 0.03);
+  }
+
+  // ---- Camera: slow push on Tom's app, then one glide left as the agent trace arrives ("agent")
+  tl.fromTo("#f16as-cam", { x: 380, scale: 1.04 }, { x: 380, scale: 1.08, duration: 4.36, ease: "power1.inOut" }, 0);
+  tl.to("#f16as-cam", { x: 0, scale: 1, duration: 0.85, ease: IO }, 4.4);
+
+  // ---- Beat 1: Tom at his credit limit, three months running
+  tl.fromTo("#f16as-win", { opacity: 0, y: 24, scale: 0.985 }, { opacity: 1, y: 0, scale: 1, duration: 0.5, ease: X }, 0.04);
+  gsap.utils.toArray("#f16as-scene .f16as-in").forEach(function (el, k) {
+    tl.fromTo(el, { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.45, ease: X }, 0.1 + k * 0.06);
+  });
+  var usedEl = document.getElementById("f16as-used"), used = { v: 0 };
+  tl.fromTo("#f16as-meterfill", { scaleX: 0 }, { scaleX: 1, duration: 0.95, ease: "power2.inOut" }, 0.35);           // "hit his credit limit"
+  tl.fromTo(used, { v: 0 }, { v: 2500, duration: 0.95, ease: "power2.inOut",
+    onUpdate: function () { usedEl.textContent = fmt(used.v); } }, 0.35);
+  pop("#f16as-limit", 1.24, 0.85, "#f16as-limit-fx");                                                                // "limit"
+  [1.5, 1.72, 1.98].forEach(function (t, k) {                                                                        // "three months running"
+    tl.fromTo("#f16as-fill" + k, { scaleY: 0 }, { scaleY: 1, duration: 0.34, ease: X }, t);
+  });
+
+  // ---- Beat 2: clicks cancel
+  var c0 = cur(P.enter), c1 = cur(P.cancel);
+  tl.fromTo("#f16as-cursor", { x: c0.x, y: c0.y, opacity: 0 }, { x: c1.x, y: c1.y, opacity: 1, duration: 0.55, ease: X }, 2.08);
+  click(2.68, P.cancel, "#f16as-rip0", "#f16as-cancelbtn", null);                                                     // "clicked"
+
+  // ---- Beat 3: cancel flow pops, "running out of credits" picked fast, Continue → passed to the agent
+  tl.fromTo("#f16as-scrim", { opacity: 0 }, { opacity: 1, duration: 0.3, ease: "power2.out" }, 2.9);
+  tl.fromTo("#f16as-modal", { opacity: 0, scale: 0.86, y: 10 }, { opacity: 1, scale: 1, y: 0, duration: 0.45, ease: X }, 2.94);
+  gsap.utils.toArray("#f16as-scene .f16as-ansrow").forEach(function (el, k) {
+    tl.fromTo(el, { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.35, ease: X }, 3.02 + k * 0.05);
+  });
+  tl.to("#f16as-cursor", { x: cur(P.answer).x, y: cur(P.answer).y, duration: 0.42, ease: IO }, 3.22);
+  click(3.66, P.answer, "#f16as-rip1", "#f16as-ans-pick", null);
+  tl.fromTo("#f16as-sel", { opacity: 0 }, { opacity: 1, duration: 0.2, ease: "power2.out" }, 3.68);
+  pop("#f16as-selcheck", 3.7, 0.5, null);
+  tl.fromTo("#f16as-continue", { opacity: 0.45 }, { opacity: 1, duration: 0.2, ease: "power2.out" }, 3.74);
+  tl.to("#f16as-cursor", { x: cur(P.cont).x, y: cur(P.cont).y, duration: 0.34, ease: IO }, 3.82);
+  click(4.2, P.cont, "#f16as-rip2", "#f16as-continue", "#f16as-continue-fx");                                         // "passed him"
+  tl.to("#f16as-cursor", { x: cur(P.cont).x + 34, y: cur(P.cont).y + 56, duration: 0.6, ease: "power3.out" }, 4.42);
+  tl.fromTo("#f16as-step2bar", { scaleX: 0 }, { scaleX: 1, duration: 0.4, ease: X }, 4.26);
+  tl.to("#f16as-mbody", { opacity: 0.45, duration: 0.3, ease: "power2.out" }, 4.28);
+
+  // ---- Beat 4: agent trace slides in ("agent"), three steps tick fast
+  tl.fromTo("#f16as-trace", { opacity: 0, x: 70 }, { opacity: 1, x: 0, duration: 0.55, ease: X }, 4.62);
+  pop("#f16as-pill-work", 4.78, 0.85, null);
+  [4.8, 4.94, 5.08].forEach(function (t, k) {
+    tl.fromTo("#f16as-step" + k, { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.35, ease: X }, t);
+    tl.fromTo("#f16as-spin" + k, { rotation: 0, opacity: 1 }, { rotation: 360, duration: 0.2, ease: "none" }, t);
+    tl.to("#f16as-spin" + k, { opacity: 0, duration: 0.05 }, t + 0.2);
+    tl.fromTo("#f16as-done" + k, { opacity: 0, scale: 0.5 }, { opacity: 1, scale: 1, duration: 0.35, ease: X }, t + 0.2);
+    tl.fromTo("#f16as-meta" + k, { opacity: 0, x: -6 }, { opacity: 1, x: 0, duration: 0.35, ease: X }, t + 0.22);
+  });
+
+  // ---- Beat 5: "skipped the discount" — the -40% ghost is struck out
+  tl.fromTo("#f16as-sect-offer", { opacity: 0 }, { opacity: 1, duration: 0.3, ease: "power2.out" }, 5.2);
+  tl.fromTo("#f16as-ghost", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.35, ease: X }, 5.22);
+  tl.fromTo("#f16as-strike", { scaleX: 0 }, { scaleX: 1, duration: 0.32, ease: IO }, 5.42);
+  pop("#f16as-skipped", 5.72, 0.85, null);
+  tl.to("#f16as-ghost", { opacity: 0.5, duration: 0.35, ease: "power2.out" }, 5.8);
+
+  // ---- Beat 6: "five thousand credits" — modal swaps to the save offer, count-up, trace logs the pick
+  tl.to("#f16as-modal", { opacity: 0, scale: 0.94, duration: 0.22, ease: "power2.in" }, 6.14);
+  tl.fromTo("#f16as-glow", { opacity: 0 }, { opacity: 1, duration: 0.8, ease: "power2.out" }, 6.28);
+  tl.fromTo("#f16as-offer", { opacity: 0, scale: 0.88, y: 12 }, { opacity: 1, scale: 1, y: 0, duration: 0.5, ease: X }, 6.3);
+  gsap.utils.toArray("#f16as-scene .f16as-oi").forEach(function (el, k) {
+    tl.fromTo(el, { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.4, ease: X }, 6.34 + k * 0.05);
+  });
+  var cntEl = document.getElementById("f16as-ocount"), cnt = { v: 0 };
+  tl.fromTo(cnt, { v: 0 }, { v: 5000, duration: 0.42, ease: "power2.out",
+    onUpdate: function () { cntEl.textContent = fmt(cnt.v); } }, 6.34);
+  pop("#f16as-pick", 6.46, 0.85, "#f16as-pick-fx");
+  pop("#f16as-pickok", 6.7, 0.5, null);
+
+  // ---- Beat 7: "same price"
+  pop("#f16as-same", 7.48, 0.8, "#f16as-same-fx");
+
+  // ---- Beat 8: "saved the sale" — press, button fills, toast
+  tl.to("#f16as-cursor", { x: cur(P.obtn).x, y: cur(P.obtn).y, duration: 0.5, ease: IO }, 7.74);
+  click(8.34, P.obtn, "#f16as-rip3", "#f16as-obtn", "#f16as-obtn-fx");
+  tl.fromTo("#f16as-obtn-fill", { opacity: 0 }, { opacity: 1, duration: 0.22, ease: "power2.out" }, 8.4);
+  tl.to("#f16as-obtn-a", { opacity: 0, y: -8, duration: 0.12, ease: "power2.in" }, 8.38);
+  tl.fromTo("#f16as-obtn-b", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.32, ease: X }, 8.48);
+  tl.to("#f16as-cursor", { x: cur(P.obtn).x + 46, y: cur(P.obtn).y + 34, opacity: 0, duration: 0.4, ease: "power2.out" }, 8.62);
+  tl.fromTo("#f16as-toast", { opacity: 0, y: 14, scale: 0.94 }, { opacity: 1, y: 0, scale: 1, duration: 0.45, ease: X }, 8.6);
+  tl.to("#f16as-pill-work", { opacity: 0, duration: 0.15 }, 8.6);
+  pop("#f16as-pill-done", 8.62, 0.8, null);
+
+  // ---- Beat 9: "inside the limits you set" — guardrail pills arrive, then light up
+  tl.fromTo("#f16as-sect-guard", { opacity: 0 }, { opacity: 1, duration: 0.3, ease: "power2.out" }, 9.22);
+  var pills = gsap.utils.toArray("#f16as-scene .f16as-gpill");
+  pills.forEach(function (el, k) {
+    tl.fromTo(el, { opacity: 0, y: 6, scale: 0.9 }, { opacity: 1, y: 0, scale: 1, duration: 0.35, ease: X }, 9.26 + k * 0.05);
+    var t = 9.6 + k * 0.07;                                                                                          // "limits"
+    tl.fromTo(el.querySelector(".f16as-hl"), { opacity: 0 }, { opacity: 1, duration: 0.3, ease: "power2.out" }, t);
+    tl.to(el.querySelector(".f16as-gtx"), { color: "#5fe3b1", duration: 0.3, ease: "power2.out" }, t);
+    var ck = el.querySelector(".f16as-gck");
+    if (ck) tl.to(ck, { color: "#5fe3b1", duration: 0.3, ease: "power2.out" }, t);
+    flash(el.querySelector(".f16as-fx"), t + 0.02);
+  });
+
+  // hold the final state to the end of the frame
+  tl.to({}, { duration: 0.01 }, 10.63);
+
+  window.__timelines["16-agent-save"] = tl;
+})();
+</script>
+</div>
+</template>

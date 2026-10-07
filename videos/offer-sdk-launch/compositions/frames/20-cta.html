@@ -1,0 +1,382 @@
+<template>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<style>
+/* ==========================================================================
+   Offer SDK app kit — the offer-app dashboard (dark theme), rebuilt for video.
+   Values are copied from offer-app/src/app/globals.css (data-theme="dark") and
+   measured from the real screens in capture/assets/app/*.png.
+
+   HOW TO USE IN A FRAME
+   1. Paste this whole file inside the style block that lives inside your frame template.
+      (Template transport: styles must live inside the frame template.)
+   2. Build the window from shell.html. Author it at its LOGICAL size
+      (.ak-window is 1366×800 — a real laptop viewport, real 14px UI text) and
+      scale the wrapper with GSAP (scale ≈ 1.08–1.12 to fill the top 83%;
+      punch in to 1.5–1.9 on the region the VO is talking about).
+   3. Copy icons from icons.html (Lucide, the icon set the app uses).
+   All classes are prefixed ak- so they never collide with frame-local names.
+   ========================================================================== */
+
+@font-face { font-family: "Cal Sans"; src: url("assets/fonts/CalSansVF.woff2") format("woff2"); font-weight: 400 700; font-display: block; }
+@font-face { font-family: "Geist Mono"; src: url("assets/fonts/geist-mono-latin.woff2") format("woff2"); font-weight: 400 600; font-display: block; }
+
+.ak {
+  --canvas: #0f0f11; --panel: #161618; --bg: #18181b; --bg-subtle: #1c1c1f; --bg-muted: #222226;
+  --bg-hover: #27272c; --bg-active: #2e2e34; --bg-elevated: #202024; --bg-inverse: #f1f1f3;
+  --fg: #ececee; --fg-secondary: rgb(236 236 238 / .93); --fg-tertiary: rgb(236 236 238 / .86);
+  --fg-muted: rgb(236 236 238 / .68); --fg-placeholder: #6f7178; --fg-icon: #9c9ea5;
+  --border: #2a2a2f; --border-strong: #37373d; --border-input: #323238;
+  --accent: #34d599; --accent-hover: #5ce0b0; --accent-subtle: rgb(52 213 153 / .13); --accent-fg: #5fe3b1; --accent-contrast: #03140c; --ring: rgb(52 213 153 / .4);
+  --btn-neon-bg: rgb(52 213 153 / .08); --shadow-brand: inset 0 0 0 1px rgb(52 213 153 / .85), inset 0 0 14px -6px rgb(52 213 153 / .35), 0 0 16px -6px rgb(52 213 153 / .4);
+  --brand-vertical: linear-gradient(180deg, #4fe0b0, #2fc48c);
+  --success: #30a46c; --success-subtle: rgb(48 164 108 / .16); --success-fg: #5ed29a;
+  --danger: #e5484d; --danger-subtle: rgb(229 72 77 / .15); --danger-fg: #ff8a8d;
+  --warning: #f0a020; --warning-subtle: rgb(240 160 32 / .14); --warning-fg: #ffc35f;
+  --brand-from: #34d599; --brand-to: #2cc0de; --brand-gradient: linear-gradient(90deg, #34d599, #2cc0de);
+  --code-comment: #7f828a; --code-keyword: #5fe3b1; --code-string: #6fd69f; --code-key: #93b8ff; --code-number: #ffa072;
+  --zapier: #ff5f1f; --paypal: #0070e0;
+  --shadow-soft: 0 14px 36px -14px rgb(0 0 0 / .75), 0 2px 8px -2px rgb(0 0 0 / .45);
+  --shadow-lg: 0 18px 44px -10px rgb(0 0 0 / .7), 0 4px 12px -4px rgb(0 0 0 / .5);
+  font-family: "Cal Sans", ui-sans-serif, system-ui, sans-serif;
+  font-variation-settings: "GEOM" 25;           /* the app's UI geometry */
+  color: var(--fg); -webkit-font-smoothing: antialiased; font-size: 14px; line-height: 1.4;
+}
+.ak * { box-sizing: border-box; }
+.ak .ak-display { font-variation-settings: "GEOM" 50; letter-spacing: -0.01em; }
+/* Neon-style eyebrow: small mono caps (site + app section kickers). */
+.ak .ak-eyebrow { font-family: "Geist Mono", monospace; font-variation-settings: normal; font-size: 11px; line-height: 16px; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; color: var(--fg-muted); }
+.ak .ak-mono, .ak code { font-family: "Geist Mono", ui-monospace, monospace; font-variation-settings: normal; }
+.ak svg { display: block; flex-shrink: 0; }
+
+/* ---------- window + shell ---------- */
+.ak-window { position: absolute; width: 1366px; height: 800px; background: var(--canvas); border-radius: 18px;
+  border: 1px solid var(--border); box-shadow: 0 40px 120px -30px rgb(0 0 0 / .9), 0 0 0 1px rgb(255 255 255 / .03);
+  overflow: hidden; display: flex; padding: 6px 6px 6px 0; transform-origin: 50% 50%; }
+.ak-rail { width: 52px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; gap: 10px; padding-top: 8px; }
+.ak-rail .ak-rail-logo { width: 30px; height: 30px; border-radius: 8px; display: grid; place-items: center; color: var(--fg); }
+.ak-rail .ak-rail-logo svg { width: 18px; height: 18px; }
+.ak-rail .ak-rail-sep { width: 22px; height: 1px; background: var(--border); }
+.ak-rail .ak-app-tile { width: 28px; height: 28px; border-radius: 7px; display: grid; place-items: center; font-size: 11px; font-weight: 600; color: var(--accent-contrast);
+  background: var(--brand-vertical); }
+.ak-rail .ak-app-tile.is-active { box-shadow: 0 0 0 2px var(--canvas), 0 0 0 3.5px var(--accent); }
+.ak-rail .ak-app-tile.alt { opacity: .8; }
+.ak-rail .ak-rail-plus { color: var(--fg-icon); width: 16px; height: 16px; }
+.ak-rail .ak-rail-foot { margin-top: auto; padding-bottom: 6px; display: flex; flex-direction: column; align-items: center; gap: 14px; color: var(--fg-icon); }
+.ak-rail .ak-rail-foot svg { width: 15px; height: 15px; }
+.ak-rail .ak-avatar { width: 26px; height: 26px; border-radius: 50%; background: var(--bg-muted); color: var(--fg-secondary); font-size: 10px; display: grid; place-items: center; }
+
+.ak-nav { width: 222px; flex-shrink: 0; background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
+  margin-right: 6px; display: flex; flex-direction: column; padding: 12px 10px; box-shadow: var(--shadow-soft); }
+.ak-nav-title { font-size: 15px; font-weight: 600; padding: 2px 6px 10px; font-variation-settings: "GEOM" 50; }
+.ak-quick { height: 30px; border: 1px solid var(--border-input); border-radius: 8px; display: flex; align-items: center; gap: 8px; padding: 0 8px;
+  color: var(--fg-muted); font-size: 13px; margin-bottom: 10px; }
+.ak-quick svg { width: 14px; height: 14px; color: var(--fg-icon); }
+.ak-quick .ak-kbd { margin-left: auto; font-size: 10.5px; border: 1px solid var(--border); border-radius: 4px; padding: 0 4px; color: var(--fg-placeholder); }
+.ak-nav-group { display: flex; flex-direction: column; gap: 1px; padding: 6px 0; border-top: 1px solid var(--border); }
+.ak-nav-group:first-of-type { border-top: 0; padding-top: 0; }
+.ak-nav-item { height: 31px; border-radius: 7px; display: flex; align-items: center; gap: 10px; padding: 0 8px; font-size: 13.5px; color: var(--fg-secondary); }
+.ak-nav-item svg { width: 15px; height: 15px; color: var(--fg-icon); }
+.ak-nav-item .ak-count { margin-left: auto; font-size: 12px; color: var(--fg-muted); font-variant-numeric: tabular-nums; }
+.ak-nav-item.is-active { background: var(--accent-subtle); color: var(--accent-fg); }
+.ak-nav-item.is-active svg { color: var(--accent-fg); }
+.ak-nav-foot { margin-top: auto; }
+
+.ak-main { flex: 1; min-width: 0; background: var(--bg); border: 1px solid var(--border); border-radius: 12px; display: flex; flex-direction: column;
+  overflow: hidden; box-shadow: var(--shadow-soft); position: relative; }
+.ak-header { height: 50px; flex-shrink: 0; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; padding: 0 12px 0 16px; }
+.ak-header .ak-crumb { display: flex; align-items: center; gap: 9px; font-size: 14px; font-weight: 500; }
+.ak-header .ak-crumb svg { width: 15px; height: 15px; color: var(--fg-icon); }
+.ak-header .ak-crumb .ak-sep { color: var(--fg-placeholder); }
+.ak-header .ak-actions { margin-left: auto; display: flex; align-items: center; gap: 4px; }
+.ak-toolbar { height: 50px; flex-shrink: 0; display: flex; align-items: center; gap: 10px; padding: 0 16px; border-bottom: 1px solid var(--border); }
+.ak-body { flex: 1; min-height: 0; position: relative; overflow: hidden; }
+.ak-page { padding: 28px 40px; }
+.ak-page-title { font-size: 22px; font-weight: 600; font-variation-settings: "GEOM" 50; letter-spacing: -0.01em; }
+.ak-page-sub { color: var(--fg-muted); font-size: 13.5px; margin-top: 4px; }
+
+/* ---------- controls ---------- */
+.ak-btn { height: 30px; border-radius: 8px; display: inline-flex; align-items: center; gap: 7px; padding: 0 10px; font-size: 13.5px; color: var(--fg-secondary);
+  border: 1px solid transparent; white-space: nowrap; }
+.ak-btn svg { width: 14px; height: 14px; }
+.ak-btn.is-outline { border-color: var(--border-strong); background: var(--bg-subtle); }
+/* Primary = the app's neon button: hairline neon border, faint green wash, green ink. */
+.ak-btn.is-primary { background: var(--btn-neon-bg); color: var(--accent-fg); font-weight: 500; box-shadow: var(--shadow-brand); }
+.ak-btn.is-gradient { background: var(--btn-neon-bg); color: var(--accent-fg); font-weight: 500; box-shadow: var(--shadow-brand), 0 0 32px -8px rgb(52 213 153 / .55); }
+.ak-btn.is-solid { background: var(--brand-vertical); color: var(--accent-contrast); font-weight: 600; }
+.ak-btn.is-paypal { background: #ffc439; color: #111; font-weight: 600; }
+.ak-btn.is-lg { height: 40px; padding: 0 16px; font-size: 15px; border-radius: 10px; }
+.ak-input { height: 32px; border: 1px solid var(--border-input); background: var(--bg-subtle); border-radius: 8px; display: flex; align-items: center; gap: 8px;
+  padding: 0 10px; font-size: 13.5px; color: var(--fg); }
+.ak-input.is-placeholder { color: var(--fg-placeholder); }
+.ak-input.is-focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--ring); }
+.ak-input svg { width: 14px; height: 14px; color: var(--fg-icon); }
+.ak-label { font-size: 13px; color: var(--fg-secondary); font-weight: 500; margin-bottom: 6px; }
+.ak-seg { display: inline-flex; background: var(--bg-muted); border-radius: 8px; padding: 2px; gap: 2px; }
+.ak-seg > span { height: 26px; padding: 0 10px; border-radius: 6px; display: inline-flex; align-items: center; font-size: 13px; color: var(--fg-muted); }
+.ak-seg > span.is-on { background: var(--bg-active); color: var(--fg); }
+.ak-switch { width: 30px; height: 18px; border-radius: 9px; background: var(--bg-active); position: relative; flex-shrink: 0; }
+.ak-switch::after { content: ""; position: absolute; top: 2px; left: 2px; width: 14px; height: 14px; border-radius: 50%; background: #fff; }
+.ak-switch.is-on { background: var(--accent); }
+.ak-switch.is-on::after { background: var(--accent-contrast); }
+.ak-switch.is-on::after { left: 14px; }
+.ak-check { width: 16px; height: 16px; border-radius: 4px; border: 1px solid var(--border-strong); display: grid; place-items: center; }
+.ak-check.is-on { background: var(--accent); border-color: var(--accent); color: var(--accent-contrast); }
+.ak-check svg { width: 11px; height: 11px; }
+
+/* ---------- table (Plans / Entitlements / Add-ons / Incentives / Accounts) ---------- */
+.ak-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+.ak-table th { height: 42px; text-align: left; font-weight: 400; color: var(--fg-muted); padding: 0 14px; border-bottom: 1px solid var(--border); border-right: 1px solid var(--border); white-space: nowrap; }
+.ak-table th:last-child, .ak-table td:last-child { border-right: 0; }
+.ak-table th .ak-th { display: inline-flex; align-items: center; gap: 7px; }
+.ak-table th svg { width: 13px; height: 13px; color: var(--fg-icon); }
+.ak-table td { height: 46px; padding: 0 14px; border-bottom: 1px solid var(--border); border-right: 1px solid var(--border); white-space: nowrap; color: var(--fg-secondary); }
+.ak-table td.is-num { text-align: right; font-variant-numeric: tabular-nums; }
+.ak-table .ak-row-name { display: flex; align-items: center; gap: 9px; color: var(--fg); }
+.ak-table .ak-row-icon { width: 22px; height: 22px; border-radius: 6px; background: rgb(59 123 246 / .18); color: #93b8ff; display: grid; place-items: center; }
+.ak-table .ak-row-icon svg { width: 13px; height: 13px; }
+.ak-table tr.is-hl td { background: rgb(52 213 153 / .07); }
+.ak-table-foot { padding: 12px 16px; color: var(--fg-muted); font-size: 13px; }
+
+/* ---------- chips + tags ---------- */
+.ak-id { font-family: "Geist Mono", monospace; font-variation-settings: normal; font-size: 12px; background: var(--bg-muted); color: var(--fg-secondary);
+  border-radius: 5px; padding: 2px 6px; }
+.ak-tag { display: inline-flex; align-items: center; gap: 5px; height: 21px; padding: 0 7px; border-radius: 5px; font-size: 12px; white-space: nowrap;
+  background: rgb(255 255 255 / .08); color: #c6c7cc; }
+.ak-tag svg { width: 11px; height: 11px; }
+.ak-tag.blue { background: rgb(59 123 246 / .18); color: #93b8ff; }
+.ak-tag.green { background: rgb(48 164 108 / .18); color: #6fd69f; }
+.ak-tag.yellow { background: rgb(240 180 40 / .16); color: #f5c451; }
+.ak-tag.orange { background: rgb(235 104 52 / .18); color: #ffa072; }
+.ak-tag.red { background: rgb(229 72 77 / .18); color: #ff8a8d; }
+.ak-tag.purple { background: rgb(143 107 255 / .2); color: #bba6ff; }
+.ak-tag.brand { background: rgb(52 213 153 / .14); color: #5fe3b1; }
+.ak-tag.pink { background: rgb(224 69 123 / .18); color: #ff8fba; }
+.ak-tag.teal { background: rgb(20 163 157 / .18); color: #62d6cf; }
+.ak-more { color: var(--fg-muted); font-size: 12px; }
+
+/* ---------- cards, stats, meters ---------- */
+.ak-card { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; }
+.ak-card-head { height: 46px; display: flex; align-items: center; padding: 0 16px; border-bottom: 1px solid var(--border); font-weight: 500; font-size: 14px; }
+.ak-card-body { padding: 16px; }
+.ak-elevated { background: var(--bg-elevated); border: 1px solid var(--border-strong); border-radius: 12px; box-shadow: var(--shadow-lg); }
+.ak-stat-strip { display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+.ak-stat { padding: 16px 18px; border-right: 1px solid var(--border); }
+.ak-stat:last-child { border-right: 0; }
+.ak-stat-label { display: flex; align-items: center; gap: 7px; font-size: 13px; color: var(--fg-secondary); }
+.ak-stat-label svg { width: 13px; height: 13px; color: var(--fg-icon); }
+.ak-stat-value { font-size: 26px; font-weight: 600; margin-top: 8px; font-variant-numeric: tabular-nums; font-variation-settings: "GEOM" 50; }
+.ak-stat-sub { font-size: 12px; color: var(--fg-muted); margin-top: 4px; }
+.ak-meter { height: 8px; border-radius: 4px; background: var(--bg-active); overflow: hidden; }
+.ak-meter > i { display: block; height: 100%; width: 0; border-radius: 4px; background: var(--brand-gradient); }
+.ak-meter.is-warn > i { background: linear-gradient(90deg, #f0a020, #e5484d); }
+.ak-bar-row { position: relative; height: 30px; border-radius: 6px; display: flex; align-items: center; padding: 0 10px; font-size: 13.5px; }
+.ak-bar-row > b { position: absolute; inset: 0 auto 0 0; border-radius: 6px; background: linear-gradient(90deg, rgb(52 213 153 / .32), rgb(44 192 222 / .22)); font-weight: 400; }
+.ak-bar-row > span { position: relative; }
+.ak-bar-row > .ak-bar-val { margin-left: auto; color: var(--fg-secondary); font-variant-numeric: tabular-nums; }
+
+/* ---------- code block (site CodeBlock look) ---------- */
+.ak-code { background: #131315; border: 1px solid var(--border); border-radius: 14px; overflow: hidden; box-shadow: var(--shadow-lg); }
+.ak-code-bar { height: 40px; display: flex; align-items: center; gap: 8px; padding: 0 14px; border-bottom: 1px solid var(--border); color: var(--fg-muted); font-size: 13px; }
+.ak-code-bar .ak-dots { display: flex; gap: 6px; margin-right: 6px; }
+.ak-code-bar .ak-dots i { width: 10px; height: 10px; border-radius: 50%; background: var(--bg-active); }
+.ak-code pre { margin: 0; padding: 18px 20px; font-family: "Geist Mono", monospace; font-variation-settings: normal; font-size: 15px; line-height: 1.65; color: var(--fg-secondary); white-space: pre; }
+.ak-code .k { color: var(--code-keyword); } .ak-code .s { color: var(--code-string); } .ak-code .p { color: var(--code-key); }
+.ak-code .n { color: var(--code-number); } .ak-code .c { color: var(--code-comment); } .ak-code .f { color: #ececee; }
+.ak-code .del { background: rgb(229 72 77 / .14); } .ak-code .add { background: rgb(48 164 108 / .14); }
+
+/* ---------- feedback ---------- */
+.ak-toast { position: absolute; display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 10px; background: var(--bg-elevated);
+  border: 1px solid var(--border-strong); box-shadow: var(--shadow-lg); font-size: 13.5px; white-space: nowrap; }
+.ak-toast svg { width: 15px; height: 15px; }
+.ak-toast.is-ok svg { color: var(--success-fg); }
+.ak-toast.is-warn svg { color: var(--warning-fg); }
+.ak-toast.is-bad svg { color: var(--danger-fg); }
+.ak-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--success); display: inline-block; }
+.ak-dot.is-warn { background: var(--warning); } .ak-dot.is-bad { background: var(--danger); }
+.ak-cursor { position: absolute; width: 22px; height: 22px; z-index: 50; pointer-events: none; filter: drop-shadow(0 2px 4px rgb(0 0 0 / .6)); }
+.ak-ripple { position: absolute; width: 36px; height: 36px; margin: -18px 0 0 -18px; border-radius: 50%; border: 2px solid var(--accent-fg); z-index: 49; opacity: 0; }
+
+/* ---------- avatars + misc ---------- */
+.ak-av { width: 22px; height: 22px; border-radius: 6px; display: grid; place-items: center; font-size: 9.5px; font-weight: 600; background: rgb(52 213 153 / .14); color: #5fe3b1; }
+.ak-av.round { border-radius: 50%; }
+.ak-kv { display: flex; justify-content: space-between; font-size: 13px; padding: 7px 0; border-bottom: 1px solid var(--border); color: var(--fg-muted); }
+.ak-kv b { font-weight: 400; color: var(--fg); }
+.ak-divider { height: 1px; background: var(--border); }
+
+/* ===================== 20-cta frame (neon, left-aligned closing section) ===================== */
+#root { position: absolute; inset: 0; width: 1920px; height: 1080px; overflow: hidden; }
+[id="20-cta-bg"] { position: absolute; inset: 0; background: #0f0f11; overflow: hidden; }
+[id="20-cta-bg-art"] { position: absolute; left: -120px; bottom: 0; width: 2160px; height: 768px; opacity: 0.6; transform-origin: 50% 100%; }
+[id="20-cta-bg-fade"] { position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse 52% 46% at 30% 44%, rgba(15,15,17,0.92) 0%, rgba(15,15,17,0.64) 55%, rgba(15,15,17,0) 100%),
+    linear-gradient(180deg, #0f0f11 0%, rgba(15,15,17,0.55) 30%, rgba(15,15,17,0) 56%); }
+[id="20-cta-stage"] { position: absolute; inset: 0; }
+
+/* one soft green bloom behind the left-aligned block */
+[id="20-cta-glow"] { position: absolute; left: -160px; top: 80px; width: 1360px; height: 760px; z-index: 1; opacity: 0;
+  background: radial-gradient(closest-side, rgba(52,213,153,0.18), rgba(52,213,153,0.06) 55%, rgba(52,213,153,0) 100%); }
+
+/* small lockup at the block's top-left: layers mark + "Offer SDK" */
+[id="20-cta-lockup"] { position: absolute; left: 200px; top: 182px; height: 56px; z-index: 2;
+  display: flex; align-items: center; gap: 14px; transform-origin: 0 50%; }
+[id="20-cta-mark"] { width: 50px; height: 50px; color: #ececee; transform-origin: 50% 50%; }
+[id="20-cta-word"] { font-family: "Cal Sans", sans-serif; font-weight: 600; font-size: 48px; line-height: 1; letter-spacing: -0.025em;
+  font-variation-settings: "GEOM" 50; color: #ececee; white-space: nowrap; }
+
+/* two-tone statement: bright typed URL, dimmed lead continuing it (same size, left-aligned) */
+[id="20-cta-statement"] { position: absolute; left: 200px; top: 290px; z-index: 2;
+  font-family: "Cal Sans", sans-serif; font-weight: 500; font-size: 112px; line-height: 1.04; letter-spacing: -0.025em;
+  font-variation-settings: "GEOM" 50; word-spacing: 0.03em; white-space: nowrap; }
+[id="20-cta-url"] { position: relative; display: inline-block; color: #ececee; transform-origin: 0 50%; margin-bottom: 30px; }
+[id="20-cta-url-ghost"] { visibility: hidden; white-space: pre; }
+[id="20-cta-url-typed"] { position: absolute; left: 0; top: 0; bottom: 0; display: flex; align-items: center; white-space: pre; }
+[id="20-cta-caret"] { display: inline-block; flex-shrink: 0; width: 9px; height: 0.78em; margin-left: 8px; border-radius: 2px; opacity: 0;
+  background: #34d599; box-shadow: 0 0 18px rgba(52,213,153,0.75); }
+[id="20-cta-url-line"] { position: absolute; left: 2px; right: 2px; bottom: -8px; height: 4px; border-radius: 2px; transform-origin: 0 50%;
+  background: linear-gradient(90deg, #34d599, #2cc0de); box-shadow: 0 0 16px rgba(52,213,153,0.55); }
+[id="20-cta-lead"] { display: block; color: rgba(236,236,238,0.6); }
+[id="20-cta-lead"] span { display: inline-block; }
+
+/* neon "Deploy on Render →" (site hero CTA), below-left */
+[id="20-cta-btn-row"] { position: absolute; left: 200px; top: 622px; height: 100px; z-index: 3; display: flex; align-items: center; }
+.ak [id="20-cta-btn"] { position: relative; height: 100px; padding: 0 54px; gap: 18px; border-radius: 999px; font-size: 40px; font-weight: 500;
+  font-variation-settings: "GEOM" 25; color: #5fe3b1; transform-origin: 50% 50%; background: rgba(52,213,153,0.08);
+  box-shadow: inset 0 0 0 2px rgba(52,213,153,0.85), inset 0 0 30px -10px rgba(52,213,153,0.4), 0 0 36px -8px rgba(52,213,153,0.5); }
+.ak [id="20-cta-btn"] svg { width: 38px; height: 38px; position: relative; }
+[id="20-cta-btn-label"] { position: relative; }
+[id="20-cta-btn-fill"] { position: absolute; inset: 0; border-radius: 999px; background: rgba(52,213,153,0.16); opacity: 0; }
+[id="20-cta-btn-halo"] { position: absolute; inset: -2px; border-radius: 999px; opacity: 0;
+  box-shadow: 0 0 70px 6px rgba(52,213,153,0.42), 0 0 22px 0 rgba(52,213,153,0.55); }
+
+[id="20-cta-cursor"] { left: 0; top: 0; width: 46px; height: 46px; opacity: 0; transform-origin: 0 0; }
+[id="20-cta-ripple-a"], [id="20-cta-ripple-b"] { left: 490px; top: 675px; width: 44px; height: 44px; margin: -22px 0 0 -22px; border-width: 3px; }
+</style>
+
+<div id="root" data-composition-id="20-cta" data-width="1920" data-height="1080" data-duration="6.37">
+  <div id="20-cta-bg" class="clip" data-start="0" data-duration="6.37" data-track-index="0">
+    <img id="20-cta-bg-art" src="assets/footer-bg-neon.webp" alt="" />
+    <div id="20-cta-bg-fade"></div>
+  </div>
+
+  <div id="20-cta-stage" class="clip ak" data-start="0" data-duration="6.37" data-track-index="1">
+    <div id="20-cta-glow"></div>
+
+    <div id="20-cta-lockup">
+      <svg id="20-cta-mark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 13.74a2 2 0 0 1-2 0L2.5 8.87a1 1 0 0 1 0-1.74L11 2.26a2 2 0 0 1 2 0l8.5 4.87a1 1 0 0 1 0 1.74z"></path><path d="m20 14.285 1.5.845a1 1 0 0 1 0 1.74L13 21.74a2 2 0 0 1-2 0l-8.5-4.87a1 1 0 0 1 0-1.74l1.5-.845"></path></svg>
+      <div id="20-cta-word">Offer SDK</div>
+    </div>
+
+    <div id="20-cta-statement">
+      <div id="20-cta-url"><span id="20-cta-url-ghost">offersdk.com</span><span id="20-cta-url-typed"><span id="20-cta-url-a"></span><span id="20-cta-caret"></span></span><i id="20-cta-url-line"></i></div>
+      <div id="20-cta-lead"><span id="20-cta-w1">Deploy</span> <span id="20-cta-w2">your</span> <span id="20-cta-w3">own</span> <span id="20-cta-w4">agentic</span> <span id="20-cta-w5">offer</span> <span id="20-cta-w6">API.</span></div>
+    </div>
+
+    <div id="20-cta-btn-row">
+      <div id="20-cta-btn" class="ak-btn is-gradient is-lg">
+        <span id="20-cta-btn-halo"></span>
+        <span id="20-cta-btn-fill"></span>
+        <span id="20-cta-btn-label">Deploy on Render</span>
+        <svg id="20-cta-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+      </div>
+    </div>
+
+    <div id="20-cta-ripple-a" class="ak-ripple"></div>
+    <div id="20-cta-ripple-b" class="ak-ripple"></div>
+
+    <svg id="20-cta-cursor" class="ak-cursor" viewBox="0 0 24 24"><path d="M4 2.5 L4 19 L8.6 14.8 L11.6 21.5 L14.4 20.3 L11.5 13.7 L17.8 13.4 Z" fill="#fff" stroke="#111" stroke-width="1.3" stroke-linejoin="round"/></svg>
+  </div>
+</div>
+
+<script>
+(function () {
+  const $ = (id) => document.getElementById("20-cta-" + id);
+  const tl = gsap.timeline({ paused: true });
+  const DUR = 6.37;
+
+  const bgArt = $("bg-art"), glow = $("glow");
+  const lockup = $("lockup"), mark = $("mark");
+  const url = $("url"), urlA = $("url-a"), caret = $("caret"), urlLine = $("url-line");
+  const words = [$("w1"), $("w2"), $("w3"), $("w4"), $("w5"), $("w6")];
+  const btn = $("btn"), halo = $("btn-halo"), fill = $("btn-fill"), arrow = $("arrow");
+  const cursor = $("cursor"), ripA = $("ripple-a"), ripB = $("ripple-b");
+
+  // ---------- Backdrop: neon footer line-art, slow camera settle under the whole shot ----------
+  tl.fromTo(bgArt, { scale: 1.06, y: 18 }, { scale: 1, y: 0, duration: DUR, ease: "power2.out" }, 0);
+  tl.fromTo(bgArt, { opacity: 0.32 }, { opacity: 0.6, duration: 0.7, ease: "power2.out" }, 0);
+
+  // ---------- 0.0 "Go to" — small lockup slides in at the block's top-left + one green glow ----------
+  tl.fromTo(glow, { opacity: 0, scale: 0.82 }, { opacity: 1, scale: 1, duration: 0.8, ease: "power3.out" }, 0);
+  tl.fromTo(lockup, { opacity: 0, x: -24, filter: "blur(8px)" },
+    { opacity: 1, x: 0, filter: "blur(0px)", duration: 0.55, ease: "expo.out" }, 0.02);
+  tl.fromTo(mark, { rotation: -14, scale: 0.8 }, { rotation: 0, scale: 1, duration: 0.6, ease: "expo.out" }, 0.02);
+
+  // ---------- 0.35 "offersdk.com" — URL types on fast (bright), caret, underline draws ----------
+  const FULL = "offersdk.com";
+  const KEYS = [0.36, 0.41, 0.46, 0.51, 0.56, 0.64, 0.69, 0.74, 0.84, 0.90, 0.95, 1.01];
+  const TYPED = KEYS[KEYS.length - 1];
+  const countAt = (t) => { let n = 0; while (n < KEYS.length && t >= KEYS[n]) n++; return n; };
+  const caretAt = (t) => {
+    if (t < 0.28 || t >= 1.5) return 0;
+    if (t < TYPED + 0.12) return 1;                                        // solid while typing
+    return Math.sin((t - TYPED - 0.12) / 0.4 * Math.PI * 2 + Math.PI / 2) > 0 ? 0 : 1;   // deterministic blink
+  };
+  const driver = { t: 0 };
+  tl.to(driver, {
+    t: DUR, duration: DUR, ease: "none",
+    onUpdate: () => {
+      const s = FULL.slice(0, countAt(driver.t));
+      if (urlA.textContent !== s) urlA.textContent = s;
+      caret.style.opacity = String(caretAt(driver.t));
+    }
+  }, 0);
+  // completion punch (anchored left) + gradient underline draws in
+  tl.fromTo(url, { scale: 1.03 }, { scale: 1, duration: 0.45, ease: "expo.out", immediateRender: false }, TYPED);
+  tl.fromTo(urlLine, { scaleX: 0, opacity: 1 }, { scaleX: 1, duration: 0.5, ease: "expo.out" }, TYPED + 0.02);
+
+  // ---------- 1.43 "deploy" — neon "Deploy on Render →" rises and ignites ----------
+  const RISE = 1.3;
+  tl.fromTo(btn, { opacity: 0, y: 46, scale: 0.92 }, { opacity: 1, y: 0, scale: 1, duration: 0.55, ease: "expo.out" }, RISE);
+  tl.fromTo(halo, { opacity: 0 }, { opacity: 1, duration: 0.2, ease: "power2.out" }, RISE + 0.1);
+  tl.to(halo, { opacity: 0.4, duration: 0.7, ease: "power3.out" }, RISE + 0.3);
+  // the glow follows the eye down toward the button
+  tl.to(glow, { y: 70, scaleY: 0.86, duration: 0.7, ease: "expo.out" }, RISE);
+
+  // ---------- 1.43 → 3.01 the dimmed lead continues the statement, word by word on the voice ----------
+  // each word lands bright as it is spoken, then settles into the dimmed tone of the two-tone statement
+  const WORD_AT = [1.38, 1.77, 2.04, 2.22, 2.72, 2.96];   // deploy · your · own · agentic · offer · API
+  words.forEach((w, i) => {
+    tl.fromTo(w, { opacity: 0, y: 22 }, { opacity: 1, y: 0, duration: 0.42, ease: "expo.out" }, WORD_AT[i]);
+    tl.fromTo(w, { color: "#ececee" }, { color: "rgba(236,236,238,0.6)", duration: 0.7, ease: "power2.out" }, WORD_AT[i] + 0.16);
+  });
+
+  // ---------- 3.76 "your app" — cursor arrives (decelerating, human aim) ----------
+  const TX = 482, TY = 670;
+  tl.set(cursor, { opacity: 1 }, 3.56);
+  tl.fromTo(cursor, { x: 1960, y: 1000 }, { x: TX, y: TY, duration: 0.82, ease: "power3.out" }, 3.56);
+
+  // ---------- 4.58 "today" — click: lockstep press, ripple, ignite ----------
+  const CLICK = 4.5, PRESS = 0.08, UP = CLICK + PRESS;
+  tl.to(cursor, { scale: 0.84, duration: PRESS, ease: "power1.in" }, CLICK);
+  tl.to(btn, { scale: 0.96, duration: PRESS, ease: "power1.in" }, CLICK);
+  tl.to(cursor, { scale: 1, duration: 0.3, ease: "power3.out" }, UP);
+  tl.to(btn, { scale: 1, duration: 0.5, ease: "expo.out" }, UP);
+  tl.fromTo(arrow, { x: 0 }, { x: 10, duration: 0.5, ease: "expo.out", immediateRender: false }, UP);
+  tl.fromTo([ripA, ripB], { scale: 0, opacity: 0.9 },
+    { scale: 5, opacity: 0, duration: 0.75, ease: "power2.out", stagger: 0.09, immediateRender: false }, UP - 0.02);
+  tl.fromTo(fill, { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "power2.out", immediateRender: false }, UP);
+  tl.to(fill, { opacity: 0.45, duration: 0.8, ease: "power3.out" }, UP + 0.1);
+  tl.to(halo, { opacity: 1, duration: 0.12, ease: "power2.out" }, UP);
+  tl.to(halo, { opacity: 0.6, duration: 0.9, ease: "power3.out" }, UP + 0.12);
+  // the footer art lights up with the click, then settles
+  tl.to(bgArt, { opacity: 0.78, duration: 0.16, ease: "power2.out" }, UP);
+  tl.to(bgArt, { opacity: 0.66, duration: 1.0, ease: "power3.out" }, UP + 0.16);
+
+  // ---------- final settle: cursor eases off the label, everything holds ----------
+  tl.to(cursor, { x: TX + 150, y: TY + 86, duration: 0.8, ease: "power2.inOut" }, 4.95);
+
+  window.__timelines = window.__timelines || {};
+  window.__timelines["20-cta"] = tl;
+})();
+</script>
+</template>

@@ -1,0 +1,662 @@
+<template>
+  <style>
+/* ==========================================================================
+   Offer SDK app kit — the offer-app dashboard (dark theme), rebuilt for video.
+   Values are copied from offer-app/src/app/globals.css (data-theme="dark") and
+   measured from the real screens in capture/assets/app/*.png.
+
+   HOW TO USE IN A FRAME
+   1. Paste this whole file inside the style block that lives inside your frame template.
+      (Template transport: styles must live inside the frame template.)
+   2. Build the window from shell.html. Author it at its LOGICAL size
+      (.ak-window is 1366×800 — a real laptop viewport, real 14px UI text) and
+      scale the wrapper with GSAP (scale ≈ 1.08–1.12 to fill the top 83%;
+      punch in to 1.5–1.9 on the region the VO is talking about).
+   3. Copy icons from icons.html (Lucide, the icon set the app uses).
+   All classes are prefixed ak- so they never collide with frame-local names.
+   ========================================================================== */
+
+@font-face { font-family: "Cal Sans"; src: url("assets/fonts/CalSansVF.woff2") format("woff2"); font-weight: 400 700; font-display: block; }
+@font-face { font-family: "Geist Mono"; src: url("assets/fonts/geist-mono-latin.woff2") format("woff2"); font-weight: 400 600; font-display: block; }
+
+.ak {
+  --canvas: #0f0f11; --panel: #161618; --bg: #18181b; --bg-subtle: #1c1c1f; --bg-muted: #222226;
+  --bg-hover: #27272c; --bg-active: #2e2e34; --bg-elevated: #202024; --bg-inverse: #f1f1f3;
+  --fg: #ececee; --fg-secondary: rgb(236 236 238 / .93); --fg-tertiary: rgb(236 236 238 / .86);
+  --fg-muted: rgb(236 236 238 / .68); --fg-placeholder: #6f7178; --fg-icon: #9c9ea5;
+  --border: #2a2a2f; --border-strong: #37373d; --border-input: #323238;
+  --accent: #34d599; --accent-hover: #5ce0b0; --accent-subtle: rgb(52 213 153 / .13); --accent-fg: #5fe3b1; --accent-contrast: #03140c; --ring: rgb(52 213 153 / .4);
+  --btn-neon-bg: rgb(52 213 153 / .08); --shadow-brand: inset 0 0 0 1px rgb(52 213 153 / .85), inset 0 0 14px -6px rgb(52 213 153 / .35), 0 0 16px -6px rgb(52 213 153 / .4);
+  --brand-vertical: linear-gradient(180deg, #4fe0b0, #2fc48c);
+  --success: #30a46c; --success-subtle: rgb(48 164 108 / .16); --success-fg: #5ed29a;
+  --danger: #e5484d; --danger-subtle: rgb(229 72 77 / .15); --danger-fg: #ff8a8d;
+  --warning: #f0a020; --warning-subtle: rgb(240 160 32 / .14); --warning-fg: #ffc35f;
+  --brand-from: #34d599; --brand-to: #2cc0de; --brand-gradient: linear-gradient(90deg, #34d599, #2cc0de);
+  --code-comment: #7f828a; --code-keyword: #5fe3b1; --code-string: #6fd69f; --code-key: #93b8ff; --code-number: #ffa072;
+  --zapier: #ff5f1f; --paypal: #0070e0;
+  --shadow-soft: 0 14px 36px -14px rgb(0 0 0 / .75), 0 2px 8px -2px rgb(0 0 0 / .45);
+  --shadow-lg: 0 18px 44px -10px rgb(0 0 0 / .7), 0 4px 12px -4px rgb(0 0 0 / .5);
+  font-family: "Cal Sans", ui-sans-serif, system-ui, sans-serif;
+  font-variation-settings: "GEOM" 25;           /* the app's UI geometry */
+  color: var(--fg); -webkit-font-smoothing: antialiased; font-size: 14px; line-height: 1.4;
+}
+.ak * { box-sizing: border-box; }
+.ak .ak-display { font-variation-settings: "GEOM" 50; letter-spacing: -0.01em; }
+/* Neon-style eyebrow: small mono caps (site + app section kickers). */
+.ak .ak-eyebrow { font-family: "Geist Mono", monospace; font-variation-settings: normal; font-size: 11px; line-height: 16px; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; color: var(--fg-muted); }
+.ak .ak-mono, .ak code { font-family: "Geist Mono", ui-monospace, monospace; font-variation-settings: normal; }
+.ak svg { display: block; flex-shrink: 0; }
+
+/* ---------- window + shell ---------- */
+.ak-window { position: absolute; width: 1366px; height: 800px; background: var(--canvas); border-radius: 18px;
+  border: 1px solid var(--border); box-shadow: 0 40px 120px -30px rgb(0 0 0 / .9), 0 0 0 1px rgb(255 255 255 / .03);
+  overflow: hidden; display: flex; padding: 6px 6px 6px 0; transform-origin: 50% 50%; }
+.ak-rail { width: 52px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; gap: 10px; padding-top: 8px; }
+.ak-rail .ak-rail-logo { width: 30px; height: 30px; border-radius: 8px; display: grid; place-items: center; color: var(--fg); }
+.ak-rail .ak-rail-logo svg { width: 18px; height: 18px; }
+.ak-rail .ak-rail-sep { width: 22px; height: 1px; background: var(--border); }
+.ak-rail .ak-app-tile { width: 28px; height: 28px; border-radius: 7px; display: grid; place-items: center; font-size: 11px; font-weight: 600; color: var(--accent-contrast);
+  background: var(--brand-vertical); }
+.ak-rail .ak-app-tile.is-active { box-shadow: 0 0 0 2px var(--canvas), 0 0 0 3.5px var(--accent); }
+.ak-rail .ak-app-tile.alt { opacity: .8; }
+.ak-rail .ak-rail-plus { color: var(--fg-icon); width: 16px; height: 16px; }
+.ak-rail .ak-rail-foot { margin-top: auto; padding-bottom: 6px; display: flex; flex-direction: column; align-items: center; gap: 14px; color: var(--fg-icon); }
+.ak-rail .ak-rail-foot svg { width: 15px; height: 15px; }
+.ak-rail .ak-avatar { width: 26px; height: 26px; border-radius: 50%; background: var(--bg-muted); color: var(--fg-secondary); font-size: 10px; display: grid; place-items: center; }
+
+.ak-nav { width: 222px; flex-shrink: 0; background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
+  margin-right: 6px; display: flex; flex-direction: column; padding: 12px 10px; box-shadow: var(--shadow-soft); }
+.ak-nav-title { font-size: 15px; font-weight: 600; padding: 2px 6px 10px; font-variation-settings: "GEOM" 50; }
+.ak-quick { height: 30px; border: 1px solid var(--border-input); border-radius: 8px; display: flex; align-items: center; gap: 8px; padding: 0 8px;
+  color: var(--fg-muted); font-size: 13px; margin-bottom: 10px; }
+.ak-quick svg { width: 14px; height: 14px; color: var(--fg-icon); }
+.ak-quick .ak-kbd { margin-left: auto; font-size: 10.5px; border: 1px solid var(--border); border-radius: 4px; padding: 0 4px; color: var(--fg-placeholder); }
+.ak-nav-group { display: flex; flex-direction: column; gap: 1px; padding: 6px 0; border-top: 1px solid var(--border); }
+.ak-nav-group:first-of-type { border-top: 0; padding-top: 0; }
+.ak-nav-item { height: 31px; border-radius: 7px; display: flex; align-items: center; gap: 10px; padding: 0 8px; font-size: 13.5px; color: var(--fg-secondary); }
+.ak-nav-item svg { width: 15px; height: 15px; color: var(--fg-icon); }
+.ak-nav-item .ak-count { margin-left: auto; font-size: 12px; color: var(--fg-muted); font-variant-numeric: tabular-nums; }
+.ak-nav-item.is-active { background: var(--accent-subtle); color: var(--accent-fg); }
+.ak-nav-item.is-active svg { color: var(--accent-fg); }
+.ak-nav-foot { margin-top: auto; }
+
+.ak-main { flex: 1; min-width: 0; background: var(--bg); border: 1px solid var(--border); border-radius: 12px; display: flex; flex-direction: column;
+  overflow: hidden; box-shadow: var(--shadow-soft); position: relative; }
+.ak-header { height: 50px; flex-shrink: 0; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; padding: 0 12px 0 16px; }
+.ak-header .ak-crumb { display: flex; align-items: center; gap: 9px; font-size: 14px; font-weight: 500; }
+.ak-header .ak-crumb svg { width: 15px; height: 15px; color: var(--fg-icon); }
+.ak-header .ak-crumb .ak-sep { color: var(--fg-placeholder); }
+.ak-header .ak-actions { margin-left: auto; display: flex; align-items: center; gap: 4px; }
+.ak-toolbar { height: 50px; flex-shrink: 0; display: flex; align-items: center; gap: 10px; padding: 0 16px; border-bottom: 1px solid var(--border); }
+.ak-body { flex: 1; min-height: 0; position: relative; overflow: hidden; }
+.ak-page { padding: 28px 40px; }
+.ak-page-title { font-size: 22px; font-weight: 600; font-variation-settings: "GEOM" 50; letter-spacing: -0.01em; }
+.ak-page-sub { color: var(--fg-muted); font-size: 13.5px; margin-top: 4px; }
+
+/* ---------- controls ---------- */
+.ak-btn { height: 30px; border-radius: 8px; display: inline-flex; align-items: center; gap: 7px; padding: 0 10px; font-size: 13.5px; color: var(--fg-secondary);
+  border: 1px solid transparent; white-space: nowrap; }
+.ak-btn svg { width: 14px; height: 14px; }
+.ak-btn.is-outline { border-color: var(--border-strong); background: var(--bg-subtle); }
+/* Primary = the app's neon button: hairline neon border, faint green wash, green ink. */
+.ak-btn.is-primary { background: var(--btn-neon-bg); color: var(--accent-fg); font-weight: 500; box-shadow: var(--shadow-brand); }
+.ak-btn.is-gradient { background: var(--btn-neon-bg); color: var(--accent-fg); font-weight: 500; box-shadow: var(--shadow-brand), 0 0 32px -8px rgb(52 213 153 / .55); }
+.ak-btn.is-solid { background: var(--brand-vertical); color: var(--accent-contrast); font-weight: 600; }
+.ak-btn.is-paypal { background: #ffc439; color: #111; font-weight: 600; }
+.ak-btn.is-lg { height: 40px; padding: 0 16px; font-size: 15px; border-radius: 10px; }
+.ak-input { height: 32px; border: 1px solid var(--border-input); background: var(--bg-subtle); border-radius: 8px; display: flex; align-items: center; gap: 8px;
+  padding: 0 10px; font-size: 13.5px; color: var(--fg); }
+.ak-input.is-placeholder { color: var(--fg-placeholder); }
+.ak-input.is-focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--ring); }
+.ak-input svg { width: 14px; height: 14px; color: var(--fg-icon); }
+.ak-label { font-size: 13px; color: var(--fg-secondary); font-weight: 500; margin-bottom: 6px; }
+.ak-seg { display: inline-flex; background: var(--bg-muted); border-radius: 8px; padding: 2px; gap: 2px; }
+.ak-seg > span { height: 26px; padding: 0 10px; border-radius: 6px; display: inline-flex; align-items: center; font-size: 13px; color: var(--fg-muted); }
+.ak-seg > span.is-on { background: var(--bg-active); color: var(--fg); }
+.ak-switch { width: 30px; height: 18px; border-radius: 9px; background: var(--bg-active); position: relative; flex-shrink: 0; }
+.ak-switch::after { content: ""; position: absolute; top: 2px; left: 2px; width: 14px; height: 14px; border-radius: 50%; background: #fff; }
+.ak-switch.is-on { background: var(--accent); }
+.ak-switch.is-on::after { background: var(--accent-contrast); }
+.ak-switch.is-on::after { left: 14px; }
+.ak-check { width: 16px; height: 16px; border-radius: 4px; border: 1px solid var(--border-strong); display: grid; place-items: center; }
+.ak-check.is-on { background: var(--accent); border-color: var(--accent); color: var(--accent-contrast); }
+.ak-check svg { width: 11px; height: 11px; }
+
+/* ---------- table (Plans / Entitlements / Add-ons / Incentives / Accounts) ---------- */
+.ak-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+.ak-table th { height: 42px; text-align: left; font-weight: 400; color: var(--fg-muted); padding: 0 14px; border-bottom: 1px solid var(--border); border-right: 1px solid var(--border); white-space: nowrap; }
+.ak-table th:last-child, .ak-table td:last-child { border-right: 0; }
+.ak-table th .ak-th { display: inline-flex; align-items: center; gap: 7px; }
+.ak-table th svg { width: 13px; height: 13px; color: var(--fg-icon); }
+.ak-table td { height: 46px; padding: 0 14px; border-bottom: 1px solid var(--border); border-right: 1px solid var(--border); white-space: nowrap; color: var(--fg-secondary); }
+.ak-table td.is-num { text-align: right; font-variant-numeric: tabular-nums; }
+.ak-table .ak-row-name { display: flex; align-items: center; gap: 9px; color: var(--fg); }
+.ak-table .ak-row-icon { width: 22px; height: 22px; border-radius: 6px; background: rgb(59 123 246 / .18); color: #93b8ff; display: grid; place-items: center; }
+.ak-table .ak-row-icon svg { width: 13px; height: 13px; }
+.ak-table tr.is-hl td { background: rgb(52 213 153 / .07); }
+.ak-table-foot { padding: 12px 16px; color: var(--fg-muted); font-size: 13px; }
+
+/* ---------- chips + tags ---------- */
+.ak-id { font-family: "Geist Mono", monospace; font-variation-settings: normal; font-size: 12px; background: var(--bg-muted); color: var(--fg-secondary);
+  border-radius: 5px; padding: 2px 6px; }
+.ak-tag { display: inline-flex; align-items: center; gap: 5px; height: 21px; padding: 0 7px; border-radius: 5px; font-size: 12px; white-space: nowrap;
+  background: rgb(255 255 255 / .08); color: #c6c7cc; }
+.ak-tag svg { width: 11px; height: 11px; }
+.ak-tag.blue { background: rgb(59 123 246 / .18); color: #93b8ff; }
+.ak-tag.green { background: rgb(48 164 108 / .18); color: #6fd69f; }
+.ak-tag.yellow { background: rgb(240 180 40 / .16); color: #f5c451; }
+.ak-tag.orange { background: rgb(235 104 52 / .18); color: #ffa072; }
+.ak-tag.red { background: rgb(229 72 77 / .18); color: #ff8a8d; }
+.ak-tag.purple { background: rgb(143 107 255 / .2); color: #bba6ff; }
+.ak-tag.brand { background: rgb(52 213 153 / .14); color: #5fe3b1; }
+.ak-tag.pink { background: rgb(224 69 123 / .18); color: #ff8fba; }
+.ak-tag.teal { background: rgb(20 163 157 / .18); color: #62d6cf; }
+.ak-more { color: var(--fg-muted); font-size: 12px; }
+
+/* ---------- cards, stats, meters ---------- */
+.ak-card { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; }
+.ak-card-head { height: 46px; display: flex; align-items: center; padding: 0 16px; border-bottom: 1px solid var(--border); font-weight: 500; font-size: 14px; }
+.ak-card-body { padding: 16px; }
+.ak-elevated { background: var(--bg-elevated); border: 1px solid var(--border-strong); border-radius: 12px; box-shadow: var(--shadow-lg); }
+.ak-stat-strip { display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+.ak-stat { padding: 16px 18px; border-right: 1px solid var(--border); }
+.ak-stat:last-child { border-right: 0; }
+.ak-stat-label { display: flex; align-items: center; gap: 7px; font-size: 13px; color: var(--fg-secondary); }
+.ak-stat-label svg { width: 13px; height: 13px; color: var(--fg-icon); }
+.ak-stat-value { font-size: 26px; font-weight: 600; margin-top: 8px; font-variant-numeric: tabular-nums; font-variation-settings: "GEOM" 50; }
+.ak-stat-sub { font-size: 12px; color: var(--fg-muted); margin-top: 4px; }
+.ak-meter { height: 8px; border-radius: 4px; background: var(--bg-active); overflow: hidden; }
+.ak-meter > i { display: block; height: 100%; width: 0; border-radius: 4px; background: var(--brand-gradient); }
+.ak-meter.is-warn > i { background: linear-gradient(90deg, #f0a020, #e5484d); }
+.ak-bar-row { position: relative; height: 30px; border-radius: 6px; display: flex; align-items: center; padding: 0 10px; font-size: 13.5px; }
+.ak-bar-row > b { position: absolute; inset: 0 auto 0 0; border-radius: 6px; background: linear-gradient(90deg, rgb(52 213 153 / .32), rgb(44 192 222 / .22)); font-weight: 400; }
+.ak-bar-row > span { position: relative; }
+.ak-bar-row > .ak-bar-val { margin-left: auto; color: var(--fg-secondary); font-variant-numeric: tabular-nums; }
+
+/* ---------- code block (site CodeBlock look) ---------- */
+.ak-code { background: #131315; border: 1px solid var(--border); border-radius: 14px; overflow: hidden; box-shadow: var(--shadow-lg); }
+.ak-code-bar { height: 40px; display: flex; align-items: center; gap: 8px; padding: 0 14px; border-bottom: 1px solid var(--border); color: var(--fg-muted); font-size: 13px; }
+.ak-code-bar .ak-dots { display: flex; gap: 6px; margin-right: 6px; }
+.ak-code-bar .ak-dots i { width: 10px; height: 10px; border-radius: 50%; background: var(--bg-active); }
+.ak-code pre { margin: 0; padding: 18px 20px; font-family: "Geist Mono", monospace; font-variation-settings: normal; font-size: 15px; line-height: 1.65; color: var(--fg-secondary); white-space: pre; }
+.ak-code .k { color: var(--code-keyword); } .ak-code .s { color: var(--code-string); } .ak-code .p { color: var(--code-key); }
+.ak-code .n { color: var(--code-number); } .ak-code .c { color: var(--code-comment); } .ak-code .f { color: #ececee; }
+.ak-code .del { background: rgb(229 72 77 / .14); } .ak-code .add { background: rgb(48 164 108 / .14); }
+
+/* ---------- feedback ---------- */
+.ak-toast { position: absolute; display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 10px; background: var(--bg-elevated);
+  border: 1px solid var(--border-strong); box-shadow: var(--shadow-lg); font-size: 13.5px; white-space: nowrap; }
+.ak-toast svg { width: 15px; height: 15px; }
+.ak-toast.is-ok svg { color: var(--success-fg); }
+.ak-toast.is-warn svg { color: var(--warning-fg); }
+.ak-toast.is-bad svg { color: var(--danger-fg); }
+.ak-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--success); display: inline-block; }
+.ak-dot.is-warn { background: var(--warning); } .ak-dot.is-bad { background: var(--danger); }
+.ak-cursor { position: absolute; width: 22px; height: 22px; z-index: 50; pointer-events: none; filter: drop-shadow(0 2px 4px rgb(0 0 0 / .6)); }
+.ak-ripple { position: absolute; width: 36px; height: 36px; margin: -18px 0 0 -18px; border-radius: 50%; border: 2px solid var(--accent-fg); z-index: 49; opacity: 0; }
+
+/* ---------- avatars + misc ---------- */
+.ak-av { width: 22px; height: 22px; border-radius: 6px; display: grid; place-items: center; font-size: 9.5px; font-weight: 600; background: rgb(52 213 153 / .14); color: #5fe3b1; }
+.ak-av.round { border-radius: 50%; }
+.ak-kv { display: flex; justify-content: space-between; font-size: 13px; padding: 7px 0; border-bottom: 1px solid var(--border); color: var(--fg-muted); }
+.ak-kv b { font-weight: 400; color: var(--fg); }
+.ak-divider { height: 1px; background: var(--border); }
+
+
+/* ===================== 19-zapier — frame-local styles (neon) ===================== */
+#root { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; overflow: hidden; }
+.zap19-bg { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; background: #0f0f11; overflow: hidden; }
+.zap19-glow { position: absolute; left: 260px; top: 40px; width: 1400px; height: 840px;
+  background: radial-gradient(closest-side, rgba(52,213,153,0.11), rgba(52,213,153,0)); }
+.zap19-stage { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; overflow: hidden; }
+.zap19-zoom { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; }
+.zap19-world { position: absolute; left: 0; top: 0; width: 1366px; height: 800px; transform-origin: 0 0; }
+.zap19-world .ak-window { left: 0; top: 0; box-sizing: border-box; }
+
+/* header + tabs */
+.zap19-zbtn { color: var(--fg-secondary); }
+.zap19-zbtn svg { color: #ff5f1f; }
+.zap19-tabs { height: 44px; flex-shrink: 0; display: flex; align-items: stretch; gap: 22px; padding: 0 20px; border-bottom: 1px solid var(--border); }
+.zap19-tab { display: flex; align-items: center; gap: 7px; font-size: 13.5px; color: var(--fg-muted); border-bottom: 2px solid transparent; }
+.zap19-tab svg { width: 14px; height: 14px; color: var(--fg-icon); }
+.zap19-tab.is-on { color: var(--fg); border-bottom-color: var(--fg-secondary); }
+.zap19-count { position: relative; display: inline-block; width: 18px; height: 18px; border-radius: 5px; background: var(--bg-muted); font-size: 11.5px; color: var(--fg-secondary); }
+.zap19-count > span { position: absolute; left: 0; top: 0; width: 18px; height: 18px; display: grid; place-items: center; font-variant-numeric: tabular-nums; }
+
+/* page */
+.zap19-page { position: absolute; left: 0; top: 0; width: 1076px; height: 690px; }
+.zap19-title { position: absolute; left: 24px; top: 36px; font-size: 19px; font-weight: 600; font-variation-settings: "GEOM" 50; letter-spacing: -0.01em; color: var(--fg); }
+.zap19-head { gap: 9px; }
+.zap19-head svg { width: 15px; height: 15px; color: var(--fg-icon); }
+.zap19-r { margin-left: auto; position: relative; }
+
+/* events card */
+.zap19-events { position: absolute; left: 24px; top: 94px; width: 500px; height: 408px; overflow: hidden; }
+.zap19-erow { position: relative; height: 60px; display: flex; align-items: center; gap: 12px; padding: 0 16px; border-top: 1px solid var(--border); }
+.zap19-events .ak-card-head + .zap19-erow { border-top: 0; }
+.zap19-hl { position: absolute; left: 0; top: 0; width: 100%; height: 100%; background: rgba(52,213,153,0.07);
+  box-shadow: inset 2px 0 0 #34d599; opacity: 0; }
+.zap19-hl.is-zap { background: rgba(255,95,31,0.10); box-shadow: inset 2px 0 0 #ff5f1f; }
+.zap19-pill { position: relative; font-family: "Geist Mono", ui-monospace, monospace; font-variation-settings: normal; font-size: 13px;
+  padding: 4px 9px; border-radius: 6px; background-color: rgba(255,255,255,0.06); border: 1px solid rgba(52,213,153,0);
+  color: rgba(236,236,238,0.93); box-shadow: 0 0 0 0px rgba(52,213,153,0), 0 0 0px 0px rgba(52,213,153,0); }
+
+/* automate-with-zapier card (compact — template rows dropped) */
+.zap19-auto { position: absolute; left: 588px; top: 94px; width: 464px; height: 112px; overflow: hidden;
+  background: linear-gradient(135deg, rgba(255,95,31,0.12), rgba(255,95,31,0) 58%), var(--bg); }
+.zap19-auto-top { position: relative; height: 112px; padding: 18px 16px 0; display: flex; gap: 12px; }
+.zap19-auto-title { font-size: 14px; font-weight: 600; color: var(--fg); }
+.zap19-auto-body { font-size: 13px; color: var(--fg-muted); margin-top: 4px; width: 236px; line-height: 1.45; }
+.zap19-auto-btn { position: absolute; right: 16px; top: 18px; }
+
+/* tiles */
+.zap19-tile { position: relative; width: 30px; height: 30px; border-radius: 8px; display: grid; place-items: center; flex-shrink: 0; }
+.zap19-tile svg { width: 15px; height: 15px; }
+.zap19-tile.is-lg { width: 36px; height: 36px; border-radius: 10px; }
+.zap19-tile.is-lg svg { width: 18px; height: 18px; }
+.zap19-tile.is-zap { background: rgba(255,95,31,0.16); color: #ff5f1f; box-shadow: 0 0 0 0px rgba(255,95,31,0), 0 0 0px 0px rgba(255,95,31,0); }
+.zap19-tile.is-hook { background: rgba(52,213,153,0.14); color: #5fe3b1; box-shadow: 0 0 0 0px rgba(52,213,153,0), 0 0 0px 0px rgba(52,213,153,0); }
+.zap19-tile.is-mail { background: rgba(59,123,246,0.18); color: #93b8ff; }
+.zap19-zapier { color: #ff5f1f; font-weight: 600; }
+
+/* endpoints card */
+.zap19-endpoints { position: absolute; left: 588px; top: 226px; width: 464px; height: 176px; overflow: hidden; }
+.zap19-empty { position: absolute; left: 0; top: 47px; width: 100%; height: 128px; display: grid; place-items: center; font-size: 13px; color: var(--fg-placeholder); }
+.zap19-prow { position: relative; height: 64px; display: flex; align-items: center; gap: 12px; padding: 0 16px; border-top: 1px solid var(--border); background: var(--bg); }
+.zap19-endpoints .ak-card-head + .zap19-empty + .zap19-prow { border-top: 0; }
+.zap19-ptext { position: relative; min-width: 0; }
+.zap19-ptitle { display: flex; align-items: center; gap: 6px; font-size: 14px; color: var(--fg); }
+.zap19-sep { color: var(--fg-placeholder); }
+.zap19-url { font-family: "Geist Mono", monospace; font-variation-settings: normal; font-size: 13px; gap: 8px; }
+.zap19-pmeta { font-family: "Geist Mono", monospace; font-variation-settings: normal; font-size: 11.5px; color: var(--fg-muted); margin-top: 3px; }
+
+/* header-button press flashes */
+.zap19-btnfx { position: relative; }
+
+/* cursor + ripples (world coords) */
+.zap19-cursor { left: 0; top: 0; opacity: 0; }
+.zap19-cursor svg { width: 22px; height: 22px; }
+.zap19-ripple { left: 0; top: 0; }
+.zap19-ripple.is-zap { border-color: #ff5f1f; }
+
+/* wires (world coords) */
+.zap19-wires { position: absolute; left: -800px; top: 0; overflow: visible; pointer-events: none; }
+.zap19-halo { fill: none; stroke: #0f0f11; stroke-width: 10; stroke-linecap: round; stroke-linejoin: round; opacity: 0.9; }
+.zap19-wglow { fill: none; stroke: #34d599; stroke-width: 7; stroke-linecap: round; stroke-linejoin: round; opacity: 0.55; }
+.zap19-wire { fill: none; stroke: #34d599; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+.zap19-pk { fill: none; stroke: #eafff6; stroke-width: 8; stroke-linecap: round; }
+.zap19-pkg { fill: none; stroke: #34d599; stroke-width: 20; stroke-linecap: round; opacity: 0.7; }
+.zap19-node { fill: #34d599; stroke: #0f0f11; stroke-width: 3; }
+.zap19-node.is-zap { fill: #ff5f1f; }
+
+/* flash overlay for a card the signal lands on */
+.zap19-flash { position: absolute; left: 0; top: 0; right: 0; bottom: 0; border-radius: 12px; pointer-events: none; opacity: 0;
+  box-shadow: inset 0 0 0 1.5px rgba(52,213,153,0.95), inset 0 0 26px -6px rgba(52,213,153,0.55); }
+
+/* email card — To + Subject only */
+.zap19-mail { position: absolute; left: 1480px; top: 336px; width: 420px; overflow: hidden; font-size: 14px; }
+.zap19-mail-head { height: 56px; display: flex; align-items: center; gap: 11px; padding: 0 16px; border-bottom: 1px solid var(--border); }
+.zap19-mh-title { font-size: 14px; font-weight: 600; color: var(--fg); }
+.zap19-mh-sub { font-size: 12px; color: var(--fg-muted); margin-top: 1px; }
+.zap19-sent { margin-left: auto; height: 23px; padding: 0 8px; font-size: 12.5px; box-shadow: 0 0 0 0px rgba(52,213,153,0), 0 0 0px 0px rgba(52,213,153,0); }
+.zap19-mrow { display: flex; gap: 10px; align-items: baseline; padding: 12px 16px; color: var(--fg); white-space: nowrap; }
+.zap19-mrow + .zap19-mrow { border-top: 1px solid var(--border); }
+.zap19-ml { width: 58px; flex-shrink: 0; color: var(--fg-muted); font-size: 13px; }
+.zap19-subj { font-weight: 500; font-size: 15px; }
+
+/* slack card — one short message */
+.zap19-slack { position: absolute; left: -480px; top: 604px; width: 420px; height: 124px; overflow: hidden; font-size: 14px; }
+.zap19-slack-head { height: 48px; display: flex; align-items: center; gap: 6px; padding: 0 16px; border-bottom: 1px solid var(--border); }
+.zap19-slack-head svg { width: 15px; height: 15px; color: var(--fg-icon); }
+.zap19-chan { font-weight: 600; color: var(--fg); }
+.zap19-slackmark { margin-left: auto; font-weight: 600; font-size: 13px; color: var(--fg-secondary); letter-spacing: -0.01em; }
+.zap19-msg { display: flex; gap: 12px; padding: 14px 16px 16px; }
+.zap19-av { width: 34px; height: 34px; border-radius: 9px; flex-shrink: 0; display: grid; place-items: center; color: #03140c; font-weight: 600; font-size: 15px;
+  background: linear-gradient(180deg, #4fe0b0, #2fc48c); font-variation-settings: "GEOM" 50; }
+.zap19-msg-col { display: flex; flex-direction: column; gap: 5px; }
+.zap19-msg-who { display: flex; align-items: center; gap: 7px; }
+.zap19-msg-who b { font-weight: 600; color: var(--fg); }
+.zap19-app { font-size: 10px; font-weight: 600; letter-spacing: 0.04em; padding: 1px 4px; border-radius: 3px; background: var(--bg-muted); color: var(--fg-muted); }
+.zap19-now { font-size: 12px; color: var(--fg-placeholder); }
+.zap19-msg-text { color: var(--fg); font-size: 15px; }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+  <div id="root" data-composition-id="19-zapier" data-start="0" data-duration="7.65" data-width="1920" data-height="1080">
+
+    <!-- Track 0: full-bleed ground + the one glow -->
+    <div id="19-zapier-bg" class="clip zap19-bg" data-start="0" data-duration="7.65" data-track-index="0">
+      <div class="zap19-glow"></div>
+    </div>
+
+    <!-- Track 1: the camera stage — one world (pan) inside one zoom wrapper -->
+    <div id="19-zapier-stage" class="clip zap19-stage" data-start="0" data-duration="7.65" data-track-index="1">
+      <div id="19-zapier-zoom" class="zap19-zoom">
+      <div id="19-zapier-world" class="ak zap19-world" data-layout-allow-overflow>
+
+<div class="ak ak-window" id="19-zapier-window">
+  <aside class="ak-rail">
+    <div class="ak-rail-logo"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 13.74a2 2 0 0 1-2 0L2.5 8.87a1 1 0 0 1 0-1.74L11 2.26a2 2 0 0 1 2 0l8.5 4.87a1 1 0 0 1 0 1.74z"/><path d="m20 14.285 1.5.845a1 1 0 0 1 0 1.74L13 21.74a2 2 0 0 1-2 0l-8.5-4.87a1 1 0 0 1 0-1.74l1.5-.845"/></svg></div>
+    <div class="ak-rail-sep"></div>
+    <div class="ak-app-tile is-active">AA</div>
+    <div class="ak-app-tile alt">CH</div>
+    <div class="ak-rail-plus"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg></div>
+    <div class="ak-rail-foot"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"/><circle cx="12" cy="12" r="3"/></svg><div class="ak-avatar">DA</div></div>
+  </aside>
+  <nav class="ak-nav">
+    <div class="ak-nav-title">AmazingApp AI</div>
+    <div class="ak-quick"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg><span>Quick actions</span><span class="ak-kbd">⌘K</span></div>
+    <div class="ak-nav-group">
+      <div class="ak-nav-item" data-nav="overview"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Overview</div>
+      <div class="ak-nav-item" data-nav="analytics"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>Analytics</div>
+      <div class="ak-nav-item" data-nav="agent"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z"/><path d="M20 2v4"/><path d="M22 4h-4"/><circle cx="4" cy="20" r="2"/></svg>Agent</div>
+      <div class="ak-nav-item" data-nav="offers"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z"/><path d="m15 9-6 6"/><path d="M9 9h.01"/><path d="M15 15h.01"/></svg>Offers</div>
+      <div class="ak-nav-item" data-nav="cancel-flow"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 21H2"/><path d="M10 3H7a2 2 0 00-2 2v16"/><path d="M14 12h.01"/><path d="M19 21V5a2 2 0 00-1.675-1.974l-6.163-1.013A1 1 0 0010 3v18a1 1 0 001.124.992z"/><path d="M22 21h-3"/></svg>Cancel flow</div>
+    </div>
+    <div class="ak-nav-group">
+      <div class="ak-nav-item" data-nav="plans"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83z"/><path d="M2 12a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 12"/><path d="M2 17a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 17"/></svg>Plans<span class="ak-count">5</span></div>
+      <div class="ak-nav-item" data-nav="entitlements"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z"/><circle cx="16.5" cy="7.5" r=".5" fill="currentColor"/></svg>Entitlements<span class="ak-count">9</span></div>
+      <div class="ak-nav-item" data-nav="addons"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15.39 4.39a1 1 0 0 0 1.68-.474 2.5 2.5 0 1 1 3.014 3.015 1 1 0 0 0-.474 1.68l1.683 1.682a2.414 2.414 0 0 1 0 3.414L19.61 15.39a1 1 0 0 1-1.68-.474 2.5 2.5 0 1 0-3.014 3.015 1 1 0 0 1 .474 1.68l-1.683 1.682a2.414 2.414 0 0 1-3.414 0L8.61 19.61a1 1 0 0 0-1.68.474 2.5 2.5 0 1 1-3.014-3.015 1 1 0 0 0 .474-1.68l-1.683-1.682a2.414 2.414 0 0 1 0-3.414L4.39 8.61a1 1 0 0 1 1.68.474 2.5 2.5 0 1 0 3.014-3.015 1 1 0 0 1-.474-1.68l1.683-1.682a2.414 2.414 0 0 1 3.414 0z"/></svg>Add-ons<span class="ak-count">3</span></div>
+      <div class="ak-nav-item" data-nav="incentives"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 7v14"/><path d="M20 11v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-8"/><path d="M7.5 7a1 1 0 0 1 0-5A4.8 8 0 0 1 12 7a4.8 8 0 0 1 4.5-5 1 1 0 0 1 0 5"/><rect x="3" y="7" width="18" height="4" rx="1"/></svg>Incentives<span class="ak-count">4</span></div>
+    </div>
+    <div class="ak-nav-group">
+      <div class="ak-nav-item" data-nav="accounts"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><path d="M16 3.128a4 4 0 0 1 0 7.744"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><circle cx="9" cy="7" r="4"/></svg>Accounts<span class="ak-count">64</span></div>
+    </div>
+    <div class="ak-nav-group">
+      <div class="ak-nav-item" data-nav="integration"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 18 6-6-6-6"/><path d="m8 6-6 6 6 6"/></svg>Integration</div>
+      <div class="ak-nav-item" data-nav="api"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H7a2 2 0 0 0-2 2v5a2 2 0 0 1-2 2 2 2 0 0 1 2 2v5c0 1.1.9 2 2 2h1"/><path d="M16 21h1a2 2 0 0 0 2-2v-5c0-1.1.9-2 2-2a2 2 0 0 1-2-2V5a2 2 0 0 0-2-2h-1"/></svg>API reference</div>
+      <div class="ak-nav-item" data-nav="mcp"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22v-5"/><path d="M15 8V2"/><path d="M17 8a1 1 0 0 1 1 1v4a4 4 0 0 1-4 4h-4a4 4 0 0 1-4-4V9a1 1 0 0 1 1-1z"/><path d="M9 8V2"/></svg>MCP server</div>
+      <div class="ak-nav-item" data-nav="keys"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m2 21 9.6-9.6"/><path d="m7.5 15.5 2.3 2.3a1 1 0 0 1 0 1.4l-2.1 2.1a1 1 0 0 1-1.4 0L4 19"/><circle cx="15.5" cy="7.5" r="5.5"/></svg>API keys</div>
+      <div class="ak-nav-item is-active" data-nav="webhooks"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 16.98h-5.99c-1.1 0-1.95.94-2.48 1.9A4 4 0 0 1 2 17c.01-.7.2-1.4.57-2"/><path d="m6 17 3.13-5.78c.53-.97.1-2.18-.5-3.1a4 4 0 1 1 6.89-4.06"/><path d="m12 6 3.13 5.73C15.66 12.7 16.9 13 18 13a4 4 0 0 1 0 8"/></svg>Webhooks</div>
+    </div>
+    <div class="ak-nav-foot"><div class="ak-nav-item"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"/><circle cx="12" cy="12" r="3"/></svg>App settings</div></div>
+  </nav>
+  <main class="ak-main">
+    <header class="ak-header">
+      <div class="ak-crumb"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 16.98h-5.99c-1.1 0-1.95.94-2.48 1.9A4 4 0 0 1 2 17c.01-.7.2-1.4.57-2"/><path d="m6 17 3.13-5.78c.53-.97.1-2.18-.5-3.1a4 4 0 1 1 6.89-4.06"/><path d="m12 6 3.13 5.73C15.66 12.7 16.9 13 18 13a4 4 0 0 1 0 8"/></svg>Webhooks</div>
+      <div class="ak-actions">
+        <span id="19-zapier-zbtn" class="ak-btn is-outline zap19-zbtn zap19-btnfx"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M12 4v16"/><path d="M4 12h16"/><path d="m6.35 6.35 11.3 11.3"/><path d="m17.65 6.35-11.3 11.3"/></svg>Connect Zapier</span>
+        <span id="19-zapier-abtn" class="ak-btn is-primary zap19-btnfx"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>Add endpoint</span>
+      </div>
+    </header>
+    <div class="zap19-tabs">
+      <span class="zap19-tab is-on"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 16.98h-5.99c-1.1 0-1.95.94-2.48 1.9A4 4 0 0 1 2 17c.01-.7.2-1.4.57-2"/><path d="m6 17 3.13-5.78c.53-.97.1-2.18-.5-3.1a4 4 0 1 1 6.89-4.06"/><path d="m12 6 3.13 5.73C15.66 12.7 16.9 13 18 13a4 4 0 0 1 0 8"/></svg>Endpoints<span class="zap19-count"><span id="19-zapier-c0">0</span><span id="19-zapier-c1" style="opacity:0">1</span><span id="19-zapier-c2" style="opacity:0">2</span></span></span>
+      <span class="zap19-tab"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"/></svg>Event log</span>
+      <span class="zap19-tab"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v16"/><path d="M20.001 19A2 2 0 0022 17V5a2 2 0 00-1.999-2L16 3.002A5 5 0 0012 5a5 5 0 00-4-2H4a2 2 0 00-2 2v12a2 2 0 001.999 2H8a5 5 0 014 2 5 5 0 014-2z"/></svg>Events &amp; signing</span>
+    </div>
+    <div class="ak-body">
+      <div class="zap19-page">
+        <div class="zap19-title">Send events to the rest of your stack</div>
+
+        <!-- Events (left column) -->
+        <div id="19-zapier-events" class="ak-card zap19-events">
+          <div class="ak-card-head zap19-head"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"/></svg><span>Events</span></div>
+          <div class="zap19-erow" id="19-zapier-e0"><span class="zap19-pill" id="19-zapier-pill0">account.created</span><span class="ak-tag blue zap19-r" id="19-zapier-t0">Customer</span></div>
+          <div class="zap19-erow" id="19-zapier-e1"><span class="zap19-pill" id="19-zapier-pill1">checkout.completed</span><span class="ak-tag brand zap19-r" id="19-zapier-t1">Billing</span></div>
+          <div class="zap19-erow" id="19-zapier-e2"><span class="zap19-pill" id="19-zapier-pill2">subscription.renewed</span><span class="ak-tag brand zap19-r" id="19-zapier-t2">Billing</span></div>
+          <div class="zap19-erow" id="19-zapier-e3"><span class="zap19-pill" id="19-zapier-pill3">subscription.paused</span><span class="ak-tag brand zap19-r" id="19-zapier-t3">Billing</span></div>
+          <div class="zap19-erow" id="19-zapier-e4"><div class="zap19-hl" id="19-zapier-e4hl"></div><span class="zap19-pill" id="19-zapier-pill4">usage.limit_reached</span><span class="ak-tag yellow zap19-r" id="19-zapier-t4">Usage</span></div>
+          <div class="zap19-erow" id="19-zapier-e5"><div class="zap19-hl" id="19-zapier-e5hl"></div><span class="zap19-pill" id="19-zapier-pill5">cancel_flow.saved</span><span class="ak-tag teal zap19-r" id="19-zapier-t5">Retention</span></div>
+        </div>
+
+        <!-- Automate with Zapier (right column, top) -->
+        <div class="ak-card zap19-auto">
+          <div class="zap19-auto-top">
+            <span class="zap19-tile is-zap is-lg"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M12 4v16"/><path d="M4 12h16"/><path d="m6.35 6.35 11.3 11.3"/><path d="m17.65 6.35-11.3 11.3"/></svg></span>
+            <div class="zap19-auto-text">
+              <div class="zap19-auto-title">Automate with Zapier</div>
+              <div class="zap19-auto-body">Send Offer events to 7,000+ apps without writing code.</div>
+            </div>
+            <span class="ak-btn is-outline zap19-zbtn zap19-auto-btn"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M12 4v16"/><path d="M4 12h16"/><path d="m6.35 6.35 11.3 11.3"/><path d="m17.65 6.35-11.3 11.3"/></svg>Connect Zapier</span>
+          </div>
+        </div>
+
+        <!-- Endpoints (right column, bottom) -->
+        <div class="ak-card zap19-endpoints">
+          <div class="ak-card-head zap19-head"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 16.98h-5.99c-1.1 0-1.95.94-2.48 1.9A4 4 0 0 1 2 17c.01-.7.2-1.4.57-2"/><path d="m6 17 3.13-5.78c.53-.97.1-2.18-.5-3.1a4 4 0 1 1 6.89-4.06"/><path d="m12 6 3.13 5.73C15.66 12.7 16.9 13 18 13a4 4 0 0 1 0 8"/></svg><span>Endpoints</span></div>
+          <div class="zap19-empty" id="19-zapier-empty">No endpoints yet</div>
+          <div class="zap19-prow" id="19-zapier-p0"><div class="zap19-hl is-zap" id="19-zapier-p0hl"></div><span class="zap19-tile is-zap" id="19-zapier-p0tile"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M12 4v16"/><path d="M4 12h16"/><path d="m6.35 6.35 11.3 11.3"/><path d="m17.65 6.35-11.3 11.3"/></svg></span><div class="zap19-ptext"><div class="zap19-ptitle"><b class="zap19-zapier">Zapier</b><span class="zap19-sep">·</span>Send email</div><div class="zap19-pmeta">usage.limit_reached</div></div><span class="ak-tag green zap19-r">Active</span></div>
+          <div class="zap19-prow" id="19-zapier-p1"><span class="zap19-tile is-hook" id="19-zapier-p1tile"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 16.98h-5.99c-1.1 0-1.95.94-2.48 1.9A4 4 0 0 1 2 17c.01-.7.2-1.4.57-2"/><path d="m6 17 3.13-5.78c.53-.97.1-2.18-.5-3.1a4 4 0 1 1 6.89-4.06"/><path d="m12 6 3.13 5.73C15.66 12.7 16.9 13 18 13a4 4 0 0 1 0 8"/></svg></span><div class="zap19-ptext"><div class="zap19-ptitle zap19-url"><span class="ak-dot"></span>https://hooks.yourapp.com/offer</div><div class="zap19-pmeta">6 events</div></div><span class="ak-tag green zap19-r">Active</span></div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+        <!-- Action card: email (right of the window) -->
+        <div id="19-zapier-mail" class="ak-elevated zap19-mail">
+          <div class="zap19-mail-head">
+            <span class="zap19-tile is-mail"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7"/><rect x="2" y="4" width="20" height="16" rx="2"/></svg></span>
+            <div class="zap19-mh-text"><div class="zap19-mh-title">Email</div><div class="zap19-mh-sub">via <b class="zap19-zapier">Zapier</b></div></div>
+            <span id="19-zapier-sent" class="ak-tag green zap19-sent"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Sent</span>
+          </div>
+          <div class="zap19-mrow" id="19-zapier-m0"><span class="zap19-ml">To</span><span>priya@…</span></div>
+          <div class="zap19-mrow" id="19-zapier-m1"><span class="zap19-ml">Subject</span><span class="zap19-subj">Out of credits? 2,000 on us</span></div>
+          <div class="zap19-flash" id="19-zapier-mflash"></div>
+        </div>
+
+        <!-- Action card: Slack message (left of the window) -->
+        <div id="19-zapier-slack" class="ak-elevated zap19-slack">
+          <div class="zap19-slack-head"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="20" y1="9" y2="9"/><line x1="4" x2="20" y1="15" y2="15"/><line x1="10" x2="8" y1="3" y2="21"/><line x1="16" x2="14" y1="3" y2="21"/></svg><span class="zap19-chan">revenue</span><span class="zap19-slackmark">Slack</span></div>
+          <div class="zap19-msg">
+            <span class="zap19-av" id="19-zapier-av">O</span>
+            <div class="zap19-msg-col">
+              <div class="zap19-msg-who" id="19-zapier-who"><b>Offer SDK</b><span class="zap19-app">APP</span><span class="zap19-now">now</span></div>
+              <div class="zap19-msg-text" id="19-zapier-msgt">Tom accepted a save offer</div>
+            </div>
+          </div>
+          <div class="zap19-flash" id="19-zapier-sflash"></div>
+        </div>
+
+        <!-- Delivery wires (world coordinates; paths are generated by the script) -->
+        <svg id="19-zapier-wires" class="zap19-wires" viewBox="-800 0 2900 900" width="2900" height="900" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <filter id="19-zapier-blur" filterUnits="userSpaceOnUse" x="-800" y="0" width="2900" height="900"><feGaussianBlur stdDeviation="3.5" /></filter>
+          </defs>
+        </svg>
+
+        <!-- Cursor + click ripples (world coordinates) -->
+        <div id="19-zapier-rz" class="ak-ripple zap19-ripple is-zap"></div>
+        <div id="19-zapier-ra" class="ak-ripple zap19-ripple"></div>
+        <div id="19-zapier-cursor" class="ak-cursor zap19-cursor"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 2.5V19l4.5-4.2 3.1 6.7 2.8-1.2-3-6.6h6.2z" fill="#ffffff" stroke="#111114" stroke-width="1.4" stroke-linejoin="round"/></svg></div>
+      </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      var FID = "19-zapier";
+      var scope = document.querySelector('[data-composition-id="19-zapier"]') || document;
+      function $(n) { return scope.querySelector('[id="' + FID + "-" + n + '"]'); }
+      var SVGNS = "http://www.w3.org/2000/svg";
+
+      var tl = gsap.timeline({ paused: true });
+
+      /* ---------- camera: one world (pan) inside one zoom wrapper (pull-back dip) ----------
+         Screen point = anchor + s * (worldPoint - c). Window logical 1366x800 at world (0,0). */
+      var AX = 960, AY = 470;
+      function pose(cx, cy, s) { return { x: AX - s * cx, y: AY - s * cy, scale: s }; }
+      var P0  = pose(683, 400, 1.1);    // at rest: window centred at (960,470), scale 1.1
+      var P1  = pose(725, 362, 1.17);   // slow push while events + endpoints arrive
+      var P2  = pose(1380, 410, 1.55);  // right: gutter wire -> Zapier row -> email card
+      var P2d = pose(1392, 412, 1.6);   // landing drift on the email card
+      var P3  = pose(-8, 640, 1.58);    // left: cancel pill -> Slack card
+      var P3d = pose(-12, 643, 1.64);   // final held drift
+
+      var world = $("world"), zoom = $("zoom");
+      gsap.set(world, { transformOrigin: "0 0", x: P0.x, y: P0.y, scale: P0.scale });
+      gsap.set(zoom, { transformOrigin: "960px 470px", scale: 1 });
+      function cam(a, b, at, dur, ease) {
+        tl.fromTo(world, { x: a.x, y: a.y, scale: a.scale },
+          { x: b.x, y: b.y, scale: b.scale, duration: dur, ease: ease, immediateRender: false }, at);
+      }
+      cam(P0, P1, 0, 3.3, "power1.out");
+      cam(P1, P2, 3.3, 1.02, "power3.inOut");          // follow the signal right
+      cam(P2, P2d, 4.32, 0.96, "sine.out");
+      cam(P2d, P3, 5.28, 0.64, "power3.inOut");        // swing to Slack ("ping Slack")
+      cam(P3, P3d, 5.92, 1.33, "power2.out");          // held drift to the end
+      tl.fromTo(zoom, { scale: 1 }, { scale: 0.7, duration: 0.32, ease: "power2.inOut", immediateRender: false }, 5.28);
+      tl.fromTo(zoom, { scale: 0.7 }, { scale: 1, duration: 0.32, ease: "power2.inOut", immediateRender: false }, 5.6);
+
+      /* ---------- helpers ---------- */
+      function enter(el, at, from, dur, ease) {
+        var to = { opacity: 1, x: 0, y: 0, scale: 1, duration: dur || 0.45, ease: ease || "expo.out" };
+        if (from.scale === undefined) from.scale = 1;
+        tl.fromTo(el, from, to, at);
+      }
+      function pop(el, at, origin) {
+        tl.fromTo(el, { opacity: 0, scale: 0.85, transformOrigin: origin || "50% 50%" },
+          { opacity: 1, scale: 1, duration: 0.42, ease: "expo.out" }, at);
+      }
+      // a continuous A -> B -> A flash on any tweenable props (seek-safe chain)
+      function flash(el, rest, peak, at, up, down) {
+        var a = { duration: up || 0.06, ease: "power2.out", immediateRender: false };
+        var b = { duration: down || 0.55, ease: "power2.out", immediateRender: false };
+        for (var k in peak) a[k] = peak[k];
+        for (var k2 in rest) b[k2] = rest[k2];
+        tl.fromTo(el, rest, a, at);
+        tl.fromTo(el, peak, b, at + (up || 0.06));
+      }
+      function press(el, at) {   // quick press 1 -> 0.95 -> 1
+        tl.fromTo(el, { scale: 1 }, { scale: 0.95, duration: 0.07, ease: "power2.out", immediateRender: false }, at);
+        tl.fromTo(el, { scale: 0.95 }, { scale: 1, duration: 0.3, ease: "expo.out", immediateRender: false }, at + 0.07);
+      }
+      function ripple(el, x, y, at) {
+        gsap.set(el, { x: x, y: y });
+        tl.fromTo(el, { opacity: 0 }, { opacity: 0.95, duration: 0.03, ease: "none" }, at);
+        tl.fromTo(el, { scale: 0.35 }, { scale: 1.7, duration: 0.5, ease: "expo.out" }, at);
+        tl.fromTo(el, { opacity: 0.95 }, { opacity: 0, duration: 0.42, ease: "power2.out", immediateRender: false }, at + 0.05);
+      }
+      function node(el, at) {
+        tl.fromTo(el, { attr: { r: 0 } }, { attr: { r: 5 }, duration: 0.3, ease: "expo.out" }, at);
+      }
+
+      /* ---------- wires: svg-path-draw (measured length; dashoffset L -> 0) + a packet riding the tip ---------- */
+      var svg = $("wires");
+      function mk(cls, d) {
+        var p = document.createElementNS(SVGNS, "path");
+        p.setAttribute("class", cls); p.setAttribute("d", d); svg.appendChild(p); return p;
+      }
+      function mkNode(id, cx, cy, zap) {
+        var c = document.createElementNS(SVGNS, "circle");
+        c.setAttribute("id", FID + "-" + id); c.setAttribute("class", "zap19-node" + (zap ? " is-zap" : ""));
+        c.setAttribute("cx", cx); c.setAttribute("cy", cy); c.setAttribute("r", 0); svg.appendChild(c); return c;
+      }
+      function wire(d, at, dur, ease) {
+        var halo = mk("zap19-halo", d), glow = mk("zap19-wglow", d), core = mk("zap19-wire", d);
+        var pkg = mk("zap19-pkg", d), pk = mk("zap19-pk", d);
+        glow.setAttribute("filter", "url(#19-zapier-blur)"); pkg.setAttribute("filter", "url(#19-zapier-blur)");
+        var L = core.getTotalLength();
+        [halo, glow, core].forEach(function (p) { p.style.strokeDasharray = L + " " + (L + 40); p.style.strokeDashoffset = (L + 12) + ""; });
+        [pkg, pk].forEach(function (p) { p.style.strokeDasharray = "0.5 " + (2 * L + 40); p.style.strokeDashoffset = "0"; p.style.opacity = "0"; });
+        tl.fromTo([halo, glow, core], { strokeDashoffset: L + 12 }, { strokeDashoffset: 0, duration: dur, ease: ease }, at);
+        tl.fromTo([pkg, pk], { strokeDashoffset: 0 }, { strokeDashoffset: -L, duration: dur, ease: ease }, at);
+        tl.fromTo([pkg, pk], { opacity: 0 }, { opacity: 1, duration: 0.04, ease: "none" }, at);
+        tl.fromTo([pkg, pk], { opacity: 1 }, { opacity: 0, duration: 0.22, ease: "power2.out", immediateRender: false }, at + dur - 0.02);
+      }
+
+      var PILL_OFF = { backgroundColor: "rgba(255,255,255,0.06)", borderColor: "rgba(52,213,153,0)", color: "rgba(236,236,238,0.93)",
+        boxShadow: "0 0 0 0px rgba(52,213,153,0), 0 0 0px 0px rgba(52,213,153,0)" };
+      var PILL_FLASH = { backgroundColor: "rgba(52,213,153,0.16)", borderColor: "rgba(52,213,153,0.9)", color: "rgba(236,236,238,0.93)",
+        boxShadow: "0 0 0 2px rgba(52,213,153,0.16), 0 0 18px 0px rgba(52,213,153,0.45)" };
+      var PILL_ON = { backgroundColor: "rgba(52,213,153,0.18)", borderColor: "rgba(52,213,153,1)", color: "rgba(255,255,255,1)",
+        boxShadow: "0 0 0 3px rgba(52,213,153,0.2), 0 0 24px 2px rgba(52,213,153,0.55)" };
+      var PILL_MID = { backgroundColor: "rgba(52,213,153,0.07)", borderColor: "rgba(52,213,153,0.28)", color: "rgba(236,236,238,0.93)",
+        boxShadow: "0 0 0 0px rgba(52,213,153,0), 0 0 0px 0px rgba(52,213,153,0)" };
+      function pillTo(el, from, to, at, dur, first) {
+        var t = { duration: dur, ease: "power3.out", immediateRender: !!first };
+        for (var k in to) t[k] = to[k];
+        tl.fromTo(el, from, t, at);
+      }
+      function firePill(el, at) {   // the event fires: neon on + a quick physical pop
+        pillTo(el, PILL_OFF, PILL_ON, at, 0.35, false);
+        tl.fromTo(el, { scale: 1 }, { scale: 1.08, duration: 0.09, ease: "power2.out", immediateRender: false }, at);
+        tl.fromTo(el, { scale: 1.08 }, { scale: 1, duration: 0.4, ease: "expo.out", immediateRender: false }, at + 0.09);
+      }
+
+      /* ===== Beat 1 (0.0–1.3): "every customer and billing event" — six events cascade ===== */
+      enter($("events"), 0.03, { opacity: 0, y: 12 }, 0.4);
+      for (var i = 0; i < 6; i++) {
+        var at = 0.12 + i * 0.04;
+        enter($("e" + i), at, { opacity: 0, x: -16 }, 0.45);
+        var pl = $("pill" + i);
+        tl.fromTo(pl, { scale: 0.85, transformOrigin: "0% 50%" }, { scale: 1, duration: 0.45, ease: "expo.out" }, at);
+        pillTo(pl, PILL_FLASH, PILL_OFF, at + 0.08, 0.6, true);
+      }
+      pop($("t0"), 0.28, "100% 50%");                         // "customer"
+      pop($("t1"), 1.02, "100% 50%"); pop($("t2"), 1.06, "100% 50%"); pop($("t3"), 1.10, "100% 50%");   // "billing"
+      pop($("t4"), 1.14, "100% 50%"); pop($("t5"), 1.18, "100% 50%");   // "event"
+
+      /* ===== Beat 2 (1.4–2.9): "trigger a Zap or a webhook" — click Connect Zapier, click Add endpoint ===== */
+      var ZB = { x: 1139, y: 33 }, AB = { x: 1280, y: 33 };   // header button centres (world, measured)
+      var HX = 3.7, HY = 2.3;                                   // cursor hotspot inside its 22px box
+      var cur = $("cursor");
+      tl.fromTo(cur, { opacity: 0 }, { opacity: 1, duration: 0.15, ease: "none" }, 1.4);
+      tl.fromTo(cur, { x: 1236 - HX, y: 168 - HY }, { x: ZB.x - HX, y: ZB.y + 2 - HY, duration: 0.46, ease: "power3.out" }, 1.4);
+      press(cur, 1.9);
+      ripple($("rz"), ZB.x, ZB.y, 1.92);
+      press($("zbtn"), 1.9);
+      flash($("zbtn"), { boxShadow: "0 0 0 0px rgba(255,95,31,0), 0 0 0px 0px rgba(255,95,31,0)" },
+        { boxShadow: "0 0 0 1px rgba(255,95,31,0.9), 0 0 22px 0px rgba(255,95,31,0.55)" }, 1.92, 0.06, 0.6);
+      tl.fromTo($("empty"), { opacity: 1 }, { opacity: 0, duration: 0.18, ease: "power2.out" }, 1.94);
+      enter($("p0"), 1.96, { opacity: 0, y: 12, scale: 0.97 }, 0.45);                       // "zap"
+      flash($("p0tile"), { boxShadow: "0 0 0 0px rgba(255,95,31,0), 0 0 0px 0px rgba(255,95,31,0)" },
+        { boxShadow: "0 0 0 2px rgba(255,95,31,0.55), 0 0 20px 2px rgba(255,95,31,0.6)" }, 2.0, 0.08, 0.6);
+      tl.fromTo($("c0"), { opacity: 1 }, { opacity: 0, duration: 0.12, ease: "none" }, 1.98);
+      tl.fromTo($("c1"), { opacity: 0 }, { opacity: 1, duration: 0.12, ease: "none" }, 1.98);
+
+      tl.fromTo(cur, { x: ZB.x - HX, y: ZB.y + 2 - HY }, { x: AB.x - HX, y: AB.y + 2 - HY, duration: 0.3, ease: "power3.inOut", immediateRender: false }, 2.06);
+      press(cur, 2.38);
+      ripple($("ra"), AB.x, AB.y, 2.4);
+      press($("abtn"), 2.38);
+      flash($("abtn"),
+        { boxShadow: "inset 0 0 0 1px rgba(52,213,153,0.85), inset 0 0 14px -6px rgba(52,213,153,0.35), 0 0 16px -6px rgba(52,213,153,0.4)" },
+        { boxShadow: "inset 0 0 0 1px rgba(52,213,153,1), inset 0 0 16px -2px rgba(52,213,153,0.6), 0 0 28px 2px rgba(52,213,153,0.7)" }, 2.4, 0.06, 0.6);
+      enter($("p1"), 2.44, { opacity: 0, y: 12, scale: 0.97 }, 0.45);                       // "webhook"
+      flash($("p1tile"), { boxShadow: "0 0 0 0px rgba(52,213,153,0), 0 0 0px 0px rgba(52,213,153,0)" },
+        { boxShadow: "0 0 0 2px rgba(52,213,153,0.5), 0 0 20px 2px rgba(52,213,153,0.6)" }, 2.48, 0.08, 0.6);
+      tl.fromTo($("c1"), { opacity: 1 }, { opacity: 0, duration: 0.12, ease: "none", immediateRender: false }, 2.46);
+      tl.fromTo($("c2"), { opacity: 0 }, { opacity: 1, duration: 0.12, ease: "none" }, 2.46);
+
+      /* ===== Beat 3 (3.4–5.1): "send a personal email when someone hits their limit" ===== */
+      tl.fromTo($("e4hl"), { opacity: 0 }, { opacity: 1, duration: 0.3, ease: "power2.out" }, 3.42);
+      firePill($("pill4"), 3.42);                                                             // "personal"
+      var dA0 = mkNode("dA0", 806, 513, false), dA1 = mkNode("dA1", 869, 406, true);
+      var dB0 = mkNode("dB0", 1334, 406, true), dB1 = mkNode("dB1", 1480, 406, false);
+      node(dA0, 3.5);
+      wire("M806 513 H821 Q837 513 837 497 V422 Q837 406 853 406 H869", 3.52, 0.28, "none");
+      node(dA1, 3.78);
+      tl.fromTo($("p0hl"), { opacity: 0, scaleX: 0, transformOrigin: "0% 50%" },
+        { opacity: 1, scaleX: 1, duration: 0.18, ease: "none" }, 3.78);
+      node(dB0, 3.94);
+      wire("M1334 406 H1480", 3.95, 0.18, "none");
+      node(dB1, 4.11);                                                                        // "email"
+      enter($("mail"), 4.04, { opacity: 0, x: 30, scale: 0.94, transformOrigin: "0% 50%" }, 0.5);
+      flash($("mflash"), { opacity: 0 }, { opacity: 1 }, 4.12, 0.05, 0.75);
+      enter($("m0"), 4.28, { opacity: 0, y: 8 }, 0.4);
+      enter($("m1"), 4.4, { opacity: 0, y: 8 }, 0.4);                                         // lands by "hits"
+      pop($("sent"), 4.92, "100% 50%");                                                       // "limit"
+      flash($("sent"), { boxShadow: "0 0 0 0px rgba(52,213,153,0), 0 0 0px 0px rgba(52,213,153,0)" },
+        { boxShadow: "0 0 0 1px rgba(94,210,154,0.8), 0 0 18px 2px rgba(52,213,153,0.55)" }, 4.96, 0.06, 0.6);
+
+      /* ===== Beat 4 (5.3–7.25): swing to Slack; "when a cancel is saved" ===== */
+      tl.fromTo($("e4hl"), { opacity: 1 }, { opacity: 0.35, duration: 0.4, ease: "power2.out", immediateRender: false }, 5.28);
+      pillTo($("pill4"), PILL_ON, PILL_MID, 5.28, 0.4, false);
+      enter($("slack"), 5.56, { opacity: 0, x: -36, scale: 0.96, transformOrigin: "100% 50%" }, 0.5);   // "Slack"
+      tl.fromTo($("e5hl"), { opacity: 0 }, { opacity: 1, duration: 0.3, ease: "power2.out" }, 6.4);
+      firePill($("pill5"), 6.4);                                                              // "cancel"
+      var dC0 = mkNode("dC0", 306, 573, false), dC1 = mkNode("dC1", -60, 666, false);
+      node(dC0, 6.44);
+      wire("M306 573 H297 Q289 573 289 581 V658 Q289 666 281 666 H-60", 6.46, 0.28, "none");
+      node(dC1, 6.72);
+      flash($("sflash"), { opacity: 0 }, { opacity: 1 }, 6.73, 0.05, 0.42);
+      pop($("av"), 6.64);
+      enter($("who"), 6.68, { opacity: 0, y: 6 }, 0.4);
+      enter($("msgt"), 6.72, { opacity: 0, y: 6 }, 0.4);                                      // "saved"
+      // hold: the camera's P3 -> P3d drift carries the last ~0.4s
+
+      window.__timelines = window.__timelines || {};
+      window.__timelines["19-zapier"] = tl;
+    })();
+  </script>
+</template>

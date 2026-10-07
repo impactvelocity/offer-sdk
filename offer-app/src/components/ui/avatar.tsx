@@ -28,7 +28,7 @@ export function Avatar({
   seed?: string;
   size?: "xs" | "sm" | "md" | "lg" | "xl";
   shape?: "rounded" | "circle";
-  /** `solid`: bold accent-purple tile with white initials (app icons). */
+  /** `solid`: bold accent-green tile with dark initials (app icons). */
   variant?: "soft" | "solid";
   className?: string;
 }) {
@@ -47,8 +47,8 @@ export function Avatar({
         shape === "circle" ? "rounded-full" : size === "xl" || size === "lg" ? "rounded-lg" : "rounded-[5px]",
         variant === "solid"
           ? cn(
-              // App icons all share the main accent purple; the initials tell them apart.
-              "bg-accent font-bold tracking-wide text-white shadow-[inset_0_1px_0_rgb(255_255_255/0.22),inset_0_-1px_0_rgb(0_0_0/0.12),0_1px_2px_rgb(16_17_19/0.18)]",
+              // App icons all share the main accent green; the initials tell them apart.
+              "bg-accent font-bold tracking-wide text-accent-contrast shadow-[inset_0_1px_0_rgb(255_255_255/0.22),inset_0_-1px_0_rgb(0_0_0/0.12),0_1px_2px_rgb(16_17_19/0.18)]",
             )
           : cn("font-semibold", palette[hash(seed ?? name ?? "") % palette.length]),
         dims,

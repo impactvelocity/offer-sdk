@@ -1,0 +1,544 @@
+<template>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<style>
+/* ===== app kit (assets/app-kit/app-kit.css, pasted whole) ===== */
+/* ==========================================================================
+   Offer SDK app kit — the offer-app dashboard (dark theme), rebuilt for video.
+   Values are copied from offer-app/src/app/globals.css (data-theme="dark") and
+   measured from the real screens in capture/assets/app/*.png.
+
+   HOW TO USE IN A FRAME
+   1. Paste this whole file inside the style block that lives inside your frame template.
+      (Template transport: styles must live inside the frame template.)
+   2. Build the window from shell.html. Author it at its LOGICAL size
+      (.ak-window is 1366×800 — a real laptop viewport, real 14px UI text) and
+      scale the wrapper with GSAP (scale ≈ 1.08–1.12 to fill the top 83%;
+      punch in to 1.5–1.9 on the region the VO is talking about).
+   3. Copy icons from icons.html (Lucide, the icon set the app uses).
+   All classes are prefixed ak- so they never collide with frame-local names.
+   ========================================================================== */
+
+@font-face { font-family: "Cal Sans"; src: url("assets/fonts/CalSansVF.woff2") format("woff2"); font-weight: 400 700; font-display: block; }
+@font-face { font-family: "Geist Mono"; src: url("assets/fonts/geist-mono-latin.woff2") format("woff2"); font-weight: 400 600; font-display: block; }
+
+.ak {
+  --canvas: #0f0f11; --panel: #161618; --bg: #18181b; --bg-subtle: #1c1c1f; --bg-muted: #222226;
+  --bg-hover: #27272c; --bg-active: #2e2e34; --bg-elevated: #202024; --bg-inverse: #f1f1f3;
+  --fg: #ececee; --fg-secondary: rgb(236 236 238 / .93); --fg-tertiary: rgb(236 236 238 / .86);
+  --fg-muted: rgb(236 236 238 / .68); --fg-placeholder: #6f7178; --fg-icon: #9c9ea5;
+  --border: #2a2a2f; --border-strong: #37373d; --border-input: #323238;
+  --accent: #34d599; --accent-hover: #5ce0b0; --accent-subtle: rgb(52 213 153 / .13); --accent-fg: #5fe3b1; --accent-contrast: #03140c; --ring: rgb(52 213 153 / .4);
+  --btn-neon-bg: rgb(52 213 153 / .08); --shadow-brand: inset 0 0 0 1px rgb(52 213 153 / .85), inset 0 0 14px -6px rgb(52 213 153 / .35), 0 0 16px -6px rgb(52 213 153 / .4);
+  --brand-vertical: linear-gradient(180deg, #4fe0b0, #2fc48c);
+  --success: #30a46c; --success-subtle: rgb(48 164 108 / .16); --success-fg: #5ed29a;
+  --danger: #e5484d; --danger-subtle: rgb(229 72 77 / .15); --danger-fg: #ff8a8d;
+  --warning: #f0a020; --warning-subtle: rgb(240 160 32 / .14); --warning-fg: #ffc35f;
+  --brand-from: #34d599; --brand-to: #2cc0de; --brand-gradient: linear-gradient(90deg, #34d599, #2cc0de);
+  --code-comment: #7f828a; --code-keyword: #5fe3b1; --code-string: #6fd69f; --code-key: #93b8ff; --code-number: #ffa072;
+  --zapier: #ff5f1f; --paypal: #0070e0;
+  --shadow-soft: 0 14px 36px -14px rgb(0 0 0 / .75), 0 2px 8px -2px rgb(0 0 0 / .45);
+  --shadow-lg: 0 18px 44px -10px rgb(0 0 0 / .7), 0 4px 12px -4px rgb(0 0 0 / .5);
+  font-family: "Cal Sans", ui-sans-serif, system-ui, sans-serif;
+  font-variation-settings: "GEOM" 25;           /* the app's UI geometry */
+  color: var(--fg); -webkit-font-smoothing: antialiased; font-size: 14px; line-height: 1.4;
+}
+.ak * { box-sizing: border-box; }
+.ak .ak-display { font-variation-settings: "GEOM" 50; letter-spacing: -0.01em; }
+/* Neon-style eyebrow: small mono caps (site + app section kickers). */
+.ak .ak-eyebrow { font-family: "Geist Mono", monospace; font-variation-settings: normal; font-size: 11px; line-height: 16px; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; color: var(--fg-muted); }
+.ak .ak-mono, .ak code { font-family: "Geist Mono", ui-monospace, monospace; font-variation-settings: normal; }
+.ak svg { display: block; flex-shrink: 0; }
+
+/* ---------- window + shell ---------- */
+.ak-window { position: absolute; width: 1366px; height: 800px; background: var(--canvas); border-radius: 18px;
+  border: 1px solid var(--border); box-shadow: 0 40px 120px -30px rgb(0 0 0 / .9), 0 0 0 1px rgb(255 255 255 / .03);
+  overflow: hidden; display: flex; padding: 6px 6px 6px 0; transform-origin: 50% 50%; }
+.ak-rail { width: 52px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; gap: 10px; padding-top: 8px; }
+.ak-rail .ak-rail-logo { width: 30px; height: 30px; border-radius: 8px; display: grid; place-items: center; color: var(--fg); }
+.ak-rail .ak-rail-logo svg { width: 18px; height: 18px; }
+.ak-rail .ak-rail-sep { width: 22px; height: 1px; background: var(--border); }
+.ak-rail .ak-app-tile { width: 28px; height: 28px; border-radius: 7px; display: grid; place-items: center; font-size: 11px; font-weight: 600; color: var(--accent-contrast);
+  background: var(--brand-vertical); }
+.ak-rail .ak-app-tile.is-active { box-shadow: 0 0 0 2px var(--canvas), 0 0 0 3.5px var(--accent); }
+.ak-rail .ak-app-tile.alt { opacity: .8; }
+.ak-rail .ak-rail-plus { color: var(--fg-icon); width: 16px; height: 16px; }
+.ak-rail .ak-rail-foot { margin-top: auto; padding-bottom: 6px; display: flex; flex-direction: column; align-items: center; gap: 14px; color: var(--fg-icon); }
+.ak-rail .ak-rail-foot svg { width: 15px; height: 15px; }
+.ak-rail .ak-avatar { width: 26px; height: 26px; border-radius: 50%; background: var(--bg-muted); color: var(--fg-secondary); font-size: 10px; display: grid; place-items: center; }
+
+.ak-nav { width: 222px; flex-shrink: 0; background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
+  margin-right: 6px; display: flex; flex-direction: column; padding: 12px 10px; box-shadow: var(--shadow-soft); }
+.ak-nav-title { font-size: 15px; font-weight: 600; padding: 2px 6px 10px; font-variation-settings: "GEOM" 50; }
+.ak-quick { height: 30px; border: 1px solid var(--border-input); border-radius: 8px; display: flex; align-items: center; gap: 8px; padding: 0 8px;
+  color: var(--fg-muted); font-size: 13px; margin-bottom: 10px; }
+.ak-quick svg { width: 14px; height: 14px; color: var(--fg-icon); }
+.ak-quick .ak-kbd { margin-left: auto; font-size: 10.5px; border: 1px solid var(--border); border-radius: 4px; padding: 0 4px; color: var(--fg-placeholder); }
+.ak-nav-group { display: flex; flex-direction: column; gap: 1px; padding: 6px 0; border-top: 1px solid var(--border); }
+.ak-nav-group:first-of-type { border-top: 0; padding-top: 0; }
+.ak-nav-item { height: 31px; border-radius: 7px; display: flex; align-items: center; gap: 10px; padding: 0 8px; font-size: 13.5px; color: var(--fg-secondary); }
+.ak-nav-item svg { width: 15px; height: 15px; color: var(--fg-icon); }
+.ak-nav-item .ak-count { margin-left: auto; font-size: 12px; color: var(--fg-muted); font-variant-numeric: tabular-nums; }
+.ak-nav-item.is-active { background: var(--accent-subtle); color: var(--accent-fg); }
+.ak-nav-item.is-active svg { color: var(--accent-fg); }
+.ak-nav-foot { margin-top: auto; }
+
+.ak-main { flex: 1; min-width: 0; background: var(--bg); border: 1px solid var(--border); border-radius: 12px; display: flex; flex-direction: column;
+  overflow: hidden; box-shadow: var(--shadow-soft); position: relative; }
+.ak-header { height: 50px; flex-shrink: 0; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; padding: 0 12px 0 16px; }
+.ak-header .ak-crumb { display: flex; align-items: center; gap: 9px; font-size: 14px; font-weight: 500; }
+.ak-header .ak-crumb svg { width: 15px; height: 15px; color: var(--fg-icon); }
+.ak-header .ak-crumb .ak-sep { color: var(--fg-placeholder); }
+.ak-header .ak-actions { margin-left: auto; display: flex; align-items: center; gap: 4px; }
+.ak-toolbar { height: 50px; flex-shrink: 0; display: flex; align-items: center; gap: 10px; padding: 0 16px; border-bottom: 1px solid var(--border); }
+.ak-body { flex: 1; min-height: 0; position: relative; overflow: hidden; }
+.ak-page { padding: 28px 40px; }
+.ak-page-title { font-size: 22px; font-weight: 600; font-variation-settings: "GEOM" 50; letter-spacing: -0.01em; }
+.ak-page-sub { color: var(--fg-muted); font-size: 13.5px; margin-top: 4px; }
+
+/* ---------- controls ---------- */
+.ak-btn { height: 30px; border-radius: 8px; display: inline-flex; align-items: center; gap: 7px; padding: 0 10px; font-size: 13.5px; color: var(--fg-secondary);
+  border: 1px solid transparent; white-space: nowrap; }
+.ak-btn svg { width: 14px; height: 14px; }
+.ak-btn.is-outline { border-color: var(--border-strong); background: var(--bg-subtle); }
+/* Primary = the app's neon button: hairline neon border, faint green wash, green ink. */
+.ak-btn.is-primary { background: var(--btn-neon-bg); color: var(--accent-fg); font-weight: 500; box-shadow: var(--shadow-brand); }
+.ak-btn.is-gradient { background: var(--btn-neon-bg); color: var(--accent-fg); font-weight: 500; box-shadow: var(--shadow-brand), 0 0 32px -8px rgb(52 213 153 / .55); }
+.ak-btn.is-solid { background: var(--brand-vertical); color: var(--accent-contrast); font-weight: 600; }
+.ak-btn.is-paypal { background: #ffc439; color: #111; font-weight: 600; }
+.ak-btn.is-lg { height: 40px; padding: 0 16px; font-size: 15px; border-radius: 10px; }
+.ak-input { height: 32px; border: 1px solid var(--border-input); background: var(--bg-subtle); border-radius: 8px; display: flex; align-items: center; gap: 8px;
+  padding: 0 10px; font-size: 13.5px; color: var(--fg); }
+.ak-input.is-placeholder { color: var(--fg-placeholder); }
+.ak-input.is-focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--ring); }
+.ak-input svg { width: 14px; height: 14px; color: var(--fg-icon); }
+.ak-label { font-size: 13px; color: var(--fg-secondary); font-weight: 500; margin-bottom: 6px; }
+.ak-seg { display: inline-flex; background: var(--bg-muted); border-radius: 8px; padding: 2px; gap: 2px; }
+.ak-seg > span { height: 26px; padding: 0 10px; border-radius: 6px; display: inline-flex; align-items: center; font-size: 13px; color: var(--fg-muted); }
+.ak-seg > span.is-on { background: var(--bg-active); color: var(--fg); }
+.ak-switch { width: 30px; height: 18px; border-radius: 9px; background: var(--bg-active); position: relative; flex-shrink: 0; }
+.ak-switch::after { content: ""; position: absolute; top: 2px; left: 2px; width: 14px; height: 14px; border-radius: 50%; background: #fff; }
+.ak-switch.is-on { background: var(--accent); }
+.ak-switch.is-on::after { background: var(--accent-contrast); }
+.ak-switch.is-on::after { left: 14px; }
+.ak-check { width: 16px; height: 16px; border-radius: 4px; border: 1px solid var(--border-strong); display: grid; place-items: center; }
+.ak-check.is-on { background: var(--accent); border-color: var(--accent); color: var(--accent-contrast); }
+.ak-check svg { width: 11px; height: 11px; }
+
+/* ---------- table (Plans / Entitlements / Add-ons / Incentives / Accounts) ---------- */
+.ak-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+.ak-table th { height: 42px; text-align: left; font-weight: 400; color: var(--fg-muted); padding: 0 14px; border-bottom: 1px solid var(--border); border-right: 1px solid var(--border); white-space: nowrap; }
+.ak-table th:last-child, .ak-table td:last-child { border-right: 0; }
+.ak-table th .ak-th { display: inline-flex; align-items: center; gap: 7px; }
+.ak-table th svg { width: 13px; height: 13px; color: var(--fg-icon); }
+.ak-table td { height: 46px; padding: 0 14px; border-bottom: 1px solid var(--border); border-right: 1px solid var(--border); white-space: nowrap; color: var(--fg-secondary); }
+.ak-table td.is-num { text-align: right; font-variant-numeric: tabular-nums; }
+.ak-table .ak-row-name { display: flex; align-items: center; gap: 9px; color: var(--fg); }
+.ak-table .ak-row-icon { width: 22px; height: 22px; border-radius: 6px; background: rgb(59 123 246 / .18); color: #93b8ff; display: grid; place-items: center; }
+.ak-table .ak-row-icon svg { width: 13px; height: 13px; }
+.ak-table tr.is-hl td { background: rgb(52 213 153 / .07); }
+.ak-table-foot { padding: 12px 16px; color: var(--fg-muted); font-size: 13px; }
+
+/* ---------- chips + tags ---------- */
+.ak-id { font-family: "Geist Mono", monospace; font-variation-settings: normal; font-size: 12px; background: var(--bg-muted); color: var(--fg-secondary);
+  border-radius: 5px; padding: 2px 6px; }
+.ak-tag { display: inline-flex; align-items: center; gap: 5px; height: 21px; padding: 0 7px; border-radius: 5px; font-size: 12px; white-space: nowrap;
+  background: rgb(255 255 255 / .08); color: #c6c7cc; }
+.ak-tag svg { width: 11px; height: 11px; }
+.ak-tag.blue { background: rgb(59 123 246 / .18); color: #93b8ff; }
+.ak-tag.green { background: rgb(48 164 108 / .18); color: #6fd69f; }
+.ak-tag.yellow { background: rgb(240 180 40 / .16); color: #f5c451; }
+.ak-tag.orange { background: rgb(235 104 52 / .18); color: #ffa072; }
+.ak-tag.red { background: rgb(229 72 77 / .18); color: #ff8a8d; }
+.ak-tag.purple { background: rgb(143 107 255 / .2); color: #bba6ff; }
+.ak-tag.brand { background: rgb(52 213 153 / .14); color: #5fe3b1; }
+.ak-tag.pink { background: rgb(224 69 123 / .18); color: #ff8fba; }
+.ak-tag.teal { background: rgb(20 163 157 / .18); color: #62d6cf; }
+.ak-more { color: var(--fg-muted); font-size: 12px; }
+
+/* ---------- cards, stats, meters ---------- */
+.ak-card { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; }
+.ak-card-head { height: 46px; display: flex; align-items: center; padding: 0 16px; border-bottom: 1px solid var(--border); font-weight: 500; font-size: 14px; }
+.ak-card-body { padding: 16px; }
+.ak-elevated { background: var(--bg-elevated); border: 1px solid var(--border-strong); border-radius: 12px; box-shadow: var(--shadow-lg); }
+.ak-stat-strip { display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+.ak-stat { padding: 16px 18px; border-right: 1px solid var(--border); }
+.ak-stat:last-child { border-right: 0; }
+.ak-stat-label { display: flex; align-items: center; gap: 7px; font-size: 13px; color: var(--fg-secondary); }
+.ak-stat-label svg { width: 13px; height: 13px; color: var(--fg-icon); }
+.ak-stat-value { font-size: 26px; font-weight: 600; margin-top: 8px; font-variant-numeric: tabular-nums; font-variation-settings: "GEOM" 50; }
+.ak-stat-sub { font-size: 12px; color: var(--fg-muted); margin-top: 4px; }
+.ak-meter { height: 8px; border-radius: 4px; background: var(--bg-active); overflow: hidden; }
+.ak-meter > i { display: block; height: 100%; width: 0; border-radius: 4px; background: var(--brand-gradient); }
+.ak-meter.is-warn > i { background: linear-gradient(90deg, #f0a020, #e5484d); }
+.ak-bar-row { position: relative; height: 30px; border-radius: 6px; display: flex; align-items: center; padding: 0 10px; font-size: 13.5px; }
+.ak-bar-row > b { position: absolute; inset: 0 auto 0 0; border-radius: 6px; background: linear-gradient(90deg, rgb(52 213 153 / .32), rgb(44 192 222 / .22)); font-weight: 400; }
+.ak-bar-row > span { position: relative; }
+.ak-bar-row > .ak-bar-val { margin-left: auto; color: var(--fg-secondary); font-variant-numeric: tabular-nums; }
+
+/* ---------- code block (site CodeBlock look) ---------- */
+.ak-code { background: #131315; border: 1px solid var(--border); border-radius: 14px; overflow: hidden; box-shadow: var(--shadow-lg); }
+.ak-code-bar { height: 40px; display: flex; align-items: center; gap: 8px; padding: 0 14px; border-bottom: 1px solid var(--border); color: var(--fg-muted); font-size: 13px; }
+.ak-code-bar .ak-dots { display: flex; gap: 6px; margin-right: 6px; }
+.ak-code-bar .ak-dots i { width: 10px; height: 10px; border-radius: 50%; background: var(--bg-active); }
+.ak-code pre { margin: 0; padding: 18px 20px; font-family: "Geist Mono", monospace; font-variation-settings: normal; font-size: 15px; line-height: 1.65; color: var(--fg-secondary); white-space: pre; }
+.ak-code .k { color: var(--code-keyword); } .ak-code .s { color: var(--code-string); } .ak-code .p { color: var(--code-key); }
+.ak-code .n { color: var(--code-number); } .ak-code .c { color: var(--code-comment); } .ak-code .f { color: #ececee; }
+.ak-code .del { background: rgb(229 72 77 / .14); } .ak-code .add { background: rgb(48 164 108 / .14); }
+
+/* ---------- feedback ---------- */
+.ak-toast { position: absolute; display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 10px; background: var(--bg-elevated);
+  border: 1px solid var(--border-strong); box-shadow: var(--shadow-lg); font-size: 13.5px; white-space: nowrap; }
+.ak-toast svg { width: 15px; height: 15px; }
+.ak-toast.is-ok svg { color: var(--success-fg); }
+.ak-toast.is-warn svg { color: var(--warning-fg); }
+.ak-toast.is-bad svg { color: var(--danger-fg); }
+.ak-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--success); display: inline-block; }
+.ak-dot.is-warn { background: var(--warning); } .ak-dot.is-bad { background: var(--danger); }
+.ak-cursor { position: absolute; width: 22px; height: 22px; z-index: 50; pointer-events: none; filter: drop-shadow(0 2px 4px rgb(0 0 0 / .6)); }
+.ak-ripple { position: absolute; width: 36px; height: 36px; margin: -18px 0 0 -18px; border-radius: 50%; border: 2px solid var(--accent-fg); z-index: 49; opacity: 0; }
+
+/* ---------- avatars + misc ---------- */
+.ak-av { width: 22px; height: 22px; border-radius: 6px; display: grid; place-items: center; font-size: 9.5px; font-weight: 600; background: rgb(52 213 153 / .14); color: #5fe3b1; }
+.ak-av.round { border-radius: 50%; }
+.ak-kv { display: flex; justify-content: space-between; font-size: 13px; padding: 7px 0; border-bottom: 1px solid var(--border); color: var(--fg-muted); }
+.ak-kv b { font-weight: 400; color: var(--fg); }
+.ak-divider { height: 1px; background: var(--border); }
+
+/* ===== 03-pileup ===== */
+#root { position: absolute; inset: 0; width: 1920px; height: 1080px; overflow: hidden; }
+#\30 3-pileup-bg { position: absolute; inset: 0; background: #0f0f11; overflow: hidden; }
+#\30 3-pileup-bg img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0.3; transform-origin: 50% 45%; }
+#\30 3-pileup-bg-fade { position: absolute; inset: 0; background: radial-gradient(ellipse 62% 64% at 50% 46%, rgba(15, 15, 17, 0.9) 40%, rgba(15, 15, 17, 0.25) 100%); }
+/* stage: screen-fixed, clips the camera; bottom band (y > 900) stays clear */
+#\30 3-pileup-stage { position: absolute; inset: 0; overflow: hidden;
+  -webkit-mask-image: linear-gradient(to bottom, #000 0, #000 858px, transparent 902px);
+          mask-image: linear-gradient(to bottom, #000 0, #000 858px, transparent 902px); }
+#\30 3-pileup-push { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; transform-origin: 50% 50%; }
+#\30 3-pileup-camera { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; transform-origin: 50% 50%; will-change: transform; }
+#\30 3-pileup-drift { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; }
+#\30 3-pileup-vignette { position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(ellipse 72% 68% at 50% 44%, transparent 52%, rgba(6, 6, 8, 0.72) 100%); }
+
+/* billing.ts wall */
+#\30 3-pileup-wall { position: absolute; left: 120px; top: 112px; width: 1680px; height: 792px; border-radius: 14px;
+  -webkit-mask-image: linear-gradient(to bottom, #000 0, #000 620px, transparent 792px);
+          mask-image: linear-gradient(to bottom, #000 0, #000 620px, transparent 792px); }
+#\30 3-pileup-wall .ak-code-bar { height: 40px; font-size: 14px; }
+#\30 3-pileup-wall .ak-code-bar .ak-mono { font-size: 13.5px; color: rgba(236, 236, 238, 0.86); }
+#\30 3-pileup-wall .ak-code-bar svg { width: 15px; height: 15px; color: #9c9ea5; }
+.\30 3-pileup-cols { position: absolute; left: 0; top: 40px; right: 0; bottom: 0; padding: 18px 0 0 26px; display: flex; gap: 30px; }
+.\30 3-pileup-col { width: 520px; flex-shrink: 0; font-family: "Geist Mono", ui-monospace, monospace; font-variation-settings: normal;
+  font-variant-ligatures: none; font-feature-settings: "liga" 0, "calt" 0;
+  font-size: 13px; line-height: 21px; color: rgb(236 236 238 / .86); }
+/* special-case rows get tinted from JS (amber "hack" → red "danger", the frame-2 row language) */
+.\30 3-pileup-ln { height: 21px; white-space: pre; position: relative; margin-left: -10px; padding-left: 10px; }
+/* marker highlight (css-marker-patterns · highlight mode) — neon green at low alpha */
+.\30 3-pileup-hl { position: relative; display: inline-block; }
+.\30 3-pileup-hl-bar { position: absolute; top: 0; bottom: 0; left: -6px; right: -6px; background: rgba(52, 213, 153, 0.26); border-radius: 3px;
+  transform-origin: left center; z-index: 0; }
+.\30 3-pileup-hl-text { position: relative; z-index: 1; color: #ececee; }
+/* "?" chip — neon-outlined mono token */
+.\30 3-pileup-lab { position: absolute; left: calc(100% + 14px); top: -8px; height: 37px; display: flex; align-items: center; gap: 2px; padding: 0 13px;
+  background: #18181b; border-radius: 8px;
+  box-shadow: inset 0 0 0 1px rgba(52, 213, 153, 0.85), inset 0 0 14px -6px rgba(52, 213, 153, 0.35), 0 0 16px -6px rgba(52, 213, 153, 0.4), 0 16px 38px -10px rgba(0, 0, 0, 0.75);
+  font-family: "Geist Mono", ui-monospace, monospace; font-size: 18px; line-height: 1; white-space: pre; color: #ececee;
+  transform-origin: 0% 50%; z-index: 3; }
+.\30 3-pileup-lab b { font-weight: 600; color: #5fe3b1; }
+
+/* Revenue by feature card */
+#\30 3-pileup-card { position: absolute; left: 1294px; top: 512px; width: 474px; background: #18181b; border: 1px solid #37373d; border-radius: 14px;
+  box-shadow: 0 30px 80px -20px rgb(0 0 0 / .85), 0 4px 12px -4px rgb(0 0 0 / .5); overflow: hidden; }
+#\30 3-pileup-card .\30 3-pileup-card-head { height: 54px; display: flex; align-items: center; gap: 10px; padding: 0 20px; border-bottom: 1px solid #2a2a2f;
+  font-size: 19px; font-weight: 500; color: #ececee; }
+#\30 3-pileup-card .\30 3-pileup-card-head svg { width: 18px; height: 18px; color: #5fe3b1; }
+.\30 3-pileup-card-body { padding: 18px 22px 18px; }
+.\30 3-pileup-chart { position: relative; width: 430px; height: 172px; }
+.\30 3-pileup-chart-svg { position: absolute; left: 0; top: 0; }
+.\30 3-pileup-bar { fill: rgba(52, 213, 153, 0.045); stroke: #8a8c93; stroke-width: 1.6; stroke-dasharray: 7 6; }
+.\30 3-pileup-q { position: absolute; top: 12px; height: 150px; display: grid; place-items: center; font-size: 40px; font-weight: 600;
+  font-variation-settings: "GEOM" 50; color: #5fe3b1; line-height: 1; text-shadow: 0 0 18px rgba(52, 213, 153, 0.35); }
+.\30 3-pileup-feats { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; width: 430px; margin-top: 10px; }
+.\30 3-pileup-feats span { text-align: center; font-size: 15.5px; color: rgba(236, 236, 238, 0.68); white-space: nowrap; }
+
+/* Scene 4: dim + red "$?" mark (glitch punch) */
+#\30 3-pileup-dim { position: absolute; inset: -200px; background: #060608; opacity: 0; pointer-events: none; }
+#\30 3-pileup-glow { position: absolute; left: 420px; top: 150px; width: 1080px; height: 640px; pointer-events: none;
+  background: radial-gradient(closest-side, rgba(229, 72, 77, 0.3), rgba(229, 72, 77, 0.08) 60%, transparent); transform-origin: 50% 50%; }
+#\30 3-pileup-mark { position: absolute; left: 0; top: 330px; width: 1920px; height: 260px; }
+#\30 3-pileup-mark-s { position: absolute; inset: 0; transform-origin: 50% 55%; }
+.\30 3-pileup-mk { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; gap: 52px;
+  font-size: 250px; line-height: 1; font-weight: 600; letter-spacing: -0.02em; font-variation-settings: "GEOM" 50; }
+#\30 3-pileup-mk-main { color: #e5484d; text-shadow: 0 0 70px rgba(229, 72, 77, 0.45), 0 0 18px rgba(229, 72, 77, 0.3); }
+#\30 3-pileup-mk-a { color: #2cc0de; opacity: 0; mix-blend-mode: screen; }
+#\30 3-pileup-mk-b { color: #ff8a8d; opacity: 0; mix-blend-mode: screen; }
+</style>
+
+<div id="root" data-composition-id="03-pileup" data-width="1920" data-height="1080" data-duration="9.98">
+  <div id="03-pileup-bg" class="clip" data-start="0" data-duration="9.98" data-track-index="0">
+    <img id="03-pileup-contour" src="assets/hero-bg-neon.webp" alt="">
+    <div id="03-pileup-bg-fade"></div>
+  </div>
+
+  <div id="03-pileup-stage" class="clip" data-start="0" data-duration="9.98" data-track-index="1">
+    <div id="03-pileup-push">
+    <div id="03-pileup-camera" class="ak"><div id="03-pileup-drift">
+      <div id="03-pileup-wall" class="ak-code">
+        <div class="ak-code-bar"><span class="ak-dots"><i></i><i></i><i></i></span><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"/><path d="M14 2v5a1 1 0 0 0 1 1h5"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg><span class="ak-mono">billing.ts</span></div>
+        <div class="03-pileup-cols">
+<div class="03-pileup-col">
+<div class="03-pileup-ln"><span class="k">import</span> { PLANS } <span class="k">from</span> <span class="s">"./plans"</span>;</div>
+<div class="03-pileup-ln"><span class="k">import</span> { db } <span class="k">from</span> <span class="s">"./db"</span>;</div>
+<div class="03-pileup-ln">&#8203;</div>
+<div class="03-pileup-ln"><span class="k">export</span> <span class="k">function</span> <span class="f">applyPricing</span>(user, org, ref) {</div>
+<div class="03-pileup-ln">  <span class="k">let</span> price = PLANS[user.plan].price;</div>
+<div class="03-pileup-ln">  <span class="k">let</span> seats = PLANS[user.plan].seats;</div>
+<div class="03-pileup-ln">  <span class="k">let</span> trialDays = <span class="n">14</span>;</div>
+<div class="03-pileup-ln">  <span class="k">let</span> sso = <span class="k">false</span>;</div>
+<div class="03-pileup-ln">  <span class="k">let</span> exports = user.plan === <span class="s">"pro"</span>;</div>
+<div class="03-pileup-ln">&#8203;</div>
+<div class="03-pileup-ln">  <span class="c">// custom deal</span></div>
+<div class="03-pileup-ln">  <span class="k">if</span> (user.id === <span class="s">"u_1042"</span>) price = <span class="n">0</span>;</div>
+<div class="03-pileup-ln">  <span class="k">if</span> (user.id === <span class="s">"u_2291"</span>) seats = <span class="n">12</span>; <span class="c">// ask Dave</span></div>
+<div class="03-pileup-ln">  <span class="k">if</span> (org.id === <span class="s">"org_77"</span>) trialDays = <span class="n">45</span>;</div>
+<div class="03-pileup-ln">  <span class="c">// temporary</span></div>
+<div class="03-pileup-ln">  <span class="k">if</span> (user.email.<span class="f">endsWith</span>(<span class="s">"@globex.io"</span>)) price = <span class="n">9</span>;</div>
+<div class="03-pileup-ln">  <span class="k">if</span> (user.id === <span class="s">"u_3310"</span> || user.id === <span class="s">"u_3311"</span>) {</div>
+<div class="03-pileup-ln">    price = <span class="n">0</span>; <span class="c">// custom deal</span></div>
+<div class="03-pileup-ln">  }</div>
+<div class="03-pileup-ln">  <span class="k">if</span> (org.name === <span class="s">"Initech"</span>) sso = <span class="k">true</span>; <span class="c">// ask Dave</span></div>
+<div class="03-pileup-ln">  <span class="k">if</span> (ref === <span class="s">"bf-2025"</span>) price = price * <span class="n">0.5</span>;</div>
+<div class="03-pileup-ln">  <span class="c">// TODO: remove after launch</span></div>
+<div class="03-pileup-ln">  <span class="k">if</span> (user.id === <span class="s">"u_0007"</span>) seats = <span class="n">999</span>;</div>
+<div class="03-pileup-ln">  <span class="k">if</span> (user.plan === <span class="s">"starter"</span> &amp;&amp; org.size &gt; <span class="n">10</span>) {</div>
+<div class="03-pileup-ln">    seats = <span class="n">10</span>; <span class="c">// temporary</span></div>
+<div class="03-pileup-ln">  }</div>
+<div class="03-pileup-ln">  <span class="03-pileup-hl" id="03-pileup-h3"><span class="03-pileup-hl-bar"></span><span class="03-pileup-hl-text"><span class="k">if</span> (ref === <span class="s">"sarah"</span>) trialDays = <span class="n">30</span>; <span class="c">// temporary</span></span><span class="03-pileup-lab">sarah<b>?</b></span></span></div>
+<div class="03-pileup-ln">  <span class="k">if</span> (ref === <span class="s">"partner"</span>) trialDays = <span class="n">60</span>; <span class="c">// ask Dave</span></div>
+<div class="03-pileup-ln">  <span class="k">if</span> (user.id === <span class="s">"u_5120"</span>) exports = <span class="k">true</span>;</div>
+<div class="03-pileup-ln">  <span class="c">// custom deal — do not touch</span></div>
+<div class="03-pileup-ln">  <span class="k">if</span> (org.id === <span class="s">"org_12"</span>) { seats = <span class="n">25</span>; sso = <span class="k">true</span>; }</div>
+<div class="03-pileup-ln">  <span class="k">if</span> (user.id === <span class="s">"u_6631"</span>) price = <span class="n">49</span>; <span class="c">// legacy</span></div>
+<div class="03-pileup-ln">  <span class="k">if</span> (user.createdAt &lt; LEGACY_CUTOFF) price = <span class="n">10</span>;</div>
+<div class="03-pileup-ln">  <span class="c">// temporary</span></div>
+<div class="03-pileup-ln">  <span class="k">if</span> (user.id === <span class="s">"u_7740"</span>) trialDays = <span class="n">90</span>;</div>
+</div>
+<div class="03-pileup-col">
+<div class="03-pileup-ln">  <span class="c">// TODO: clean this up</span></div>
+<div class="03-pileup-ln">  <span class="k">if</span> (user.id === <span class="s">"u_8120"</span>) price = <span class="n">0</span>; <span class="c">// custom deal</span></div>
+<div class="03-pileup-ln">  <span class="k">if</span> (org.id === <span class="s">"org_31"</span> &amp;&amp; seats &gt; <span class="n">40</span>) seats = <span class="n">40</span>;</div>
+<div class="03-pileup-ln">  <span class="k">if</span> (user.email === <span class="s">"cto@hooli.com"</span>) sso = <span class="k">true</span>;</div>
+<div class="03-pileup-ln">  <span class="c">// ask Dave</span></div>
+<div class="03-pileup-ln">  <span class="k">if</span> (ref === <span class="s">"launch-week"</span>) trialDays = <span class="n">30</span>;</div>
+<div class="03-pileup-ln">  <span class="k">if</span> (user.id === <span class="s">"u_4402"</span>) { price = <span class="n">15</span>; exports = <span class="k">true</span>; }</div>
+<div class="03-pileup-ln">  <span class="k">if</span> (org.size &gt; <span class="n">200</span>) price = <span class="k">null</span>; <span class="c">// call sales</span></div>
+<div class="03-pileup-ln">  <span class="c">// temporary</span></div>
+<div class="03-pileup-ln">  <span class="k">if</span> (user.id === <span class="s">"u_9001"</span>) seats = seats + <span class="n">5</span>;</div>
+<div class="03-pileup-ln">  <span class="k">if</span> (user.email === <span class="s">"sally@…"</span>) trialDays = <span class="n">30</span>;</div>
+<div class="03-pileup-ln">  <span class="03-pileup-hl" id="03-pileup-h1"><span class="03-pileup-hl-bar"></span><span class="03-pileup-hl-text"><span class="k">if</span> (user.org === <span class="s">"acme"</span>) { seats = <span class="n">50</span>; sso = <span class="k">true</span>; } <span class="c">// ask Dave</span></span><span class="03-pileup-lab">Acme<b>?</b></span></span></div>
+<div class="03-pileup-ln">  <span class="k">if</span> (ref === <span class="s">"sarah"</span> &amp;&amp; Date.<span class="f">now</span>() &lt; FRIDAY) price = <span class="n">19</span>;</div>
+<div class="03-pileup-ln">  <span class="c">// TODO: affiliate bundles???</span></div>
+<div class="03-pileup-ln">  <span class="03-pileup-hl" id="03-pileup-h2"><span class="03-pileup-hl-bar"></span><span class="03-pileup-hl-text"><span class="k">if</span> (plan === <span class="s">"pro"</span> || user.id === <span class="s">"u_8812"</span>) <span class="f">enableExports</span>();</span><span class="03-pileup-lab">u_8812<b>?</b></span></span></div>
+<div class="03-pileup-ln">  <span class="k">if</span> (user.id === <span class="s">"u_2048"</span>) trialDays = <span class="n">60</span>; <span class="c">// custom deal</span></div>
+<div class="03-pileup-ln">  <span class="k">if</span> (org.region === <span class="s">"EU"</span>) price = price * <span class="n">1.2</span>;</div>
+<div class="03-pileup-ln">  <span class="c">// ask Dave</span></div>
+<div class="03-pileup-ln">  <span class="k">if</span> (user.id === <span class="s">"u_1337"</span>) { seats = <span class="n">3</span>; price = <span class="n">5</span>; }</div>
+<div class="03-pileup-ln">  <span class="k">if</span> (ref === <span class="s">"podcast"</span>) price = price - <span class="n">10</span>; <span class="c">// temporary</span></div>
+<div class="03-pileup-ln">  <span class="k">if</span> (user.plan === <span class="s">"free"</span> &amp;&amp; user.id === <span class="s">"u_6060"</span>) {</div>
+<div class="03-pileup-ln">    exports = <span class="k">true</span>; <span class="c">// custom deal</span></div>
+<div class="03-pileup-ln">  }</div>
+<div class="03-pileup-ln">  <span class="k">if</span> (org.id === <span class="s">"org_88"</span>) trialDays = <span class="n">21</span>;</div>
+<div class="03-pileup-ln">  <span class="c">// temporary — remove before Q3?</span></div>
+<div class="03-pileup-ln">  <span class="k">if</span> (user.email.<span class="f">includes</span>(<span class="s">"+test"</span>)) price = <span class="n">0</span>;</div>
+<div class="03-pileup-ln">  <span class="k">if</span> (user.id === <span class="s">"u_3141"</span>) sso = <span class="k">true</span>; <span class="c">// ask Dave</span></div>
+<div class="03-pileup-ln">  <span class="k">if</span> (ref === <span class="s">"ph-launch"</span>) price = <span class="n">14</span>;</div>
+<div class="03-pileup-ln">  <span class="k">if</span> (org.id === <span class="s">"org_09"</span> || org.id === <span class="s">"org_10"</span>) {</div>
+<div class="03-pileup-ln">    seats = <span class="n">100</span>; <span class="c">// custom deal</span></div>
+<div class="03-pileup-ln">  }</div>
+<div class="03-pileup-ln">  <span class="k">if</span> (user.id === <span class="s">"u_7007"</span>) exports = <span class="k">false</span>;</div>
+<div class="03-pileup-ln">  <span class="c">// ???</span></div>
+<div class="03-pileup-ln">  <span class="k">if</span> (user.id === <span class="s">"u_2718"</span>) trialDays = <span class="n">7</span>;</div>
+<div class="03-pileup-ln">  <span class="k">if</span> (ref === <span class="s">"newsletter"</span>) price = <span class="n">11</span>; <span class="c">// temporary</span></div>
+</div>
+<div class="03-pileup-col">
+<div class="03-pileup-ln"><span class="k">function</span> <span class="f">legacyDiscount</span>(user) {</div>
+<div class="03-pileup-ln">  <span class="c">// custom deal</span></div>
+<div class="03-pileup-ln">  <span class="k">if</span> (user.id === <span class="s">"u_0412"</span>) <span class="k">return</span> <span class="n">0.3</span>;</div>
+<div class="03-pileup-ln">  <span class="k">if</span> (user.id === <span class="s">"u_0413"</span>) <span class="k">return</span> <span class="n">0.3</span>; <span class="c">// ask Dave</span></div>
+<div class="03-pileup-ln">  <span class="k">if</span> (user.cohort === <span class="s">"beta"</span>) <span class="k">return</span> <span class="n">0.5</span>;</div>
+<div class="03-pileup-ln">  <span class="c">// temporary</span></div>
+<div class="03-pileup-ln">  <span class="k">return</span> <span class="n">0</span>;</div>
+<div class="03-pileup-ln">}</div>
+<div class="03-pileup-ln">&#8203;</div>
+<div class="03-pileup-ln"><span class="k">export</span> <span class="k">function</span> <span class="f">canUse</span>(user, feature) {</div>
+<div class="03-pileup-ln">  <span class="k">if</span> (feature === <span class="s">"sso"</span>) {</div>
+<div class="03-pileup-ln">    <span class="k">if</span> (user.org === <span class="s">"acme"</span>) <span class="k">return</span> <span class="k">true</span>; <span class="c">// ask Dave</span></div>
+<div class="03-pileup-ln">    <span class="k">return</span> user.plan === <span class="s">"enterprise"</span>;</div>
+<div class="03-pileup-ln">  }</div>
+<div class="03-pileup-ln">  <span class="k">if</span> (feature === <span class="s">"exports"</span>) {</div>
+<div class="03-pileup-ln">    <span class="k">if</span> (user.id === <span class="s">"u_8812"</span>) <span class="k">return</span> <span class="k">true</span>;</div>
+<div class="03-pileup-ln">    <span class="k">if</span> (user.id === <span class="s">"u_5120"</span>) <span class="k">return</span> <span class="k">true</span>; <span class="c">// temporary</span></div>
+<div class="03-pileup-ln">    <span class="k">return</span> user.plan === <span class="s">"pro"</span>;</div>
+<div class="03-pileup-ln">  }</div>
+<div class="03-pileup-ln">  <span class="k">if</span> (feature === <span class="s">"ai_credits"</span>) {</div>
+<div class="03-pileup-ln">    <span class="c">// TODO: who gets unlimited?</span></div>
+<div class="03-pileup-ln">    <span class="k">if</span> (user.id === <span class="s">"u_0007"</span>) <span class="k">return</span> <span class="k">true</span>;</div>
+<div class="03-pileup-ln">    <span class="k">return</span> user.credits &gt; <span class="n">0</span>;</div>
+<div class="03-pileup-ln">  }</div>
+<div class="03-pileup-ln">  <span class="k">if</span> (feature === <span class="s">"seats"</span>) {</div>
+<div class="03-pileup-ln">    <span class="k">return</span> user.seats &lt; <span class="f">limitFor</span>(user); <span class="c">// ???</span></div>
+<div class="03-pileup-ln">  }</div>
+<div class="03-pileup-ln">  <span class="c">// custom deal</span></div>
+<div class="03-pileup-ln">  <span class="k">if</span> (user.id === <span class="s">"u_4402"</span>) <span class="k">return</span> <span class="k">true</span>;</div>
+<div class="03-pileup-ln">  <span class="k">return</span> <span class="k">false</span>;</div>
+<div class="03-pileup-ln">}</div>
+<div class="03-pileup-ln">&#8203;</div>
+<div class="03-pileup-ln"><span class="c">// TODO: which features actually pay?</span></div>
+<div class="03-pileup-ln"><span class="c">// temporary</span></div>
+<div class="03-pileup-ln"><span class="c">// ask Dave</span></div>
+</div>
+        </div>
+      </div>
+
+      <div id="03-pileup-card">
+        <div class="03-pileup-card-head"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg><span>Revenue by feature</span></div>
+        <div class="03-pileup-card-body">
+          <div class="03-pileup-chart">
+<svg class="03-pileup-chart-svg" width="430" height="172" viewBox="0 0 430 172" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <mask id="03-pileup-m0" maskUnits="userSpaceOnUse" x="-10" y="-10" width="450" height="192"><path id="03-pileup-draw0" class="03-pileup-draw" data-per="440" d="M 19 162 L 19 20 Q 19 12 27 12 L 81 12 Q 89 12 89 20 L 89 162 Z" fill="none" stroke="#fff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/></mask>
+    <mask id="03-pileup-m1" maskUnits="userSpaceOnUse" x="-10" y="-10" width="450" height="192"><path id="03-pileup-draw1" class="03-pileup-draw" data-per="440" d="M 126 162 L 126 20 Q 126 12 134 12 L 188 12 Q 196 12 196 20 L 196 162 Z" fill="none" stroke="#fff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/></mask>
+    <mask id="03-pileup-m2" maskUnits="userSpaceOnUse" x="-10" y="-10" width="450" height="192"><path id="03-pileup-draw2" class="03-pileup-draw" data-per="440" d="M 234 162 L 234 20 Q 234 12 242 12 L 296 12 Q 304 12 304 20 L 304 162 Z" fill="none" stroke="#fff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/></mask>
+    <mask id="03-pileup-m3" maskUnits="userSpaceOnUse" x="-10" y="-10" width="450" height="192"><path id="03-pileup-draw3" class="03-pileup-draw" data-per="440" d="M 341 162 L 341 20 Q 341 12 349 12 L 403 12 Q 411 12 411 20 L 411 162 Z" fill="none" stroke="#fff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/></mask>
+  </defs>
+  <line x1="0" x2="430" y1="162.5" y2="162.5" stroke="#2a2a2f" stroke-width="1"/>
+  <path class="03-pileup-bar" d="M 19 162 L 19 20 Q 19 12 27 12 L 81 12 Q 89 12 89 20 L 89 162 Z" mask="url(#03-pileup-m0)"/>
+  <path class="03-pileup-bar" d="M 126 162 L 126 20 Q 126 12 134 12 L 188 12 Q 196 12 196 20 L 196 162 Z" mask="url(#03-pileup-m1)"/>
+  <path class="03-pileup-bar" d="M 234 162 L 234 20 Q 234 12 242 12 L 296 12 Q 304 12 304 20 L 304 162 Z" mask="url(#03-pileup-m2)"/>
+  <path class="03-pileup-bar" d="M 341 162 L 341 20 Q 341 12 349 12 L 403 12 Q 411 12 411 20 L 411 162 Z" mask="url(#03-pileup-m3)"/>
+</svg>
+            <span class="03-pileup-q" style="left:0px;width:108px">?</span><span class="03-pileup-q" style="left:108px;width:108px">?</span><span class="03-pileup-q" style="left:215px;width:108px">?</span><span class="03-pileup-q" style="left:323px;width:108px">?</span>
+          </div>
+          <div class="03-pileup-feats"><span>PDF export</span><span>Team seats</span><span>AI credits</span><span>SSO</span></div>
+        </div>
+      </div>
+
+      <div id="03-pileup-dim"></div>
+      <div id="03-pileup-glow"></div>
+      <div id="03-pileup-mark"><div id="03-pileup-mark-s">
+        <div id="03-pileup-mk-a" class="03-pileup-mk"><span>$</span><span>?</span></div>
+        <div id="03-pileup-mk-b" class="03-pileup-mk"><span>$</span><span>?</span></div>
+        <div id="03-pileup-mk-main" class="03-pileup-mk"><span>$</span><span>?</span></div>
+      </div></div>
+    </div></div>
+    </div>
+    <div id="03-pileup-vignette"></div>
+  </div>
+
+  <script>
+    (function () {
+      window.__timelines = window.__timelines || {};
+      var tl = gsap.timeline({ paused: true });
+      var byId = function (id) { return document.getElementById("03-pileup-" + id); };
+      var DUR = 9.58;
+      var F = 1 / 30;
+
+      // ---------- camera (multi-phase-camera) ----------
+      // #camera: ONE decelerating pull-back from Frame 2's last lines (scale 2.3) to the full wall,
+      // landed by "special cases" (2.06s). #push: slow macro push underneath the rest of the shot.
+      // #drift: continuous sine micro-drift. One GSAP writer per wrapper -> seek-safe.
+      var PH1 = 2.3;
+      tl.fromTo(byId("camera"), { scale: PH1, x: PH1 * 22, y: PH1 * 76 }, { scale: 1, x: 0, y: 0, duration: 2.3, ease: "power3.out" }, 0);
+      tl.fromTo(byId("contour"), { scale: 1.1 }, { scale: 1, duration: 2.6, ease: "power3.out" }, 0);
+      tl.fromTo(byId("push"), { scale: 1 }, { scale: 1.03, duration: 6.7, ease: "power1.inOut" }, 2.5);
+      var drift = byId("drift");
+      function sineDrift(prop, amp, halves) {
+        var half = DUR / halves;
+        var from = {}; from[prop] = amp;
+        var to = {}; to[prop] = -amp; to.duration = half; to.ease = "sine.inOut";
+        tl.fromTo(drift, from, to, 0);
+        for (var i = 1; i < halves; i++) {
+          var v = {}; v[prop] = (i % 2 ? amp : -amp); v.duration = half; v.ease = "sine.inOut";
+          tl.to(drift, v, i * half);
+        }
+      }
+      sineDrift("x", 4, 3);
+      sineDrift("y", 2, 4);
+
+      // ---------- special-case rows (amber "hack" → red "danger") ----------
+      var RE = /"u_\d|"org_\d|"acme"|"Initech"|@|ref ===|custom deal|ask Dave|temporary|TODO|\?\?\?|cohort|LEGACY/;
+      var special = [];
+      var cols = byId("wall").getElementsByClassName("03-pileup-col");
+      for (var c = 0; c < cols.length; c++) {
+        var lns = cols[c].getElementsByClassName("03-pileup-ln");
+        for (var r = 0; r < lns.length; r++) {
+          if (lns[r].getElementsByClassName("03-pileup-hl").length) continue;
+          if (RE.test(lns[r].textContent)) special.push({ el: lns[r], r: r });
+        }
+      }
+      var AMB0 = { backgroundColor: "rgba(240,160,32,0)", boxShadow: "inset 3px 0px 0px 0px rgba(240,160,32,0)" };
+      var AMB1 = { backgroundColor: "rgba(240,160,32,0.075)", boxShadow: "inset 3px 0px 0px 0px rgba(240,160,32,0.8)" };
+      var RED1 = { backgroundColor: "rgba(229,72,77,0.13)", boxShadow: "inset 3px 0px 0px 0px rgba(229,72,77,1)" };
+      special.forEach(function (s) {
+        // "a pile of special cases": the pile lights up top → bottom as the wide lands
+        tl.fromTo(s.el, AMB0, Object.assign({ duration: 0.3, ease: "power2.out" }, AMB1), 1.96 + s.r * 0.013);
+        // "Every yes": each special case turns into a cost
+        tl.fromTo(s.el, AMB1, Object.assign({ duration: 0.25, ease: "power2.out", immediateRender: false }, RED1), 7.28 + s.r * 0.012);
+      });
+
+      // ---------- "Nobody remembers which customer got which deal": 3 flash-highlights + "?" chips ----------
+      [["h1", 3.1], ["h2", 3.68], ["h3", 4.26]].forEach(function (h) {
+        var wrap = byId(h[0]);
+        var bar = wrap.getElementsByClassName("03-pileup-hl-bar")[0];
+        var lab = wrap.getElementsByClassName("03-pileup-lab")[0];
+        tl.fromTo(bar, { scaleX: 0, backgroundColor: "rgba(52,213,153,0.7)" }, { scaleX: 1, backgroundColor: "rgba(52,213,153,0.26)", duration: 0.5, ease: "expo.out" }, h[1]);
+        tl.fromTo(lab,
+          { opacity: 0, scale: 0.85, x: -8, boxShadow: "inset 0 0 0 1px rgba(52,213,153,1), inset 0 0 14px -6px rgba(52,213,153,0.7), 0 0 34px 2px rgba(52,213,153,0.75), 0 16px 38px -10px rgba(0,0,0,0.75)" },
+          { opacity: 1, scale: 1, x: 0, boxShadow: "inset 0 0 0 1px rgba(52,213,153,0.85), inset 0 0 14px -6px rgba(52,213,153,0.35), 0 0 16px -6px rgba(52,213,153,0.4), 0 16px 38px -10px rgba(0,0,0,0.75)", duration: 0.45, ease: "expo.out" },
+          h[1] + 0.12);
+      });
+
+      // ---------- "nobody can tell which features make money": Revenue by feature ----------
+      tl.fromTo(byId("card"), { opacity: 0, x: 120 }, { opacity: 1, x: 0, duration: 0.55, ease: "expo.out" }, 5.28);
+      var qs = byId("card").getElementsByClassName("03-pileup-q");
+      [0, 1, 2, 3].forEach(function (i) {
+        var p = byId("draw" + i);
+        var len = 0;
+        try { len = p.getTotalLength(); } catch (e) { len = 0; }
+        if (!len) len = parseFloat(p.getAttribute("data-per"));
+        len = len * 1.05;
+        tl.fromTo(p, { strokeDasharray: len, strokeDashoffset: len }, { strokeDasharray: len, strokeDashoffset: 0, duration: 0.45, ease: "power3.out" }, 5.9 + i * 0.1);
+        tl.fromTo(qs[i], { opacity: 0, scale: 0.6, textShadow: "0 0 30px rgba(52,213,153,0.95)" }, { opacity: 1, scale: 1, textShadow: "0 0 18px rgba(52,213,153,0.35)", duration: 0.4, ease: "expo.out" }, 6.48 + i * 0.06);
+      });
+
+      // ---------- "Every yes was an expensive guess": wall dims, red "$?" glitch-punches in; hold ----------
+      var G = 8.34;
+      tl.fromTo(byId("dim"), { opacity: 0 }, { opacity: 0.56, duration: 0.45, ease: "power2.out" }, G - 0.06);
+      tl.fromTo(byId("glow"), { opacity: 0, scale: 0.6 }, { opacity: 1, scale: 1, duration: 0.6, ease: "expo.out" }, G);
+      tl.fromTo(byId("mark-s"), { scale: 1.42 }, { scale: 1, duration: 0.5, ease: "expo.out" }, G);
+      var main = byId("mk-main"), ga = byId("mk-a"), gb = byId("mk-b");
+      tl.fromTo(main, { opacity: 0 }, { opacity: 1, duration: 0.06, ease: "none" }, G);
+      // stepped glitch: x / skew jolts + RGB-split slices, one change per frame
+      var J = [[-12, 30], [8, -22], [-4, 10], [0, 0]];
+      J.forEach(function (j, k) { tl.set(main, { skewX: j[0], x: j[1] }, G + k * 2 * F); });
+      var A = [[-34, "inset(8% 0% 52% 0%)"], [26, "inset(48% 0% 18% 0%)"], [-18, "inset(22% 0% 40% 0%)"], [40, "inset(64% 0% 6% 0%)"], [-10, "inset(0% 0% 70% 0%)"], [12, "inset(35% 0% 35% 0%)"]];
+      A.forEach(function (a, k) {
+        tl.set(ga, { opacity: 0.9, x: a[0], clipPath: a[1] }, G + k * F);
+        tl.set(gb, { opacity: 0.8, x: -a[0] * 0.8, clipPath: A[(k + 3) % A.length][1] }, G + k * F);
+      });
+      tl.set([ga, gb], { opacity: 0 }, G + A.length * F);
+      // after-jolt on "guess" (8.93)
+      var G2 = 8.9;
+      tl.set(main, { x: -14, skewX: 5 }, G2);
+      tl.set(ga, { opacity: 0.85, x: 22, clipPath: "inset(30% 0% 44% 0%)" }, G2);
+      tl.set(gb, { opacity: 0.7, x: -18, clipPath: "inset(58% 0% 12% 0%)" }, G2);
+      tl.set(main, { x: 6, skewX: -2 }, G2 + F);
+      tl.set(ga, { x: -12, clipPath: "inset(12% 0% 66% 0%)" }, G2 + F);
+      tl.set([ga, gb], { opacity: 0 }, G2 + 2 * F);
+      tl.set(main, { x: 0, skewX: 0 }, G2 + 2 * F);
+      // 9.0–9.58: hold (no new reveals; the push + drift keep it alive)
+
+      window.__timelines["03-pileup"] = tl;
+    })();
+  </script>
+</div>
+</template>

@@ -1,0 +1,430 @@
+<template>
+<style>
+/* ==========================================================================
+   Offer SDK app kit — the offer-app dashboard (dark theme), rebuilt for video.
+   Values are copied from offer-app/src/app/globals.css (data-theme="dark") and
+   measured from the real screens in capture/assets/app/*.png.
+
+   HOW TO USE IN A FRAME
+   1. Paste this whole file inside the style block that lives inside your frame template.
+      (Template transport: styles must live inside the frame template.)
+   2. Build the window from shell.html. Author it at its LOGICAL size
+      (.ak-window is 1366×800 — a real laptop viewport, real 14px UI text) and
+      scale the wrapper with GSAP (scale ≈ 1.08–1.12 to fill the top 83%;
+      punch in to 1.5–1.9 on the region the VO is talking about).
+   3. Copy icons from icons.html (Lucide, the icon set the app uses).
+   All classes are prefixed ak- so they never collide with frame-local names.
+   ========================================================================== */
+
+@font-face { font-family: "Cal Sans"; src: url("assets/fonts/CalSansVF.woff2") format("woff2"); font-weight: 400 700; font-display: block; }
+@font-face { font-family: "Geist Mono"; src: url("assets/fonts/geist-mono-latin.woff2") format("woff2"); font-weight: 400 600; font-display: block; }
+
+.ak {
+  --canvas: #0f0f11; --panel: #161618; --bg: #18181b; --bg-subtle: #1c1c1f; --bg-muted: #222226;
+  --bg-hover: #27272c; --bg-active: #2e2e34; --bg-elevated: #202024; --bg-inverse: #f1f1f3;
+  --fg: #ececee; --fg-secondary: rgb(236 236 238 / .93); --fg-tertiary: rgb(236 236 238 / .86);
+  --fg-muted: rgb(236 236 238 / .68); --fg-placeholder: #6f7178; --fg-icon: #9c9ea5;
+  --border: #2a2a2f; --border-strong: #37373d; --border-input: #323238;
+  --accent: #34d599; --accent-hover: #5ce0b0; --accent-subtle: rgb(52 213 153 / .13); --accent-fg: #5fe3b1; --accent-contrast: #03140c; --ring: rgb(52 213 153 / .4);
+  --btn-neon-bg: rgb(52 213 153 / .08); --shadow-brand: inset 0 0 0 1px rgb(52 213 153 / .85), inset 0 0 14px -6px rgb(52 213 153 / .35), 0 0 16px -6px rgb(52 213 153 / .4);
+  --brand-vertical: linear-gradient(180deg, #4fe0b0, #2fc48c);
+  --success: #30a46c; --success-subtle: rgb(48 164 108 / .16); --success-fg: #5ed29a;
+  --danger: #e5484d; --danger-subtle: rgb(229 72 77 / .15); --danger-fg: #ff8a8d;
+  --warning: #f0a020; --warning-subtle: rgb(240 160 32 / .14); --warning-fg: #ffc35f;
+  --brand-from: #34d599; --brand-to: #2cc0de; --brand-gradient: linear-gradient(90deg, #34d599, #2cc0de);
+  --code-comment: #7f828a; --code-keyword: #5fe3b1; --code-string: #6fd69f; --code-key: #93b8ff; --code-number: #ffa072;
+  --zapier: #ff5f1f; --paypal: #0070e0;
+  --shadow-soft: 0 14px 36px -14px rgb(0 0 0 / .75), 0 2px 8px -2px rgb(0 0 0 / .45);
+  --shadow-lg: 0 18px 44px -10px rgb(0 0 0 / .7), 0 4px 12px -4px rgb(0 0 0 / .5);
+  font-family: "Cal Sans", ui-sans-serif, system-ui, sans-serif;
+  font-variation-settings: "GEOM" 25;           /* the app's UI geometry */
+  color: var(--fg); -webkit-font-smoothing: antialiased; font-size: 14px; line-height: 1.4;
+}
+.ak * { box-sizing: border-box; }
+.ak .ak-display { font-variation-settings: "GEOM" 50; letter-spacing: -0.01em; }
+/* Neon-style eyebrow: small mono caps (site + app section kickers). */
+.ak .ak-eyebrow { font-family: "Geist Mono", monospace; font-variation-settings: normal; font-size: 11px; line-height: 16px; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; color: var(--fg-muted); }
+.ak .ak-mono, .ak code { font-family: "Geist Mono", ui-monospace, monospace; font-variation-settings: normal; }
+.ak svg { display: block; flex-shrink: 0; }
+
+/* ---------- window + shell ---------- */
+.ak-window { position: absolute; width: 1366px; height: 800px; background: var(--canvas); border-radius: 18px;
+  border: 1px solid var(--border); box-shadow: 0 40px 120px -30px rgb(0 0 0 / .9), 0 0 0 1px rgb(255 255 255 / .03);
+  overflow: hidden; display: flex; padding: 6px 6px 6px 0; transform-origin: 50% 50%; }
+.ak-rail { width: 52px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; gap: 10px; padding-top: 8px; }
+.ak-rail .ak-rail-logo { width: 30px; height: 30px; border-radius: 8px; display: grid; place-items: center; color: var(--fg); }
+.ak-rail .ak-rail-logo svg { width: 18px; height: 18px; }
+.ak-rail .ak-rail-sep { width: 22px; height: 1px; background: var(--border); }
+.ak-rail .ak-app-tile { width: 28px; height: 28px; border-radius: 7px; display: grid; place-items: center; font-size: 11px; font-weight: 600; color: var(--accent-contrast);
+  background: var(--brand-vertical); }
+.ak-rail .ak-app-tile.is-active { box-shadow: 0 0 0 2px var(--canvas), 0 0 0 3.5px var(--accent); }
+.ak-rail .ak-app-tile.alt { opacity: .8; }
+.ak-rail .ak-rail-plus { color: var(--fg-icon); width: 16px; height: 16px; }
+.ak-rail .ak-rail-foot { margin-top: auto; padding-bottom: 6px; display: flex; flex-direction: column; align-items: center; gap: 14px; color: var(--fg-icon); }
+.ak-rail .ak-rail-foot svg { width: 15px; height: 15px; }
+.ak-rail .ak-avatar { width: 26px; height: 26px; border-radius: 50%; background: var(--bg-muted); color: var(--fg-secondary); font-size: 10px; display: grid; place-items: center; }
+
+.ak-nav { width: 222px; flex-shrink: 0; background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
+  margin-right: 6px; display: flex; flex-direction: column; padding: 12px 10px; box-shadow: var(--shadow-soft); }
+.ak-nav-title { font-size: 15px; font-weight: 600; padding: 2px 6px 10px; font-variation-settings: "GEOM" 50; }
+.ak-quick { height: 30px; border: 1px solid var(--border-input); border-radius: 8px; display: flex; align-items: center; gap: 8px; padding: 0 8px;
+  color: var(--fg-muted); font-size: 13px; margin-bottom: 10px; }
+.ak-quick svg { width: 14px; height: 14px; color: var(--fg-icon); }
+.ak-quick .ak-kbd { margin-left: auto; font-size: 10.5px; border: 1px solid var(--border); border-radius: 4px; padding: 0 4px; color: var(--fg-placeholder); }
+.ak-nav-group { display: flex; flex-direction: column; gap: 1px; padding: 6px 0; border-top: 1px solid var(--border); }
+.ak-nav-group:first-of-type { border-top: 0; padding-top: 0; }
+.ak-nav-item { height: 31px; border-radius: 7px; display: flex; align-items: center; gap: 10px; padding: 0 8px; font-size: 13.5px; color: var(--fg-secondary); }
+.ak-nav-item svg { width: 15px; height: 15px; color: var(--fg-icon); }
+.ak-nav-item .ak-count { margin-left: auto; font-size: 12px; color: var(--fg-muted); font-variant-numeric: tabular-nums; }
+.ak-nav-item.is-active { background: var(--accent-subtle); color: var(--accent-fg); }
+.ak-nav-item.is-active svg { color: var(--accent-fg); }
+.ak-nav-foot { margin-top: auto; }
+
+.ak-main { flex: 1; min-width: 0; background: var(--bg); border: 1px solid var(--border); border-radius: 12px; display: flex; flex-direction: column;
+  overflow: hidden; box-shadow: var(--shadow-soft); position: relative; }
+.ak-header { height: 50px; flex-shrink: 0; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; padding: 0 12px 0 16px; }
+.ak-header .ak-crumb { display: flex; align-items: center; gap: 9px; font-size: 14px; font-weight: 500; }
+.ak-header .ak-crumb svg { width: 15px; height: 15px; color: var(--fg-icon); }
+.ak-header .ak-crumb .ak-sep { color: var(--fg-placeholder); }
+.ak-header .ak-actions { margin-left: auto; display: flex; align-items: center; gap: 4px; }
+.ak-toolbar { height: 50px; flex-shrink: 0; display: flex; align-items: center; gap: 10px; padding: 0 16px; border-bottom: 1px solid var(--border); }
+.ak-body { flex: 1; min-height: 0; position: relative; overflow: hidden; }
+.ak-page { padding: 28px 40px; }
+.ak-page-title { font-size: 22px; font-weight: 600; font-variation-settings: "GEOM" 50; letter-spacing: -0.01em; }
+.ak-page-sub { color: var(--fg-muted); font-size: 13.5px; margin-top: 4px; }
+
+/* ---------- controls ---------- */
+.ak-btn { height: 30px; border-radius: 8px; display: inline-flex; align-items: center; gap: 7px; padding: 0 10px; font-size: 13.5px; color: var(--fg-secondary);
+  border: 1px solid transparent; white-space: nowrap; }
+.ak-btn svg { width: 14px; height: 14px; }
+.ak-btn.is-outline { border-color: var(--border-strong); background: var(--bg-subtle); }
+/* Primary = the app's neon button: hairline neon border, faint green wash, green ink. */
+.ak-btn.is-primary { background: var(--btn-neon-bg); color: var(--accent-fg); font-weight: 500; box-shadow: var(--shadow-brand); }
+.ak-btn.is-gradient { background: var(--btn-neon-bg); color: var(--accent-fg); font-weight: 500; box-shadow: var(--shadow-brand), 0 0 32px -8px rgb(52 213 153 / .55); }
+.ak-btn.is-solid { background: var(--brand-vertical); color: var(--accent-contrast); font-weight: 600; }
+.ak-btn.is-paypal { background: #ffc439; color: #111; font-weight: 600; }
+.ak-btn.is-lg { height: 40px; padding: 0 16px; font-size: 15px; border-radius: 10px; }
+.ak-input { height: 32px; border: 1px solid var(--border-input); background: var(--bg-subtle); border-radius: 8px; display: flex; align-items: center; gap: 8px;
+  padding: 0 10px; font-size: 13.5px; color: var(--fg); }
+.ak-input.is-placeholder { color: var(--fg-placeholder); }
+.ak-input.is-focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--ring); }
+.ak-input svg { width: 14px; height: 14px; color: var(--fg-icon); }
+.ak-label { font-size: 13px; color: var(--fg-secondary); font-weight: 500; margin-bottom: 6px; }
+.ak-seg { display: inline-flex; background: var(--bg-muted); border-radius: 8px; padding: 2px; gap: 2px; }
+.ak-seg > span { height: 26px; padding: 0 10px; border-radius: 6px; display: inline-flex; align-items: center; font-size: 13px; color: var(--fg-muted); }
+.ak-seg > span.is-on { background: var(--bg-active); color: var(--fg); }
+.ak-switch { width: 30px; height: 18px; border-radius: 9px; background: var(--bg-active); position: relative; flex-shrink: 0; }
+.ak-switch::after { content: ""; position: absolute; top: 2px; left: 2px; width: 14px; height: 14px; border-radius: 50%; background: #fff; }
+.ak-switch.is-on { background: var(--accent); }
+.ak-switch.is-on::after { background: var(--accent-contrast); }
+.ak-switch.is-on::after { left: 14px; }
+.ak-check { width: 16px; height: 16px; border-radius: 4px; border: 1px solid var(--border-strong); display: grid; place-items: center; }
+.ak-check.is-on { background: var(--accent); border-color: var(--accent); color: var(--accent-contrast); }
+.ak-check svg { width: 11px; height: 11px; }
+
+/* ---------- table (Plans / Entitlements / Add-ons / Incentives / Accounts) ---------- */
+.ak-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+.ak-table th { height: 42px; text-align: left; font-weight: 400; color: var(--fg-muted); padding: 0 14px; border-bottom: 1px solid var(--border); border-right: 1px solid var(--border); white-space: nowrap; }
+.ak-table th:last-child, .ak-table td:last-child { border-right: 0; }
+.ak-table th .ak-th { display: inline-flex; align-items: center; gap: 7px; }
+.ak-table th svg { width: 13px; height: 13px; color: var(--fg-icon); }
+.ak-table td { height: 46px; padding: 0 14px; border-bottom: 1px solid var(--border); border-right: 1px solid var(--border); white-space: nowrap; color: var(--fg-secondary); }
+.ak-table td.is-num { text-align: right; font-variant-numeric: tabular-nums; }
+.ak-table .ak-row-name { display: flex; align-items: center; gap: 9px; color: var(--fg); }
+.ak-table .ak-row-icon { width: 22px; height: 22px; border-radius: 6px; background: rgb(59 123 246 / .18); color: #93b8ff; display: grid; place-items: center; }
+.ak-table .ak-row-icon svg { width: 13px; height: 13px; }
+.ak-table tr.is-hl td { background: rgb(52 213 153 / .07); }
+.ak-table-foot { padding: 12px 16px; color: var(--fg-muted); font-size: 13px; }
+
+/* ---------- chips + tags ---------- */
+.ak-id { font-family: "Geist Mono", monospace; font-variation-settings: normal; font-size: 12px; background: var(--bg-muted); color: var(--fg-secondary);
+  border-radius: 5px; padding: 2px 6px; }
+.ak-tag { display: inline-flex; align-items: center; gap: 5px; height: 21px; padding: 0 7px; border-radius: 5px; font-size: 12px; white-space: nowrap;
+  background: rgb(255 255 255 / .08); color: #c6c7cc; }
+.ak-tag svg { width: 11px; height: 11px; }
+.ak-tag.blue { background: rgb(59 123 246 / .18); color: #93b8ff; }
+.ak-tag.green { background: rgb(48 164 108 / .18); color: #6fd69f; }
+.ak-tag.yellow { background: rgb(240 180 40 / .16); color: #f5c451; }
+.ak-tag.orange { background: rgb(235 104 52 / .18); color: #ffa072; }
+.ak-tag.red { background: rgb(229 72 77 / .18); color: #ff8a8d; }
+.ak-tag.purple { background: rgb(143 107 255 / .2); color: #bba6ff; }
+.ak-tag.brand { background: rgb(52 213 153 / .14); color: #5fe3b1; }
+.ak-tag.pink { background: rgb(224 69 123 / .18); color: #ff8fba; }
+.ak-tag.teal { background: rgb(20 163 157 / .18); color: #62d6cf; }
+.ak-more { color: var(--fg-muted); font-size: 12px; }
+
+/* ---------- cards, stats, meters ---------- */
+.ak-card { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; }
+.ak-card-head { height: 46px; display: flex; align-items: center; padding: 0 16px; border-bottom: 1px solid var(--border); font-weight: 500; font-size: 14px; }
+.ak-card-body { padding: 16px; }
+.ak-elevated { background: var(--bg-elevated); border: 1px solid var(--border-strong); border-radius: 12px; box-shadow: var(--shadow-lg); }
+.ak-stat-strip { display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+.ak-stat { padding: 16px 18px; border-right: 1px solid var(--border); }
+.ak-stat:last-child { border-right: 0; }
+.ak-stat-label { display: flex; align-items: center; gap: 7px; font-size: 13px; color: var(--fg-secondary); }
+.ak-stat-label svg { width: 13px; height: 13px; color: var(--fg-icon); }
+.ak-stat-value { font-size: 26px; font-weight: 600; margin-top: 8px; font-variant-numeric: tabular-nums; font-variation-settings: "GEOM" 50; }
+.ak-stat-sub { font-size: 12px; color: var(--fg-muted); margin-top: 4px; }
+.ak-meter { height: 8px; border-radius: 4px; background: var(--bg-active); overflow: hidden; }
+.ak-meter > i { display: block; height: 100%; width: 0; border-radius: 4px; background: var(--brand-gradient); }
+.ak-meter.is-warn > i { background: linear-gradient(90deg, #f0a020, #e5484d); }
+.ak-bar-row { position: relative; height: 30px; border-radius: 6px; display: flex; align-items: center; padding: 0 10px; font-size: 13.5px; }
+.ak-bar-row > b { position: absolute; inset: 0 auto 0 0; border-radius: 6px; background: linear-gradient(90deg, rgb(52 213 153 / .32), rgb(44 192 222 / .22)); font-weight: 400; }
+.ak-bar-row > span { position: relative; }
+.ak-bar-row > .ak-bar-val { margin-left: auto; color: var(--fg-secondary); font-variant-numeric: tabular-nums; }
+
+/* ---------- code block (site CodeBlock look) ---------- */
+.ak-code { background: #131315; border: 1px solid var(--border); border-radius: 14px; overflow: hidden; box-shadow: var(--shadow-lg); }
+.ak-code-bar { height: 40px; display: flex; align-items: center; gap: 8px; padding: 0 14px; border-bottom: 1px solid var(--border); color: var(--fg-muted); font-size: 13px; }
+.ak-code-bar .ak-dots { display: flex; gap: 6px; margin-right: 6px; }
+.ak-code-bar .ak-dots i { width: 10px; height: 10px; border-radius: 50%; background: var(--bg-active); }
+.ak-code pre { margin: 0; padding: 18px 20px; font-family: "Geist Mono", monospace; font-variation-settings: normal; font-size: 15px; line-height: 1.65; color: var(--fg-secondary); white-space: pre; }
+.ak-code .k { color: var(--code-keyword); } .ak-code .s { color: var(--code-string); } .ak-code .p { color: var(--code-key); }
+.ak-code .n { color: var(--code-number); } .ak-code .c { color: var(--code-comment); } .ak-code .f { color: #ececee; }
+.ak-code .del { background: rgb(229 72 77 / .14); } .ak-code .add { background: rgb(48 164 108 / .14); }
+
+/* ---------- feedback ---------- */
+.ak-toast { position: absolute; display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 10px; background: var(--bg-elevated);
+  border: 1px solid var(--border-strong); box-shadow: var(--shadow-lg); font-size: 13.5px; white-space: nowrap; }
+.ak-toast svg { width: 15px; height: 15px; }
+.ak-toast.is-ok svg { color: var(--success-fg); }
+.ak-toast.is-warn svg { color: var(--warning-fg); }
+.ak-toast.is-bad svg { color: var(--danger-fg); }
+.ak-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--success); display: inline-block; }
+.ak-dot.is-warn { background: var(--warning); } .ak-dot.is-bad { background: var(--danger); }
+.ak-cursor { position: absolute; width: 22px; height: 22px; z-index: 50; pointer-events: none; filter: drop-shadow(0 2px 4px rgb(0 0 0 / .6)); }
+.ak-ripple { position: absolute; width: 36px; height: 36px; margin: -18px 0 0 -18px; border-radius: 50%; border: 2px solid var(--accent-fg); z-index: 49; opacity: 0; }
+
+/* ---------- avatars + misc ---------- */
+.ak-av { width: 22px; height: 22px; border-radius: 6px; display: grid; place-items: center; font-size: 9.5px; font-weight: 600; background: rgb(52 213 153 / .14); color: #5fe3b1; }
+.ak-av.round { border-radius: 50%; }
+.ak-kv { display: flex; justify-content: space-between; font-size: 13px; padding: 7px 0; border-bottom: 1px solid var(--border); color: var(--fg-muted); }
+.ak-kv b { font-weight: 400; color: var(--fg); }
+.ak-divider { height: 1px; background: var(--border); }
+
+/* ===== frame 12-addons ===== */
+#root { position: absolute; inset: 0; width: 1920px; height: 1080px; overflow: hidden; }
+[id="12-addons-bg"] { position: absolute; inset: 0; background: #0f0f11; }
+[id="12-addons-stage"] { position: absolute; inset: 0; overflow: hidden; }
+[id="12-addons-cam"] { position: absolute; left: 0; top: 0; width: 1366px; height: 800px; transform-origin: 0 0; will-change: transform; }
+[id="12-addons-window"] { left: 0; top: 0; }
+[id="12-addons-window"] .ak-row-icon { width: 20px; height: 20px; background: rgb(255 255 255 / .05); color: var(--fg-placeholder); }
+[id="12-addons-window"] .ak-row-icon svg { width: 12px; height: 12px; }
+[id="12-addons-window"] .ak-id { display: inline-block; }
+[id="12-addons-newbtn"] { position: relative; }
+[class~="12-addons-tbl"] { table-layout: fixed; }
+[class~="12-addons-tbl"] td { overflow: hidden; height: 45px; }
+[id="12-addons-rows"] { position: absolute; left: 0; right: 0; top: 42px; height: 300px; }
+[class~="12-addons-row"] { position: absolute; left: 0; right: 0; height: 46px; background: var(--bg); z-index: 1; }
+[class~="12-addons-row"] > table { position: relative; z-index: 1; }
+[id="12-addons-row1"], [id="12-addons-row2"] { z-index: 3; }
+[class~="12-addons-hl"] { position: absolute; inset: 0; z-index: 0; background: rgb(52 213 153 / .08); box-shadow: inset 2px 0 0 var(--accent); opacity: 0; }
+[class~="12-addons-foot"] { position: absolute; left: 0; right: 0; top: 138px; height: 42px; display: flex; align-items: center; border-bottom: 1px solid var(--border); background: var(--bg); padding: 0 16px; z-index: 2; }
+[class~="12-addons-stack"] { display: inline-grid; }
+[class~="12-addons-stack"] > span { grid-area: 1 / 1; }
+[class~="12-addons-cell"] { display: inline-block; }
+[class~="12-addons-used"] { transform-origin: 0% 50%; }
+[class~="12-addons-field"] { position: relative; display: inline-flex; align-items: center; min-width: 150px; height: 20px; }
+[class~="12-addons-chrome"] { position: absolute; top: -6px; bottom: -6px; left: -8px; right: -10px; border: 1px solid var(--accent); background: var(--bg-subtle); border-radius: 7px; box-shadow: 0 0 0 3px var(--ring), 0 0 14px -4px rgb(52 213 153 / .45); z-index: 0; }
+[class~="12-addons-typed"] { position: relative; z-index: 1; display: inline-flex; align-items: center; white-space: pre; color: var(--fg); }
+[class~="12-addons-typed"] > span { display: none; }
+[class~="12-addons-caret"] { display: inline-block; width: 1.5px; height: 15px; margin-left: 1px; background: var(--accent-fg); opacity: 0; }
+
+/* the plan stack: Pro pill at the base, add-on chips land on top of it */
+[id="12-addons-glow"] { position: absolute; left: 249px; top: 225px; width: 580px; height: 330px; background: radial-gradient(closest-side, rgb(52 213 153 / .2), transparent); opacity: 0; pointer-events: none; }
+[class~="12-addons-flash"] { position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: 0;
+  box-shadow: inset 0 0 0 1.5px rgb(95 227 177 / .95), 0 0 26px 2px rgb(52 213 153 / .6); }
+[class~="12-addons-chip"] { position: absolute; left: 464px; width: 150px; height: 30px; z-index: 6; border-radius: 999px;
+  display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 13.5px; font-weight: 500; color: var(--accent-fg); white-space: nowrap;
+  background: #17221e; box-shadow: inset 0 0 0 1px rgb(52 213 153 / .6), 0 0 14px -6px rgb(52 213 153 / .5), 0 8px 18px -10px rgb(0 0 0 / .8); }
+[class~="12-addons-chip"] svg { width: 12px; height: 12px; }
+[id="12-addons-chip1"] { top: 368px; }
+[id="12-addons-chip2"] { top: 330px; }
+[id="12-addons-pill"] { position: absolute; left: 451px; top: 406px; width: 176px; height: 46px; z-index: 5; border-radius: 999px;
+  display: flex; align-items: center; justify-content: center; gap: 9px; padding: 0 14px 0 8px; white-space: nowrap; transform-origin: 50% 100%;
+  background: var(--bg-elevated); box-shadow: var(--shadow-brand), var(--shadow-lg); }
+[class~="12-addons-pill-ic"] { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; background: var(--accent-subtle); color: var(--accent-fg); }
+[class~="12-addons-pill-ic"] svg { width: 15px; height: 15px; }
+[class~="12-addons-pill-name"] { font-size: 16px; font-weight: 600; font-variation-settings: "GEOM" 50; color: var(--fg); }
+[class~="12-addons-pill-price"] { font-size: 13.5px; color: var(--fg-muted); }
+[id="12-addons-rip1"], [id="12-addons-rip2"] { left: 1292px; top: 32px; }
+</style>
+<div id="root" data-composition-id="12-addons" data-width="1920" data-height="1080" data-duration="4.49">
+  <div id="12-addons-bg" class="clip" data-start="0" data-duration="4.49" data-track-index="0"></div>
+  <div id="12-addons-stage" class="clip" data-start="0" data-duration="4.49" data-track-index="1">
+    <div id="12-addons-cam">
+<div class="ak ak-window" id="12-addons-window">
+  <aside class="ak-rail">
+    <div class="ak-rail-logo"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 13.74a2 2 0 0 1-2 0L2.5 8.87a1 1 0 0 1 0-1.74L11 2.26a2 2 0 0 1 2 0l8.5 4.87a1 1 0 0 1 0 1.74z"/><path d="m20 14.285 1.5.845a1 1 0 0 1 0 1.74L13 21.74a2 2 0 0 1-2 0l-8.5-4.87a1 1 0 0 1 0-1.74l1.5-.845"/></svg></div>
+    <div class="ak-rail-sep"></div>
+    <div class="ak-app-tile is-active">AA</div>
+    <div class="ak-app-tile alt">CH</div>
+    <div class="ak-rail-plus"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg></div>
+    <div class="ak-rail-foot"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"/><circle cx="12" cy="12" r="3"/></svg><div class="ak-avatar">DA</div></div>
+  </aside>
+  <nav class="ak-nav">
+    <div class="ak-nav-title">AmazingApp AI</div>
+    <div class="ak-quick"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg><span>Quick actions</span><span class="ak-kbd">⌘K</span></div>
+    <div class="ak-nav-group">
+      <div class="ak-nav-item" data-nav="overview"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Overview</div>
+      <div class="ak-nav-item" data-nav="analytics"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>Analytics</div>
+      <div class="ak-nav-item" data-nav="agent"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z"/><path d="M20 2v4"/><path d="M22 4h-4"/><circle cx="4" cy="20" r="2"/></svg>Agent</div>
+      <div class="ak-nav-item" data-nav="offers"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z"/><path d="m15 9-6 6"/><path d="M9 9h.01"/><path d="M15 15h.01"/></svg>Offers</div>
+      <div class="ak-nav-item" data-nav="cancel-flow"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 21H2"/><path d="M10 3H7a2 2 0 00-2 2v16"/><path d="M14 12h.01"/><path d="M19 21V5a2 2 0 00-1.675-1.974l-6.163-1.013A1 1 0 0010 3v18a1 1 0 001.124.992z"/><path d="M22 21h-3"/></svg>Cancel flow</div>
+    </div>
+    <div class="ak-nav-group">
+      <div class="ak-nav-item" data-nav="plans"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83z"/><path d="M2 12a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 12"/><path d="M2 17a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 17"/></svg>Plans<span class="ak-count">5</span></div>
+      <div class="ak-nav-item" data-nav="entitlements"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z"/><circle cx="16.5" cy="7.5" r=".5" fill="currentColor"/></svg>Entitlements<span class="ak-count">9</span></div>
+      <div class="ak-nav-item is-active" data-nav="addons"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15.39 4.39a1 1 0 0 0 1.68-.474 2.5 2.5 0 1 1 3.014 3.015 1 1 0 0 0-.474 1.68l1.683 1.682a2.414 2.414 0 0 1 0 3.414L19.61 15.39a1 1 0 0 1-1.68-.474 2.5 2.5 0 1 0-3.014 3.015 1 1 0 0 1 .474 1.68l-1.683 1.682a2.414 2.414 0 0 1-3.414 0L8.61 19.61a1 1 0 0 0-1.68.474 2.5 2.5 0 1 1-3.014-3.015 1 1 0 0 0 .474-1.68l-1.683-1.682a2.414 2.414 0 0 1 0-3.414L4.39 8.61a1 1 0 0 1 1.68.474 2.5 2.5 0 1 0 3.014-3.015 1 1 0 0 1-.474-1.68l1.683-1.682a2.414 2.414 0 0 1 3.414 0z"/></svg>Add-ons<span class="ak-count 12-addons-stack"><span id="12-addons-n3">3</span><span id="12-addons-n4">4</span><span id="12-addons-n5">5</span></span></div>
+      <div class="ak-nav-item" data-nav="incentives"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 7v14"/><path d="M20 11v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-8"/><path d="M7.5 7a1 1 0 0 1 0-5A4.8 8 0 0 1 12 7a4.8 8 0 0 1 4.5-5 1 1 0 0 1 0 5"/><rect x="3" y="7" width="18" height="4" rx="1"/></svg>Incentives<span class="ak-count">4</span></div>
+    </div>
+    <div class="ak-nav-group">
+      <div class="ak-nav-item" data-nav="accounts"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><path d="M16 3.128a4 4 0 0 1 0 7.744"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><circle cx="9" cy="7" r="4"/></svg>Accounts<span class="ak-count">64</span></div>
+    </div>
+    <div class="ak-nav-group">
+      <div class="ak-nav-item" data-nav="integration"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 18 6-6-6-6"/><path d="m8 6-6 6 6 6"/></svg>Integration</div>
+      <div class="ak-nav-item" data-nav="api"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H7a2 2 0 0 0-2 2v5a2 2 0 0 1-2 2 2 2 0 0 1 2 2v5c0 1.1.9 2 2 2h1"/><path d="M16 21h1a2 2 0 0 0 2-2v-5c0-1.1.9-2 2-2a2 2 0 0 1-2-2V5a2 2 0 0 0-2-2h-1"/></svg>API reference</div>
+      <div class="ak-nav-item" data-nav="mcp"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22v-5"/><path d="M15 8V2"/><path d="M17 8a1 1 0 0 1 1 1v4a4 4 0 0 1-4 4h-4a4 4 0 0 1-4-4V9a1 1 0 0 1 1-1z"/><path d="M9 8V2"/></svg>MCP server</div>
+      <div class="ak-nav-item" data-nav="keys"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m2 21 9.6-9.6"/><path d="m7.5 15.5 2.3 2.3a1 1 0 0 1 0 1.4l-2.1 2.1a1 1 0 0 1-1.4 0L4 19"/><circle cx="15.5" cy="7.5" r="5.5"/></svg>API keys</div>
+      <div class="ak-nav-item" data-nav="webhooks"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 16.98h-5.99c-1.1 0-1.95.94-2.48 1.9A4 4 0 0 1 2 17c.01-.7.2-1.4.57-2"/><path d="m6 17 3.13-5.78c.53-.97.1-2.18-.5-3.1a4 4 0 1 1 6.89-4.06"/><path d="m12 6 3.13 5.73C15.66 12.7 16.9 13 18 13a4 4 0 0 1 0 8"/></svg>Webhooks</div>
+    </div>
+    <div class="ak-nav-foot"><div class="ak-nav-item"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"/><circle cx="12" cy="12" r="3"/></svg>App settings</div></div>
+  </nav>
+  <main class="ak-main">
+    <header class="ak-header">
+      <div class="ak-crumb"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15.39 4.39a1 1 0 0 0 1.68-.474 2.5 2.5 0 1 1 3.014 3.015 1 1 0 0 0-.474 1.68l1.683 1.682a2.414 2.414 0 0 1 0 3.414L19.61 15.39a1 1 0 0 1-1.68-.474 2.5 2.5 0 1 0-3.014 3.015 1 1 0 0 1 .474 1.68l-1.683 1.682a2.414 2.414 0 0 1-3.414 0L8.61 19.61a1 1 0 0 0-1.68.474 2.5 2.5 0 1 1-3.014-3.015 1 1 0 0 0 .474-1.68l-1.683-1.682a2.414 2.414 0 0 1 0-3.414L4.39 8.61a1 1 0 0 1 1.68.474 2.5 2.5 0 1 0 3.014-3.015 1 1 0 0 1-.474-1.68l1.683-1.682a2.414 2.414 0 0 1 3.414 0z"/></svg>Add-ons</div>
+      <div class="ak-actions">
+        <span class="ak-btn"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 18 6-6-6-6"/><path d="m8 6-6 6 6 6"/></svg>Use SDK</span>
+        <span class="ak-btn"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H7a2 2 0 0 0-2 2v5a2 2 0 0 1-2 2 2 2 0 0 1 2 2v5c0 1.1.9 2 2 2h1"/><path d="M16 21h1a2 2 0 0 0 2-2v-5c0-1.1.9-2 2-2a2 2 0 0 1-2-2V5a2 2 0 0 0-2-2h-1"/></svg>Use API</span>
+        <span class="ak-btn"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>How Add-ons Work</span>
+        <span class="ak-btn is-primary" id="12-addons-newbtn"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>New add-on</span>
+      </div>
+    </header>
+    <div class="ak-toolbar"><div class="ak-input is-placeholder" style="width:180px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg>Search add-ons</div></div>
+    <div class="ak-body" id="12-addons-body">
+      <table class="ak-table 12-addons-tbl"><colgroup><col style="width:240px"><col style="width:165px"><col style="width:314px"><col style="width:207px"><col style="width:126px"><col></colgroup><thead><tr><th><span class="ak-th"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15.39 4.39a1 1 0 0 0 1.68-.474 2.5 2.5 0 1 1 3.014 3.015 1 1 0 0 0-.474 1.68l1.683 1.682a2.414 2.414 0 0 1 0 3.414L19.61 15.39a1 1 0 0 1-1.68-.474 2.5 2.5 0 1 0-3.014 3.015 1 1 0 0 1 .474 1.68l-1.683 1.682a2.414 2.414 0 0 1-3.414 0L8.61 19.61a1 1 0 0 0-1.68.474 2.5 2.5 0 1 1-3.014-3.015 1 1 0 0 0 .474-1.68l-1.683-1.682a2.414 2.414 0 0 1 0-3.414L4.39 8.61a1 1 0 0 1 1.68.474 2.5 2.5 0 1 0 3.014-3.015 1 1 0 0 1-.474-1.68l1.683-1.682a2.414 2.414 0 0 1 3.414 0z"/></svg>Add-on</span></th><th><span class="ak-th"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="20" y1="9" y2="9"/><line x1="4" x2="20" y1="15" y2="15"/><line x1="10" x2="8" y1="3" y2="21"/><line x1="16" x2="14" y1="3" y2="21"/></svg>ID</span></th><th><span class="ak-th"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"/><path d="M14 2v5a1 1 0 0 0 1 1h5"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>Description</span></th><th><span class="ak-th"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83z"/><path d="M2 12a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 12"/><path d="M2 17a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 17"/></svg>Used in</span></th><th><span class="ak-th"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v3"/><path d="M16 2v3"/><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/></svg>Created</span></th><th></th></tr></thead></table>
+      <div id="12-addons-rows">
+        <div class="12-addons-row" id="12-addons-rowa" style="top:0px"><table class="ak-table 12-addons-tbl"><colgroup><col style="width:240px"><col style="width:165px"><col style="width:314px"><col style="width:207px"><col style="width:126px"><col></colgroup><tbody><tr><td><span class="ak-row-name"><span class="ak-row-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15.39 4.39a1 1 0 0 0 1.68-.474 2.5 2.5 0 1 1 3.014 3.015 1 1 0 0 0-.474 1.68l1.683 1.682a2.414 2.414 0 0 1 0 3.414L19.61 15.39a1 1 0 0 1-1.68-.474 2.5 2.5 0 1 0-3.014 3.015 1 1 0 0 1 .474 1.68l-1.683 1.682a2.414 2.414 0 0 1-3.414 0L8.61 19.61a1 1 0 0 0-1.68.474 2.5 2.5 0 1 1-3.014-3.015 1 1 0 0 0 .474-1.68l-1.683-1.682a2.414 2.414 0 0 1 0-3.414L4.39 8.61a1 1 0 0 1 1.68.474 2.5 2.5 0 1 0 3.014-3.015 1 1 0 0 1-.474-1.68l1.683-1.682a2.414 2.414 0 0 1 3.414 0z"/></svg></span>AI boost</span></td><td><span class="ak-id">ai_boost</span></td><td>Faster models and higher rate limits.</td><td><span class="ak-tag">2 plans</span> <span class="ak-tag orange">1 incentive</span></td><td>Oct 5, 2026</td><td></td></tr></tbody></table></div><div class="12-addons-row" id="12-addons-rowb" style="top:46px"><table class="ak-table 12-addons-tbl"><colgroup><col style="width:240px"><col style="width:165px"><col style="width:314px"><col style="width:207px"><col style="width:126px"><col></colgroup><tbody><tr><td><span class="ak-row-name"><span class="ak-row-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15.39 4.39a1 1 0 0 0 1.68-.474 2.5 2.5 0 1 1 3.014 3.015 1 1 0 0 0-.474 1.68l1.683 1.682a2.414 2.414 0 0 1 0 3.414L19.61 15.39a1 1 0 0 1-1.68-.474 2.5 2.5 0 1 0-3.014 3.015 1 1 0 0 1 .474 1.68l-1.683 1.682a2.414 2.414 0 0 1-3.414 0L8.61 19.61a1 1 0 0 0-1.68.474 2.5 2.5 0 1 1-3.014-3.015 1 1 0 0 0 .474-1.68l-1.683-1.682a2.414 2.414 0 0 1 0-3.414L4.39 8.61a1 1 0 0 1 1.68.474 2.5 2.5 0 1 0 3.014-3.015 1 1 0 0 1-.474-1.68l1.683-1.682a2.414 2.414 0 0 1 3.414 0z"/></svg></span>Extra storage pack</span></td><td><span class="ak-id">extra_storage</span></td><td>+500 GB of storage.</td><td><span class="ak-tag">1 plan</span></td><td>Oct 5, 2026</td><td></td></tr></tbody></table></div><div class="12-addons-row" id="12-addons-rowc" style="top:92px"><table class="ak-table 12-addons-tbl"><colgroup><col style="width:240px"><col style="width:165px"><col style="width:314px"><col style="width:207px"><col style="width:126px"><col></colgroup><tbody><tr><td><span class="ak-row-name"><span class="ak-row-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15.39 4.39a1 1 0 0 0 1.68-.474 2.5 2.5 0 1 1 3.014 3.015 1 1 0 0 0-.474 1.68l1.683 1.682a2.414 2.414 0 0 1 0 3.414L19.61 15.39a1 1 0 0 1-1.68-.474 2.5 2.5 0 1 0-3.014 3.015 1 1 0 0 1 .474 1.68l-1.683 1.682a2.414 2.414 0 0 1-3.414 0L8.61 19.61a1 1 0 0 0-1.68.474 2.5 2.5 0 1 1-3.014-3.015 1 1 0 0 0 .474-1.68l-1.683-1.682a2.414 2.414 0 0 1 0-3.414L4.39 8.61a1 1 0 0 1 1.68.474 2.5 2.5 0 1 0 3.014-3.015 1 1 0 0 1-.474-1.68l1.683-1.682a2.414 2.414 0 0 1 3.414 0z"/></svg></span>White-label</span></td><td><span class="ak-id">white_label</span></td><td>Remove all product branding.</td><td><span class="ak-tag">1 plan</span></td><td>Oct 5, 2026</td><td></td></tr></tbody></table></div><div class="12-addons-row" id="12-addons-row1" style="top:138px"><i class="12-addons-hl" id="12-addons-hl1"></i><table class="ak-table 12-addons-tbl"><colgroup><col style="width:240px"><col style="width:165px"><col style="width:314px"><col style="width:207px"><col style="width:126px"><col></colgroup><tbody><tr><td><span class="ak-row-name"><span class="ak-row-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15.39 4.39a1 1 0 0 0 1.68-.474 2.5 2.5 0 1 1 3.014 3.015 1 1 0 0 0-.474 1.68l1.683 1.682a2.414 2.414 0 0 1 0 3.414L19.61 15.39a1 1 0 0 1-1.68-.474 2.5 2.5 0 1 0-3.014 3.015 1 1 0 0 1 .474 1.68l-1.683 1.682a2.414 2.414 0 0 1-3.414 0L8.61 19.61a1 1 0 0 0-1.68.474 2.5 2.5 0 1 1-3.014-3.015 1 1 0 0 0 .474-1.68l-1.683-1.682a2.414 2.414 0 0 1 0-3.414L4.39 8.61a1 1 0 0 1 1.68.474 2.5 2.5 0 1 0 3.014-3.015 1 1 0 0 1-.474-1.68l1.683-1.682a2.414 2.414 0 0 1 3.414 0z"/></svg></span><span class="12-addons-field"><i class="12-addons-chrome" id="12-addons-chrome1"></i><span class="12-addons-typed" id="12-addons-typed1"><span>T</span><span>e</span><span>m</span><span>p</span><span>l</span><span>a</span><span>t</span><span>e</span><span> </span><span>p</span><span>a</span><span>c</span><span>k</span><b class="12-addons-caret" id="12-addons-caret1"></b></span></span></span></td><td><span class="ak-id" id="12-addons-id1">template_pack</span></td><td><span class="12-addons-cell" id="12-addons-desc1">+$19</span></td><td><span class="ak-tag brand 12-addons-used" id="12-addons-used1"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83z"/><path d="M2 12a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 12"/><path d="M2 17a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 17"/></svg>Pro</span></td><td><span class="12-addons-cell" id="12-addons-date1">Oct 6, 2026</span></td><td></td></tr></tbody></table></div><div class="12-addons-row" id="12-addons-row2" style="top:184px"><i class="12-addons-hl" id="12-addons-hl2"></i><table class="ak-table 12-addons-tbl"><colgroup><col style="width:240px"><col style="width:165px"><col style="width:314px"><col style="width:207px"><col style="width:126px"><col></colgroup><tbody><tr><td><span class="ak-row-name"><span class="ak-row-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15.39 4.39a1 1 0 0 0 1.68-.474 2.5 2.5 0 1 1 3.014 3.015 1 1 0 0 0-.474 1.68l1.683 1.682a2.414 2.414 0 0 1 0 3.414L19.61 15.39a1 1 0 0 1-1.68-.474 2.5 2.5 0 1 0-3.014 3.015 1 1 0 0 1 .474 1.68l-1.683 1.682a2.414 2.414 0 0 1-3.414 0L8.61 19.61a1 1 0 0 0-1.68.474 2.5 2.5 0 1 1-3.014-3.015 1 1 0 0 0 .474-1.68l-1.683-1.682a2.414 2.414 0 0 1 0-3.414L4.39 8.61a1 1 0 0 1 1.68.474 2.5 2.5 0 1 0 3.014-3.015 1 1 0 0 1-.474-1.68l1.683-1.682a2.414 2.414 0 0 1 3.414 0z"/></svg></span>Credit top-up</span></td><td><span class="ak-id">credit_topup</span></td><td>+1,000 AI credits</td><td><span class="ak-tag brand 12-addons-used" id="12-addons-used2"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83z"/><path d="M2 12a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 12"/><path d="M2 17a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 17"/></svg>Pro</span></td><td>Oct 6, 2026</td><td></td></tr></tbody></table></div>
+        <div class="ak-table-foot 12-addons-foot" id="12-addons-foot"><span class="12-addons-stack"><span id="12-addons-f3">3 add-ons</span><span id="12-addons-f4">4 add-ons</span><span id="12-addons-f5">5 add-ons</span></span></div>
+      </div>
+      <div id="12-addons-glow"></div>
+      <div class="12-addons-chip" id="12-addons-chip2"><i class="12-addons-flash"></i><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg><span>Credit top-up</span></div>
+      <div class="12-addons-chip" id="12-addons-chip1"><i class="12-addons-flash"></i><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg><span>Template pack</span></div>
+      <div id="12-addons-pill"><i class="12-addons-flash" id="12-addons-pillflash"></i><span class="12-addons-pill-ic"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83z"/><path d="M2 12a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 12"/><path d="M2 17a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 17"/></svg></span><span class="12-addons-pill-name">Pro</span><span class="12-addons-pill-price">$29/mo</span></div>
+    </div>
+  </main>
+  <!-- CURSOR: position with GSAP x/y; tip is at the element's top-left. -->
+  <svg class="ak-cursor" id="12-addons-cursor" viewBox="0 0 24 24" style="left:0;top:0"><path d="M4 2.5 L4 19 L8.6 14.8 L11.6 21.5 L14.4 20.3 L11.5 13.7 L17.8 13.4 Z" fill="#fff" stroke="#111" stroke-width="1.3" stroke-linejoin="round"/></svg>
+  <div class="ak-ripple" id="12-addons-rip1"></div>
+  <div class="ak-ripple" id="12-addons-rip2"></div>
+</div>
+    </div>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<script>
+(function () {
+  var P = "12-addons-";
+  function $(id) { return document.getElementById(P + id); }
+  window.__timelines = window.__timelines || {};
+  var tl = gsap.timeline({ paused: true });
+  /* Cue sheet (s): Add-ons .11 · extras .67 · top 1.19 · plan 1.55 · like a 2.04 · template 2.09 · pack 2.49
+     · or a 2.79 · credit 2.92 · top-up 3.33 · speech ends ~3.63 · frame 3.99 */
+
+  /* ---------- camera: rest (center 960,470 @1.1) -> punch lands on "plan" -> slow drift toward the plan stack ---------- */
+  var cam = $("cam");
+  // punch: rail slides off-left, the page card's right edge stays in frame (x 1912)
+  tl.fromTo(cam, { x: 208.7, y: 30, scale: 1.1 }, { x: -68.7, y: 30, scale: 1.45, duration: 1.0, ease: "power3.inOut" }, 0.5);
+  // drift 1.45 -> 1.47 pinned at window (1366, 559) = right edge / pill base, so "New add-on" never clips
+  tl.to(cam, { x: -96.0, y: 18.8, scale: 1.47, duration: 2.49, ease: "power1.inOut" }, 1.5);
+
+  /* ---------- "Add-ons": the real rows snap in ---------- */
+  ["rowa", "rowb", "rowc", "foot"].forEach(function (id, i) {
+    tl.fromTo($(id), { opacity: 0, x: -14 }, { opacity: 1, x: 0, duration: 0.4, ease: "expo.out" }, 0.02 + i * 0.05);
+  });
+
+  /* ---------- "on top of a plan": Pro plan pill pops, neon flash peaks on "plan" ---------- */
+  tl.fromTo($("glow"), { opacity: 0 }, { opacity: 0.75, duration: 0.6, ease: "power2.out" }, 1.25);
+  tl.fromTo($("pill"), { opacity: 0, y: 14, scale: 0.85 }, { opacity: 1, y: 0, scale: 1, duration: 0.5, ease: "expo.out" }, 1.28);
+  tl.fromTo($("pillflash"), { opacity: 0 }, { opacity: 1, duration: 0.14, ease: "power2.out" }, 1.4);
+  tl.to($("pillflash"), { opacity: 0, duration: 0.5, ease: "power2.out" }, 1.58);
+
+  /* ---------- cursor glides in to "New add-on" ---------- */
+  var cur = $("cursor");
+  tl.fromTo(cur, { x: 1170, y: 175, opacity: 0, scale: 1, transformOrigin: "0% 0%" }, { opacity: 1, duration: 0.2, ease: "power2.out" }, 1.3);
+  tl.fromTo(cur, { x: 1170, y: 175 }, { x: 1289, y: 30, duration: 0.55, ease: "power3.inOut", immediateRender: false }, 1.33);
+  var btn = $("newbtn");
+  function click(t, rip) {
+    tl.to(cur, { scale: 0.84, duration: 0.07, ease: "power2.out" }, t - 0.03);
+    tl.to(cur, { scale: 1, duration: 0.25, ease: "power3.out" }, t + 0.04);
+    tl.to(btn, { scale: 0.96, duration: 0.07, ease: "power2.out" }, t - 0.03);
+    tl.to(btn, { scale: 1, duration: 0.3, ease: "power3.out" }, t + 0.04);
+    tl.fromTo($(rip), { scale: 0.4, opacity: 0.95 }, { scale: 1.8, opacity: 0, duration: 0.45, ease: "power3.out", immediateRender: false }, t);
+  }
+
+  /* ---------- "like a template pack": new row pops, name types in ---------- */
+  click(1.93, "rip1");
+  tl.to($("foot"), { y: 46, duration: 0.4, ease: "expo.out" }, 1.95);
+  tl.fromTo($("row1"), { opacity: 0, y: -8 }, { opacity: 1, y: 0, duration: 0.38, ease: "expo.out" }, 1.96);
+  tl.fromTo($("hl1"), { opacity: 0 }, { opacity: 1, duration: 0.2, ease: "power2.out" }, 1.96);
+  tl.fromTo($("caret1"), { opacity: 0 }, { opacity: 1, duration: 0.01 }, 2.0);
+  var chars = $("typed1").querySelectorAll("span");
+  for (var i = 0; i < chars.length; i++) tl.set(chars[i], { display: "inline" }, 2.06 + i * 0.027);
+  // commit on "pack"
+  tl.to($("caret1"), { opacity: 0, duration: 0.01 }, 2.42);
+  tl.to($("chrome1"), { opacity: 0, duration: 0.05, ease: "power2.out" }, 2.39);
+  tl.fromTo($("id1"), { opacity: 0, scale: 0.85, transformOrigin: "0% 50%" }, { opacity: 1, scale: 1, duration: 0.35, ease: "expo.out" }, 2.42);
+  tl.fromTo($("desc1"), { opacity: 0, x: -6 }, { opacity: 1, x: 0, duration: 0.35, ease: "expo.out" }, 2.45);
+  tl.fromTo($("date1"), { opacity: 0, x: -6 }, { opacity: 1, x: 0, duration: 0.35, ease: "expo.out" }, 2.48);
+  tl.to($("hl1"), { opacity: 0, duration: 0.4, ease: "power2.out" }, 2.6);
+  // counts 3 -> 4
+  [["n3", "n4"], ["f3", "f4"]].forEach(function (p) {
+    tl.fromTo($(p[0]), { opacity: 1, y: 0 }, { opacity: 0, y: -6, duration: 0.12, ease: "power2.out", immediateRender: false }, 2.42);
+    tl.fromTo($(p[1]), { opacity: 0, y: 6 }, { opacity: 1, y: 0, duration: 0.3, ease: "expo.out" }, 2.47);
+  });
+
+  /* chip fly: lift off the row, arc over, drop onto the stack */
+  function fly(chip, t, dx, dy) {
+    var c = $(chip), f = c.querySelector("i");
+    tl.fromTo(c, { x: dx, y: dy, opacity: 0 }, { opacity: 1, duration: 0.01, ease: "none" }, t);
+    tl.fromTo(c, { scale: 0.85 }, { scale: 1.07, duration: 0.12, ease: "power2.out" }, t);
+    tl.fromTo(f, { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "power2.out" }, t);
+    // steady sideways glide + accelerating drop = a thrown arc that lands from above
+    tl.fromTo(c, { x: dx }, { x: 0, duration: 0.3, ease: "power1.inOut", immediateRender: false }, t + 0.1);
+    tl.fromTo(c, { y: dy }, { y: 0, duration: 0.3, ease: "power2.in", immediateRender: false }, t + 0.1);
+    tl.fromTo(c, { scale: 1.07 }, { scale: 1, duration: 0.3, ease: "power2.inOut", immediateRender: false }, t + 0.1);
+    tl.to(f, { opacity: 0, duration: 0.45, ease: "power2.out" }, t + 0.42);
+    return t + 0.4; // landing time
+  }
+  function land(t, under) {
+    under.forEach(function (id) {
+      tl.to($(id), { scale: 0.95, duration: 0.06, ease: "power2.out" }, t);
+      tl.to($(id), { scale: 1, duration: 0.3, ease: "power3.out" }, t + 0.06);
+    });
+    tl.fromTo($("pillflash"), { opacity: 0 }, { opacity: 1, duration: 0.08, ease: "power2.out", immediateRender: false }, t);
+    tl.to($("pillflash"), { opacity: 0, duration: 0.45, ease: "power2.out" }, t + 0.1);
+  }
+  // chip start = its label sitting exactly over the row's name (chip left 4 vs dock left 464), row center vs slot center
+  var l1 = fly("chip1", 2.42, -460, -180);          // row1 center y 203 -> slot center 383
+  land(l1, ["pill"]);
+  tl.fromTo($("used1"), { opacity: 0, scale: 0.85 }, { opacity: 1, scale: 1, duration: 0.35, ease: "expo.out" }, l1);
+
+  /* ---------- "or a credit top-up": second row pops, its chip lands on top ---------- */
+  click(2.86, "rip2");
+  tl.to($("foot"), { y: 92, duration: 0.4, ease: "expo.out" }, 2.88);
+  tl.fromTo($("row2"), { opacity: 0, y: -8 }, { opacity: 1, y: 0, duration: 0.38, ease: "expo.out" }, 2.89);
+  tl.fromTo($("hl2"), { opacity: 0 }, { opacity: 1, duration: 0.2, ease: "power2.out" }, 2.89);
+  tl.to($("hl2"), { opacity: 0, duration: 0.4, ease: "power2.out" }, 3.42);
+  [["n4", "n5"], ["f4", "f5"]].forEach(function (p) {
+    tl.fromTo($(p[0]), { opacity: 1, y: 0 }, { opacity: 0, y: -6, duration: 0.12, ease: "power2.out", immediateRender: false }, 2.89);
+    tl.fromTo($(p[1]), { opacity: 0, y: 6 }, { opacity: 1, y: 0, duration: 0.3, ease: "expo.out" }, 2.94);
+  });
+  var l2 = fly("chip2", 3.04, -460, -96);           // row2 center y 249 -> slot center 345
+  land(l2, ["pill", "chip1"]);
+  tl.fromTo($("used2"), { opacity: 0, scale: 0.85 }, { opacity: 1, scale: 1, duration: 0.35, ease: "expo.out" }, l2);
+  tl.to($("glow"), { opacity: 1, duration: 0.5, ease: "power2.out" }, l2);
+
+  window.__timelines["12-addons"] = tl;
+})();
+</script>
+</template>

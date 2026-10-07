@@ -7,10 +7,13 @@
     "start": "bun src/index.ts",
     "migrate": "bun src/db/migrate.ts",
     "import:redis": "bun scripts/import-redis.ts",
+    "postman": "bun postman/build.ts",
     "test": "bun test",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.131.0",
+    "@renderinc/sdk": "^1.2.0",
     "@scalar/hono-api-reference": "^0.9.44",
     "better-auth": "^1.7.7",
     "hono": "^4.12.0",

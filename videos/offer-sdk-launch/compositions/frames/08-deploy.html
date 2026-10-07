@@ -1,0 +1,524 @@
+<template>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+  <style>
+/* ==========================================================================
+   Offer SDK app kit — the offer-app dashboard (dark theme), rebuilt for video.
+   Values are copied from offer-app/src/app/globals.css (data-theme="dark") and
+   measured from the real screens in capture/assets/app/*.png.
+
+   HOW TO USE IN A FRAME
+   1. Paste this whole file inside the style block that lives inside your frame template.
+      (Template transport: styles must live inside the frame template.)
+   2. Build the window from shell.html. Author it at its LOGICAL size
+      (.ak-window is 1366×800 — a real laptop viewport, real 14px UI text) and
+      scale the wrapper with GSAP (scale ≈ 1.08–1.12 to fill the top 83%;
+      punch in to 1.5–1.9 on the region the VO is talking about).
+   3. Copy icons from icons.html (Lucide, the icon set the app uses).
+   All classes are prefixed ak- so they never collide with frame-local names.
+   ========================================================================== */
+
+@font-face { font-family: "Cal Sans"; src: url("assets/fonts/CalSansVF.woff2") format("woff2"); font-weight: 400 700; font-display: block; }
+@font-face { font-family: "Geist Mono"; src: url("assets/fonts/geist-mono-latin.woff2") format("woff2"); font-weight: 400 600; font-display: block; }
+
+.ak {
+  --canvas: #0f0f11; --panel: #161618; --bg: #18181b; --bg-subtle: #1c1c1f; --bg-muted: #222226;
+  --bg-hover: #27272c; --bg-active: #2e2e34; --bg-elevated: #202024; --bg-inverse: #f1f1f3;
+  --fg: #ececee; --fg-secondary: rgb(236 236 238 / .93); --fg-tertiary: rgb(236 236 238 / .86);
+  --fg-muted: rgb(236 236 238 / .68); --fg-placeholder: #6f7178; --fg-icon: #9c9ea5;
+  --border: #2a2a2f; --border-strong: #37373d; --border-input: #323238;
+  --accent: #34d599; --accent-hover: #5ce0b0; --accent-subtle: rgb(52 213 153 / .13); --accent-fg: #5fe3b1; --accent-contrast: #03140c; --ring: rgb(52 213 153 / .4);
+  --btn-neon-bg: rgb(52 213 153 / .08); --shadow-brand: inset 0 0 0 1px rgb(52 213 153 / .85), inset 0 0 14px -6px rgb(52 213 153 / .35), 0 0 16px -6px rgb(52 213 153 / .4);
+  --brand-vertical: linear-gradient(180deg, #4fe0b0, #2fc48c);
+  --success: #30a46c; --success-subtle: rgb(48 164 108 / .16); --success-fg: #5ed29a;
+  --danger: #e5484d; --danger-subtle: rgb(229 72 77 / .15); --danger-fg: #ff8a8d;
+  --warning: #f0a020; --warning-subtle: rgb(240 160 32 / .14); --warning-fg: #ffc35f;
+  --brand-from: #34d599; --brand-to: #2cc0de; --brand-gradient: linear-gradient(90deg, #34d599, #2cc0de);
+  --code-comment: #7f828a; --code-keyword: #5fe3b1; --code-string: #6fd69f; --code-key: #93b8ff; --code-number: #ffa072;
+  --zapier: #ff5f1f; --paypal: #0070e0;
+  --shadow-soft: 0 14px 36px -14px rgb(0 0 0 / .75), 0 2px 8px -2px rgb(0 0 0 / .45);
+  --shadow-lg: 0 18px 44px -10px rgb(0 0 0 / .7), 0 4px 12px -4px rgb(0 0 0 / .5);
+  font-family: "Cal Sans", ui-sans-serif, system-ui, sans-serif;
+  font-variation-settings: "GEOM" 25;           /* the app's UI geometry */
+  color: var(--fg); -webkit-font-smoothing: antialiased; font-size: 14px; line-height: 1.4;
+}
+.ak * { box-sizing: border-box; }
+.ak .ak-display { font-variation-settings: "GEOM" 50; letter-spacing: -0.01em; }
+/* Neon-style eyebrow: small mono caps (site + app section kickers). */
+.ak .ak-eyebrow { font-family: "Geist Mono", monospace; font-variation-settings: normal; font-size: 11px; line-height: 16px; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; color: var(--fg-muted); }
+.ak .ak-mono, .ak code { font-family: "Geist Mono", ui-monospace, monospace; font-variation-settings: normal; }
+.ak svg { display: block; flex-shrink: 0; }
+
+/* ---------- window + shell ---------- */
+.ak-window { position: absolute; width: 1366px; height: 800px; background: var(--canvas); border-radius: 18px;
+  border: 1px solid var(--border); box-shadow: 0 40px 120px -30px rgb(0 0 0 / .9), 0 0 0 1px rgb(255 255 255 / .03);
+  overflow: hidden; display: flex; padding: 6px 6px 6px 0; transform-origin: 50% 50%; }
+.ak-rail { width: 52px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; gap: 10px; padding-top: 8px; }
+.ak-rail .ak-rail-logo { width: 30px; height: 30px; border-radius: 8px; display: grid; place-items: center; color: var(--fg); }
+.ak-rail .ak-rail-logo svg { width: 18px; height: 18px; }
+.ak-rail .ak-rail-sep { width: 22px; height: 1px; background: var(--border); }
+.ak-rail .ak-app-tile { width: 28px; height: 28px; border-radius: 7px; display: grid; place-items: center; font-size: 11px; font-weight: 600; color: var(--accent-contrast);
+  background: var(--brand-vertical); }
+.ak-rail .ak-app-tile.is-active { box-shadow: 0 0 0 2px var(--canvas), 0 0 0 3.5px var(--accent); }
+.ak-rail .ak-app-tile.alt { opacity: .8; }
+.ak-rail .ak-rail-plus { color: var(--fg-icon); width: 16px; height: 16px; }
+.ak-rail .ak-rail-foot { margin-top: auto; padding-bottom: 6px; display: flex; flex-direction: column; align-items: center; gap: 14px; color: var(--fg-icon); }
+.ak-rail .ak-rail-foot svg { width: 15px; height: 15px; }
+.ak-rail .ak-avatar { width: 26px; height: 26px; border-radius: 50%; background: var(--bg-muted); color: var(--fg-secondary); font-size: 10px; display: grid; place-items: center; }
+
+.ak-nav { width: 222px; flex-shrink: 0; background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
+  margin-right: 6px; display: flex; flex-direction: column; padding: 12px 10px; box-shadow: var(--shadow-soft); }
+.ak-nav-title { font-size: 15px; font-weight: 600; padding: 2px 6px 10px; font-variation-settings: "GEOM" 50; }
+.ak-quick { height: 30px; border: 1px solid var(--border-input); border-radius: 8px; display: flex; align-items: center; gap: 8px; padding: 0 8px;
+  color: var(--fg-muted); font-size: 13px; margin-bottom: 10px; }
+.ak-quick svg { width: 14px; height: 14px; color: var(--fg-icon); }
+.ak-quick .ak-kbd { margin-left: auto; font-size: 10.5px; border: 1px solid var(--border); border-radius: 4px; padding: 0 4px; color: var(--fg-placeholder); }
+.ak-nav-group { display: flex; flex-direction: column; gap: 1px; padding: 6px 0; border-top: 1px solid var(--border); }
+.ak-nav-group:first-of-type { border-top: 0; padding-top: 0; }
+.ak-nav-item { height: 31px; border-radius: 7px; display: flex; align-items: center; gap: 10px; padding: 0 8px; font-size: 13.5px; color: var(--fg-secondary); }
+.ak-nav-item svg { width: 15px; height: 15px; color: var(--fg-icon); }
+.ak-nav-item .ak-count { margin-left: auto; font-size: 12px; color: var(--fg-muted); font-variant-numeric: tabular-nums; }
+.ak-nav-item.is-active { background: var(--accent-subtle); color: var(--accent-fg); }
+.ak-nav-item.is-active svg { color: var(--accent-fg); }
+.ak-nav-foot { margin-top: auto; }
+
+.ak-main { flex: 1; min-width: 0; background: var(--bg); border: 1px solid var(--border); border-radius: 12px; display: flex; flex-direction: column;
+  overflow: hidden; box-shadow: var(--shadow-soft); position: relative; }
+.ak-header { height: 50px; flex-shrink: 0; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; padding: 0 12px 0 16px; }
+.ak-header .ak-crumb { display: flex; align-items: center; gap: 9px; font-size: 14px; font-weight: 500; }
+.ak-header .ak-crumb svg { width: 15px; height: 15px; color: var(--fg-icon); }
+.ak-header .ak-crumb .ak-sep { color: var(--fg-placeholder); }
+.ak-header .ak-actions { margin-left: auto; display: flex; align-items: center; gap: 4px; }
+.ak-toolbar { height: 50px; flex-shrink: 0; display: flex; align-items: center; gap: 10px; padding: 0 16px; border-bottom: 1px solid var(--border); }
+.ak-body { flex: 1; min-height: 0; position: relative; overflow: hidden; }
+.ak-page { padding: 28px 40px; }
+.ak-page-title { font-size: 22px; font-weight: 600; font-variation-settings: "GEOM" 50; letter-spacing: -0.01em; }
+.ak-page-sub { color: var(--fg-muted); font-size: 13.5px; margin-top: 4px; }
+
+/* ---------- controls ---------- */
+.ak-btn { height: 30px; border-radius: 8px; display: inline-flex; align-items: center; gap: 7px; padding: 0 10px; font-size: 13.5px; color: var(--fg-secondary);
+  border: 1px solid transparent; white-space: nowrap; }
+.ak-btn svg { width: 14px; height: 14px; }
+.ak-btn.is-outline { border-color: var(--border-strong); background: var(--bg-subtle); }
+/* Primary = the app's neon button: hairline neon border, faint green wash, green ink. */
+.ak-btn.is-primary { background: var(--btn-neon-bg); color: var(--accent-fg); font-weight: 500; box-shadow: var(--shadow-brand); }
+.ak-btn.is-gradient { background: var(--btn-neon-bg); color: var(--accent-fg); font-weight: 500; box-shadow: var(--shadow-brand), 0 0 32px -8px rgb(52 213 153 / .55); }
+.ak-btn.is-solid { background: var(--brand-vertical); color: var(--accent-contrast); font-weight: 600; }
+.ak-btn.is-paypal { background: #ffc439; color: #111; font-weight: 600; }
+.ak-btn.is-lg { height: 40px; padding: 0 16px; font-size: 15px; border-radius: 10px; }
+.ak-input { height: 32px; border: 1px solid var(--border-input); background: var(--bg-subtle); border-radius: 8px; display: flex; align-items: center; gap: 8px;
+  padding: 0 10px; font-size: 13.5px; color: var(--fg); }
+.ak-input.is-placeholder { color: var(--fg-placeholder); }
+.ak-input.is-focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--ring); }
+.ak-input svg { width: 14px; height: 14px; color: var(--fg-icon); }
+.ak-label { font-size: 13px; color: var(--fg-secondary); font-weight: 500; margin-bottom: 6px; }
+.ak-seg { display: inline-flex; background: var(--bg-muted); border-radius: 8px; padding: 2px; gap: 2px; }
+.ak-seg > span { height: 26px; padding: 0 10px; border-radius: 6px; display: inline-flex; align-items: center; font-size: 13px; color: var(--fg-muted); }
+.ak-seg > span.is-on { background: var(--bg-active); color: var(--fg); }
+.ak-switch { width: 30px; height: 18px; border-radius: 9px; background: var(--bg-active); position: relative; flex-shrink: 0; }
+.ak-switch::after { content: ""; position: absolute; top: 2px; left: 2px; width: 14px; height: 14px; border-radius: 50%; background: #fff; }
+.ak-switch.is-on { background: var(--accent); }
+.ak-switch.is-on::after { background: var(--accent-contrast); }
+.ak-switch.is-on::after { left: 14px; }
+.ak-check { width: 16px; height: 16px; border-radius: 4px; border: 1px solid var(--border-strong); display: grid; place-items: center; }
+.ak-check.is-on { background: var(--accent); border-color: var(--accent); color: var(--accent-contrast); }
+.ak-check svg { width: 11px; height: 11px; }
+
+/* ---------- table (Plans / Entitlements / Add-ons / Incentives / Accounts) ---------- */
+.ak-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+.ak-table th { height: 42px; text-align: left; font-weight: 400; color: var(--fg-muted); padding: 0 14px; border-bottom: 1px solid var(--border); border-right: 1px solid var(--border); white-space: nowrap; }
+.ak-table th:last-child, .ak-table td:last-child { border-right: 0; }
+.ak-table th .ak-th { display: inline-flex; align-items: center; gap: 7px; }
+.ak-table th svg { width: 13px; height: 13px; color: var(--fg-icon); }
+.ak-table td { height: 46px; padding: 0 14px; border-bottom: 1px solid var(--border); border-right: 1px solid var(--border); white-space: nowrap; color: var(--fg-secondary); }
+.ak-table td.is-num { text-align: right; font-variant-numeric: tabular-nums; }
+.ak-table .ak-row-name { display: flex; align-items: center; gap: 9px; color: var(--fg); }
+.ak-table .ak-row-icon { width: 22px; height: 22px; border-radius: 6px; background: rgb(59 123 246 / .18); color: #93b8ff; display: grid; place-items: center; }
+.ak-table .ak-row-icon svg { width: 13px; height: 13px; }
+.ak-table tr.is-hl td { background: rgb(52 213 153 / .07); }
+.ak-table-foot { padding: 12px 16px; color: var(--fg-muted); font-size: 13px; }
+
+/* ---------- chips + tags ---------- */
+.ak-id { font-family: "Geist Mono", monospace; font-variation-settings: normal; font-size: 12px; background: var(--bg-muted); color: var(--fg-secondary);
+  border-radius: 5px; padding: 2px 6px; }
+.ak-tag { display: inline-flex; align-items: center; gap: 5px; height: 21px; padding: 0 7px; border-radius: 5px; font-size: 12px; white-space: nowrap;
+  background: rgb(255 255 255 / .08); color: #c6c7cc; }
+.ak-tag svg { width: 11px; height: 11px; }
+.ak-tag.blue { background: rgb(59 123 246 / .18); color: #93b8ff; }
+.ak-tag.green { background: rgb(48 164 108 / .18); color: #6fd69f; }
+.ak-tag.yellow { background: rgb(240 180 40 / .16); color: #f5c451; }
+.ak-tag.orange { background: rgb(235 104 52 / .18); color: #ffa072; }
+.ak-tag.red { background: rgb(229 72 77 / .18); color: #ff8a8d; }
+.ak-tag.purple { background: rgb(143 107 255 / .2); color: #bba6ff; }
+.ak-tag.brand { background: rgb(52 213 153 / .14); color: #5fe3b1; }
+.ak-tag.pink { background: rgb(224 69 123 / .18); color: #ff8fba; }
+.ak-tag.teal { background: rgb(20 163 157 / .18); color: #62d6cf; }
+.ak-more { color: var(--fg-muted); font-size: 12px; }
+
+/* ---------- cards, stats, meters ---------- */
+.ak-card { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; }
+.ak-card-head { height: 46px; display: flex; align-items: center; padding: 0 16px; border-bottom: 1px solid var(--border); font-weight: 500; font-size: 14px; }
+.ak-card-body { padding: 16px; }
+.ak-elevated { background: var(--bg-elevated); border: 1px solid var(--border-strong); border-radius: 12px; box-shadow: var(--shadow-lg); }
+.ak-stat-strip { display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+.ak-stat { padding: 16px 18px; border-right: 1px solid var(--border); }
+.ak-stat:last-child { border-right: 0; }
+.ak-stat-label { display: flex; align-items: center; gap: 7px; font-size: 13px; color: var(--fg-secondary); }
+.ak-stat-label svg { width: 13px; height: 13px; color: var(--fg-icon); }
+.ak-stat-value { font-size: 26px; font-weight: 600; margin-top: 8px; font-variant-numeric: tabular-nums; font-variation-settings: "GEOM" 50; }
+.ak-stat-sub { font-size: 12px; color: var(--fg-muted); margin-top: 4px; }
+.ak-meter { height: 8px; border-radius: 4px; background: var(--bg-active); overflow: hidden; }
+.ak-meter > i { display: block; height: 100%; width: 0; border-radius: 4px; background: var(--brand-gradient); }
+.ak-meter.is-warn > i { background: linear-gradient(90deg, #f0a020, #e5484d); }
+.ak-bar-row { position: relative; height: 30px; border-radius: 6px; display: flex; align-items: center; padding: 0 10px; font-size: 13.5px; }
+.ak-bar-row > b { position: absolute; inset: 0 auto 0 0; border-radius: 6px; background: linear-gradient(90deg, rgb(52 213 153 / .32), rgb(44 192 222 / .22)); font-weight: 400; }
+.ak-bar-row > span { position: relative; }
+.ak-bar-row > .ak-bar-val { margin-left: auto; color: var(--fg-secondary); font-variant-numeric: tabular-nums; }
+
+/* ---------- code block (site CodeBlock look) ---------- */
+.ak-code { background: #131315; border: 1px solid var(--border); border-radius: 14px; overflow: hidden; box-shadow: var(--shadow-lg); }
+.ak-code-bar { height: 40px; display: flex; align-items: center; gap: 8px; padding: 0 14px; border-bottom: 1px solid var(--border); color: var(--fg-muted); font-size: 13px; }
+.ak-code-bar .ak-dots { display: flex; gap: 6px; margin-right: 6px; }
+.ak-code-bar .ak-dots i { width: 10px; height: 10px; border-radius: 50%; background: var(--bg-active); }
+.ak-code pre { margin: 0; padding: 18px 20px; font-family: "Geist Mono", monospace; font-variation-settings: normal; font-size: 15px; line-height: 1.65; color: var(--fg-secondary); white-space: pre; }
+.ak-code .k { color: var(--code-keyword); } .ak-code .s { color: var(--code-string); } .ak-code .p { color: var(--code-key); }
+.ak-code .n { color: var(--code-number); } .ak-code .c { color: var(--code-comment); } .ak-code .f { color: #ececee; }
+.ak-code .del { background: rgb(229 72 77 / .14); } .ak-code .add { background: rgb(48 164 108 / .14); }
+
+/* ---------- feedback ---------- */
+.ak-toast { position: absolute; display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 10px; background: var(--bg-elevated);
+  border: 1px solid var(--border-strong); box-shadow: var(--shadow-lg); font-size: 13.5px; white-space: nowrap; }
+.ak-toast svg { width: 15px; height: 15px; }
+.ak-toast.is-ok svg { color: var(--success-fg); }
+.ak-toast.is-warn svg { color: var(--warning-fg); }
+.ak-toast.is-bad svg { color: var(--danger-fg); }
+.ak-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--success); display: inline-block; }
+.ak-dot.is-warn { background: var(--warning); } .ak-dot.is-bad { background: var(--danger); }
+.ak-cursor { position: absolute; width: 22px; height: 22px; z-index: 50; pointer-events: none; filter: drop-shadow(0 2px 4px rgb(0 0 0 / .6)); }
+.ak-ripple { position: absolute; width: 36px; height: 36px; margin: -18px 0 0 -18px; border-radius: 50%; border: 2px solid var(--accent-fg); z-index: 49; opacity: 0; }
+
+/* ---------- avatars + misc ---------- */
+.ak-av { width: 22px; height: 22px; border-radius: 6px; display: grid; place-items: center; font-size: 9.5px; font-weight: 600; background: rgb(52 213 153 / .14); color: #5fe3b1; }
+.ak-av.round { border-radius: 50%; }
+.ak-kv { display: flex; justify-content: space-between; font-size: 13px; padding: 7px 0; border-bottom: 1px solid var(--border); color: var(--fg-muted); }
+.ak-kv b { font-weight: 400; color: var(--fg); }
+.ak-divider { height: 1px; background: var(--border); }
+
+
+    /* ---------- 08-deploy frame ---------- */
+    #root { position: absolute; inset: 0; width: 1920px; height: 1080px; overflow: hidden; }
+    [id="08-deploy-bg"] { position: absolute; inset: 0; background: #0f0f11; }
+    [id="08-deploy-stage"] { position: absolute; inset: 0; }
+
+    /* the frame's one soft green glow behind the hero */
+    [id="08-deploy-stage"] .dp-glow { position: absolute; left: 410px; top: 120px; width: 1100px; height: 700px;
+      background: radial-gradient(closest-side, rgba(52,213,153,0.20), transparent); opacity: 0; }
+
+    /* Scene 1 — "Deploy on Render →" neon outline CTA (site hero button, frame scale) */
+    [id="08-deploy-stage"] .dp-btnwrap { position: absolute; left: 0; right: 0; top: 406px; height: 128px; display: flex; justify-content: center;
+      transform-origin: 50% 50%; }
+    [id="08-deploy-stage"] .dp-btn { position: relative; height: 128px; border-radius: 999px; display: inline-flex; align-items: center; gap: 22px;
+      padding: 0 62px 0 68px; overflow: hidden; transform-origin: 50% 50%;
+      background-color: rgba(52,213,153,0.08); color: #5fe3b1;
+      box-shadow: inset 0 0 0 2px rgba(52,213,153,0.85), inset 0 0 30px -10px rgba(52,213,153,0.40), 0 0 44px -10px rgba(52,213,153,0.45); }
+    [id="08-deploy-stage"] .dp-btn-label { font-size: 56px; font-weight: 500; letter-spacing: -0.012em; line-height: 1; white-space: nowrap;
+      font-variation-settings: "GEOM" 25; position: relative; }
+    [id="08-deploy-stage"] .dp-btn-arrow { width: 50px; height: 50px; position: relative; }
+    [id="08-deploy-stage"] .dp-btn-arrow svg { width: 50px; height: 50px; stroke-width: 2.2; }
+    [id="08-deploy-stage"] .dp-shine { position: absolute; top: -20px; left: 0; width: 160px; height: 168px;
+      background: linear-gradient(90deg, rgba(95,227,177,0), rgba(95,227,177,0.22), rgba(95,227,177,0)); }
+
+    /* Scene 2 — deploy card (aspect-matched to the app window: 819.6 x 480 = 1366 x 800 / 1.6667) */
+    [id="08-deploy-stage"] .dp-card { position: absolute; left: 550.2px; top: 230px; width: 819.6px; height: 480px; border-radius: 16px;
+      background-color: #202024; border: 1px solid #37373d; overflow: hidden; transform-origin: 50% 50%; opacity: 0; z-index: 2;
+      box-shadow: 0 30px 80px -20px rgba(0,0,0,0.85), 0 0 0 1px rgba(255,255,255,0.03); }
+    [id="08-deploy-stage"] .dp-card-content { position: absolute; inset: 0; padding: 32px 38px 34px; display: flex; flex-direction: column; }
+    [id="08-deploy-stage"] .dp-card-head { display: flex; align-items: center; gap: 18px; padding-bottom: 24px; border-bottom: 1px solid #2a2a2f; }
+    [id="08-deploy-stage"] .dp-card-tile { width: 52px; height: 52px; border-radius: 14px; display: grid; place-items: center; color: #5fe3b1;
+      background: rgba(52,213,153,0.08);
+      box-shadow: inset 0 0 0 1.5px rgba(52,213,153,0.85), inset 0 0 14px -6px rgba(52,213,153,0.35), 0 0 18px -6px rgba(52,213,153,0.45); }
+    [id="08-deploy-stage"] .dp-card-tile svg { width: 26px; height: 26px; }
+    [id="08-deploy-stage"] .dp-wordmark { font-size: 32px; font-weight: 700; color: #ffffff; letter-spacing: -0.03em; line-height: 1;
+      font-variation-settings: "GEOM" 50; }
+    [id="08-deploy-stage"] .dp-counter { margin-left: auto; display: flex; align-items: center; gap: 2px; font-size: 24px; line-height: 30px; color: rgba(236,236,238,0.68); }
+    [id="08-deploy-stage"] .dp-digits { position: relative; width: 15px; height: 30px; color: #ececee; }
+    [id="08-deploy-stage"] .dp-digits > span { position: absolute; left: 0; top: 0; line-height: 30px; opacity: 0; }
+    [id="08-deploy-stage"] .dp-digits > span:first-child { opacity: 1; }
+    [id="08-deploy-stage"] .dp-rows { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+    [id="08-deploy-stage"] .dp-row { height: 86px; display: flex; align-items: center; padding: 0 6px; border-bottom: 1px solid #2a2a2f; }
+    [id="08-deploy-stage"] .dp-row:last-child { border-bottom: 0; }
+    [id="08-deploy-stage"] .dp-row-name { font-size: 26px; color: #ececee; }
+    [id="08-deploy-stage"] .dp-status { margin-left: auto; position: relative; width: 140px; height: 42px; flex-shrink: 0; }
+    [id="08-deploy-stage"] .dp-pending { position: absolute; left: 56px; top: 9px; width: 24px; height: 24px; color: #6f7178; transform-origin: 50% 50%; }
+    [id="08-deploy-stage"] .dp-pending svg { width: 24px; height: 24px; }
+    [id="08-deploy-stage"] .dp-live { position: absolute; right: 0; top: 0; height: 42px; display: flex; align-items: center; gap: 11px;
+      padding: 0 18px 0 16px; border-radius: 999px; font-size: 20px; white-space: nowrap; transform-origin: 80% 50%; opacity: 0;
+      color: #5fe3b1; background: rgba(52,213,153,0.14); box-shadow: 0 0 0 0 rgba(52,213,153,0); }
+    [id="08-deploy-stage"] .dp-live i { width: 11px; height: 11px; border-radius: 50%; background: #34d599; display: block;
+      box-shadow: 0 0 10px 1px rgba(52,213,153,0.75); }
+    [id="08-deploy-stage"] .dp-meter { height: 8px; border-radius: 4px; background: #2e2e34; overflow: hidden; }
+    [id="08-deploy-stage"] .dp-meter > i { display: block; height: 100%; width: 100%; border-radius: 4px; background: linear-gradient(90deg, #34d599, #2cc0de);
+      transform-origin: 0 50%; }
+
+    /* Scene 3 — the app window at rest (handoff: center 960,470 · scale 1.1 · static) */
+    [id="08-deploy-winwrap"] { position: absolute; left: 277px; top: 70px; width: 1366px; height: 800px; transform: scale(1.1); transform-origin: 50% 50%; opacity: 0; }
+    [id="08-deploy-window"] { left: 0; top: 0; }
+    [id="08-deploy-window"] .dp-page { position: absolute; left: 50%; top: 28px; width: 760px; margin-left: -380px; }
+    [id="08-deploy-window"] .dp-apps { position: absolute; left: 0; top: 74px; width: 760px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    [id="08-deploy-window"] .dp-app { position: relative; height: 110px; border-radius: 12px; border: 1px solid #2a2a2f; background-color: #18181b; padding: 14px 16px; }
+    [id="08-deploy-window"] .dp-app-tile { width: 30px; height: 30px; border-radius: 7px; display: grid; place-items: center; font-size: 11.5px; font-weight: 600;
+      color: #03140c; background: linear-gradient(180deg, #4fe0b0, #2fc48c); }
+    [id="08-deploy-window"] .dp-app-arrow { position: absolute; right: 14px; top: 14px; width: 13px; height: 13px; color: #6f7178; }
+    [id="08-deploy-window"] .dp-app-name { font-size: 15px; font-weight: 500; color: #ececee; margin-top: 12px; }
+    [id="08-deploy-window"] .dp-app-meta { display: flex; align-items: center; gap: 8px; margin-top: 6px; font-size: 12.5px; color: rgba(236,236,238,0.68); }
+    [id="08-deploy-window"] .dp-app.is-new { border-style: dashed; border-color: #37373d; background-color: transparent; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 6px; color: rgba(236,236,238,0.86); font-size: 13.5px; }
+    [id="08-deploy-window"] .dp-app.is-new svg { width: 15px; height: 15px; color: #9c9ea5; }
+    [id="08-deploy-window"] .dp-nav-first { border-top: 0; padding-top: 0; }
+
+    /* cursor + ripples live in frame space, above everything */
+    [id="08-deploy-stage"] .ak-cursor { left: 0; top: 0; }
+    [id="08-deploy-stage"] .ak-ripple { left: 978px; top: 482px; width: 40px; height: 40px; margin: -20px 0 0 -20px; z-index: 1; }
+  </style>
+
+  <div id="root" data-composition-id="08-deploy" data-width="1920" data-height="1080" data-duration="4.37">
+    <div id="08-deploy-bg" class="clip" data-start="0" data-duration="4.37" data-track-index="0"></div>
+
+    <div id="08-deploy-stage" class="ak clip" data-start="0" data-duration="4.37" data-track-index="1">
+      <div class="dp-glow"></div>
+
+      <!-- anchor: the real app window (rendered BEFORE the morph card so the card stacks on top) -->
+      <div id="08-deploy-winwrap">
+        <div class="ak ak-window" id="08-deploy-window">
+          <aside class="ak-rail">
+            <div class="ak-rail-logo"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 13.74a2 2 0 0 1-2 0L2.5 8.87a1 1 0 0 1 0-1.74L11 2.26a2 2 0 0 1 2 0l8.5 4.87a1 1 0 0 1 0 1.74z"/><path d="m20 14.285 1.5.845a1 1 0 0 1 0 1.74L13 21.74a2 2 0 0 1-2 0l-8.5-4.87a1 1 0 0 1 0-1.74l1.5-.845"/></svg></div>
+            <div class="ak-rail-sep"></div>
+            <div class="ak-app-tile">AA</div>
+            <div class="ak-app-tile alt">CH</div>
+            <div class="ak-rail-plus"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg></div>
+            <div class="ak-rail-foot"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"/><circle cx="12" cy="12" r="3"/></svg><div class="ak-avatar">DA</div></div>
+          </aside>
+          <nav class="ak-nav">
+            <div class="ak-nav-title">Acme Labs</div>
+            <div class="ak-quick"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg><span>Quick actions</span><span class="ak-kbd">⌘K</span></div>
+            <div class="ak-nav-group dp-nav-first">
+              <div class="ak-nav-item is-active"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg>Apps<span class="ak-count">2</span></div>
+            </div>
+            <div class="ak-nav-group">
+              <div class="ak-nav-item"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"/><circle cx="12" cy="12" r="3"/></svg>General</div>
+              <div class="ak-nav-item"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><path d="M16 3.128a4 4 0 0 1 0 7.744"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><circle cx="9" cy="7" r="4"/></svg>Members</div>
+            </div>
+            <div class="ak-nav-group">
+              <div class="ak-nav-item"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Profile</div>
+            </div>
+          </nav>
+          <main class="ak-main">
+            <header class="ak-header">
+              <div class="ak-crumb"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg>Apps</div>
+              <div class="ak-actions">
+                <span class="ak-btn is-primary"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>New app</span>
+              </div>
+            </header>
+            <div class="ak-body">
+              <div class="dp-page">
+                <div class="ak-page-title dp-in">Acme Labs</div>
+                <div class="ak-page-sub dp-in">Each app is a product whose access, limits and offers you control from here.</div>
+                <div class="dp-apps">
+                  <div class="dp-app dp-in dp-app-hover">
+                    <div class="dp-app-tile">AA</div>
+                    <svg class="dp-app-arrow" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg>
+                    <div class="dp-app-name">AmazingApp AI</div>
+                    <div class="dp-app-meta"><span class="ak-id">app_lnpSrz</span><span>Created Oct 5, 2026</span></div>
+                  </div>
+                  <div class="dp-app dp-in">
+                    <div class="dp-app-tile">CH</div>
+                    <svg class="dp-app-arrow" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg>
+                    <div class="dp-app-name">Course Hub</div>
+                    <div class="dp-app-meta"><span class="ak-id">app_JgFxyj</span><span>Created Oct 5, 2026</span></div>
+                  </div>
+                  <div class="dp-app is-new dp-in">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+                    <span>New app</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </main>
+        </div>
+      </div>
+
+      <!-- Scene 1 CTA: neon outline "Deploy on Render →" -->
+      <div class="dp-btnwrap">
+        <div class="dp-btn">
+          <div class="dp-shine"></div>
+          <span class="dp-btn-label">Deploy on Render</span>
+          <span class="dp-btn-arrow"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></span>
+        </div>
+      </div>
+
+      <!-- Scene 2 deploy card = the morph card (Scene 3 morphs it into the window) -->
+      <div class="dp-card">
+        <div class="dp-card-content">
+          <div class="dp-card-head">
+            <div class="dp-card-tile"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09"/><path d="M9 12a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.4 22.4 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 .05 5 .05"/></svg></div>
+            <div class="dp-wordmark">Render</div>
+            <div class="dp-counter ak-mono"><span class="dp-digits"><span>0</span><span>1</span><span>2</span><span>3</span></span><span>/3</span></div>
+          </div>
+          <div class="dp-rows">
+            <div class="dp-row">
+              <div class="dp-row-name ak-mono">offersdk-api</div>
+              <div class="dp-status">
+                <div class="dp-pending"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg></div>
+                <div class="dp-live"><i></i>Live</div>
+              </div>
+            </div>
+            <div class="dp-row">
+              <div class="dp-row-name ak-mono">offer-app</div>
+              <div class="dp-status">
+                <div class="dp-pending"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg></div>
+                <div class="dp-live"><i></i>Live</div>
+              </div>
+            </div>
+            <div class="dp-row">
+              <div class="dp-row-name ak-mono">postgres</div>
+              <div class="dp-status">
+                <div class="dp-pending"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg></div>
+                <div class="dp-live"><i></i>Live</div>
+              </div>
+            </div>
+          </div>
+          <div class="dp-meter"><i></i></div>
+        </div>
+      </div>
+
+      <!-- click ripples: in DOM from t=0 at the click point, scale 0 / opacity 0 -->
+      <div class="ak-ripple dp-ripple"></div>
+      <div class="ak-ripple dp-ripple"></div>
+
+      <!-- app-kit cursor (tip at element top-left + 3.7,2.3) -->
+      <svg class="ak-cursor" viewBox="0 0 24 24"><path d="M4 2.5 L4 19 L8.6 14.8 L11.6 21.5 L14.4 20.3 L11.5 13.7 L17.8 13.4 Z" fill="#fff" stroke="#111" stroke-width="1.3" stroke-linejoin="round"/></svg>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      window.__timelines = window.__timelines || {};
+      var root = document.querySelector('[data-composition-id="08-deploy"]');
+      var stage = root.querySelector('[id="08-deploy-stage"]');
+      var q = function (sel) { return stage.querySelector(sel); };
+      var qa = function (sel) { return Array.prototype.slice.call(stage.querySelectorAll(sel)); };
+
+      var glow = q('.dp-glow');
+      var btnWrap = q('.dp-btnwrap');
+      var btn = q('.dp-btn');
+      var shine = q('.dp-shine');
+      var arrow = q('.dp-btn-arrow');
+      var card = q('.dp-card');
+      var content = q('.dp-card-content');
+      var rows = qa('.dp-row');
+      var pendings = qa('.dp-pending');
+      var lives = qa('.dp-live');
+      var digits = qa('.dp-digits > span');
+      var meterFill = q('.dp-meter > i');
+      var ripples = qa('.dp-ripple');
+      var cursor = q('.ak-cursor');
+      var win = root.querySelector('[id="08-deploy-winwrap"]');
+      var pageIn = qa('[id="08-deploy-window"] .dp-in');
+      var hoverCard = q('.dp-app-hover');
+      var hoverArrow = q('.dp-app-hover .dp-app-arrow');
+
+      // cursor tip offset inside the 22px glyph
+      var TIP_X = 3.7, TIP_Y = 2.3;
+      var CLICK_X = 978, CLICK_Y = 482;        // a few px off the button's center (960,470): human aim
+      var PARK_X = 1430, PARK_Y = 748;         // just off the deploy card's bottom-right corner
+      var HOVER_X = 900, HOVER_Y = 252;        // on the AmazingApp AI card, right of the name (card 692.7..962.6 x 206..327 at rest)
+      var END_SCALE = 880 / 480;               // card 819.6x480 -> window 1366x800 @ 1.1 = 1502.6x880
+      var CUR_BIG = 1.9, CUR_REST = 1.1;       // cursor reads at frame scale in Scene 1; window scale (1.1) at rest
+
+      // neon box-shadow states (same structure so GSAP can interpolate)
+      var BTN_REST  = 'inset 0 0 0 2px rgba(52,213,153,0.85), inset 0 0 30px -10px rgba(52,213,153,0.40), 0 0 44px -10px rgba(52,213,153,0.45)';
+      var BTN_FLASH = 'inset 0 0 0 2px rgba(92,224,176,1), inset 0 0 40px -6px rgba(52,213,153,0.70), 0 0 80px 0px rgba(52,213,153,0.70)';
+      var BTN_HOVER = 'inset 0 0 0 2px rgba(92,224,176,1), inset 0 0 36px -8px rgba(52,213,153,0.55), 0 0 64px -6px rgba(52,213,153,0.65)';
+
+      var tl = gsap.timeline({ paused: true });
+      gsap.set(cursor, { transformOrigin: '17% 10%' });
+
+      // ---------- Scene 1 (0.0–1.62s): "Deploy" — neon CTA is up by 0.1s; cursor clicks on "single click" ----------
+      tl.fromTo(glow, { opacity: 0 }, { opacity: 0.6, duration: 0.5, ease: 'power2.out' }, 0);
+      tl.fromTo(btn, { scale: 0.86, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5, ease: 'expo.out' }, 0);
+      tl.fromTo(btn, { boxShadow: BTN_FLASH }, { boxShadow: BTN_REST, duration: 0.7, ease: 'power2.out' }, 0.05);
+      // slow push-in under the beat (camera breath)
+      tl.fromTo(btnWrap, { scale: 1 }, { scale: 1.04, duration: 1.35, ease: 'power1.out' }, 0.1);
+      // "render.com" — one neon shine sweep across the button
+      tl.fromTo(shine, { x: -200 }, { x: 760, duration: 0.6, ease: 'power2.inOut' }, 0.42);
+
+      // cursor arrives from off-stage on a decelerating path
+      tl.fromTo(cursor, { x: 1990 - TIP_X, y: 760 - TIP_Y, scale: CUR_BIG, opacity: 1 },
+        { x: CLICK_X - TIP_X, y: CLICK_Y - TIP_Y, scale: CUR_BIG, duration: 0.6, ease: 'power3.out' }, 0.8);
+      // hover response
+      tl.to(btn, { backgroundColor: 'rgba(52,213,153,0.15)', boxShadow: BTN_HOVER, duration: 0.22, ease: 'power2.out' }, 1.16);
+      tl.to(arrow, { x: 8, duration: 0.3, ease: 'expo.out' }, 1.16);
+      // press (lockstep) on "click"
+      var PRESS_AT = 1.48;
+      tl.to(btn, { scale: 0.96, duration: 0.08, ease: 'power2.in' }, PRESS_AT);
+      tl.to(cursor, { scale: CUR_BIG * 0.85, duration: 0.08, ease: 'power2.in' }, PRESS_AT);
+      tl.to(btn, { scale: 1, boxShadow: BTN_FLASH, duration: 0.24, ease: 'expo.out' }, PRESS_AT + 0.08);
+      tl.to(cursor, { scale: CUR_BIG, duration: 0.12, ease: 'power2.out' }, PRESS_AT + 0.08);
+      tl.fromTo(ripples, { scale: 0, opacity: 0.9 }, { scale: 4.5, opacity: 0, duration: 0.45, ease: 'power2.out', stagger: 0.07, immediateRender: false }, PRESS_AT + 0.02);
+      tl.set(ripples, { scale: 0, opacity: 0 }, 0);
+      tl.to(glow, { opacity: 1, duration: 0.22, ease: 'power2.out' }, PRESS_AT + 0.08);
+
+      // ---------- Scene 2 (1.62–2.26s): button expands into the deploy card; 3 services flip Live in a burst ----------
+      tl.to(btn, { scale: 1.12, duration: 0.16, ease: 'power2.out' }, 1.62);
+      tl.to(btn, { opacity: 0, duration: 0.1, ease: 'power1.out' }, 1.62);
+      tl.fromTo(card, { scale: 0.72, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.42, ease: 'expo.out' }, 1.63);
+      tl.to(glow, { opacity: 0.65, duration: 0.5, ease: 'power2.inOut' }, 1.8);
+      tl.to(cursor, { x: PARK_X - TIP_X, y: PARK_Y - TIP_Y, duration: 0.5, ease: 'power3.inOut' }, 1.62);
+      tl.fromTo(rows, { y: 14, opacity: 0 }, { y: 0, opacity: 1, duration: 0.3, ease: 'expo.out', stagger: 0.04 }, 1.7);
+      tl.fromTo(pendings, { rotation: 0 }, { rotation: 540, duration: 0.6, ease: 'none' }, 1.64);
+      tl.fromTo(meterFill, { scaleX: 0 }, { scaleX: 0.06, duration: 0.15, ease: 'power2.out' }, 1.7);
+
+      var LIVE_AT = [1.80, 1.92, 2.04];
+      LIVE_AT.forEach(function (t, i) {
+        tl.to(pendings[i], { opacity: 0, scale: 0.6, duration: 0.08, ease: 'power2.in' }, t);
+        tl.fromTo(lives[i], { opacity: 0, scale: 0.85 }, { opacity: 1, scale: 1, duration: 0.3, ease: 'expo.out' }, t + 0.03);
+        tl.fromTo(lives[i], { boxShadow: '0 0 22px 2px rgba(52,213,153,0.65)' }, { boxShadow: '0 0 0px 0px rgba(52,213,153,0)', duration: 0.45, ease: 'power2.out' }, t + 0.03);
+        tl.set(digits[i], { opacity: 0 }, t + 0.03);
+        tl.set(digits[i + 1], { opacity: 1 }, t + 0.03);
+        tl.to(meterFill, { scaleX: (i + 1) / 3, duration: 0.22, ease: 'expo.out' }, t + 0.03);
+      });
+
+      // ---------- Scene 3 (2.26–3.4s): "open your new Offer admin app" — card morphs into the app window ----------
+      var MORPH_START = 2.26, MORPH_DUR = 0.5, FINAL_FRAC = 0.3;
+      tl.fromTo(card, {
+        scale: 1, borderRadius: 16, backgroundColor: '#202024', borderColor: '#37373d',
+        boxShadow: '0 30px 80px -20px rgba(0,0,0,0.85), 0 0 0 1px rgba(255,255,255,0.03)'
+      }, {
+        scale: END_SCALE, borderRadius: 18 / END_SCALE, backgroundColor: '#0f0f11', borderColor: '#2a2a2f',
+        boxShadow: '0 24px 72px -18px rgba(0,0,0,0.9), 0 0 0 0.55px rgba(255,255,255,0.03)',
+        duration: MORPH_DUR, ease: 'power3.inOut', immediateRender: false
+      }, MORPH_START);
+      tl.to(content, { opacity: 0, duration: 0.2, ease: 'power2.in' }, MORPH_START + 0.06);
+      tl.to(glow, { opacity: 0.35, duration: MORPH_DUR, ease: 'power2.inOut' }, MORPH_START);
+      // handoff: the card fades over the real window anchor (same apparent size / radius / ground)
+      var FADE_AT = MORPH_START + MORPH_DUR * (1 - FINAL_FRAC), FADE_DUR = MORPH_DUR * FINAL_FRAC;
+      tl.fromTo(card, { opacity: 1 }, { opacity: 0, duration: FADE_DUR, ease: 'power1.in', immediateRender: false }, FADE_AT);
+      tl.fromTo(win, { opacity: 0 }, { opacity: 1, duration: FADE_DUR, ease: 'power1.out' }, FADE_AT);
+
+      // Apps page lands on "new" (2.74)
+      tl.fromTo(pageIn, { y: 12, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: 'expo.out', stagger: 0.05 }, 2.64);
+
+      // cursor glides onto AmazingApp AI on "offer admin" (3.20), neon hover ring — then hold
+      tl.to(cursor, { x: HOVER_X - TIP_X, y: HOVER_Y - TIP_Y, scale: CUR_REST, duration: 0.52, ease: 'power3.out' }, 2.64);
+      tl.fromTo(hoverCard,
+        { borderColor: '#2a2a2f', backgroundColor: '#18181b', boxShadow: '0 0 0 0px rgba(52,213,153,0), 0 0 0px 0px rgba(52,213,153,0)' },
+        { borderColor: '#34d599', backgroundColor: '#1b1f1d', boxShadow: '0 0 0 3px rgba(52,213,153,0.28), 0 0 22px -4px rgba(52,213,153,0.45)',
+          duration: 0.25, ease: 'power2.out', immediateRender: false }, 3.06);
+      tl.fromTo(hoverArrow, { color: '#6f7178' }, { color: '#5fe3b1', duration: 0.25, ease: 'power2.out', immediateRender: false }, 3.06);
+
+      // pad to the full frame duration (static hold, handoff_out = window at rest)
+      tl.set({}, {}, 3.87);
+
+      window.__timelines["08-deploy"] = tl;
+    })();
+  </script>
+</template>

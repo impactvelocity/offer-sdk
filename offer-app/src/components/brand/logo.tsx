@@ -1,7 +1,9 @@
 import { Layers2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export function LogoMark({ className }: { className?: string }) {
+/** `bare`: just the glyph, no tile (the shell rail). */
+export function LogoMark({ className, bare }: { className?: string; bare?: boolean }) {
+  if (bare) return <Layers2 aria-hidden className={cn("size-6 shrink-0 text-fg", className)} strokeWidth={2.25} />;
   return (
     <span
       aria-hidden

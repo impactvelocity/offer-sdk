@@ -4,6 +4,12 @@ import type {
   Addon,
   AnalyticsInterval,
   App,
+  CancelFlow,
+  CancelFlowInput,
+  CancelFlowStats,
+  CancelFlowStep,
+  CancelOfferPreview,
+  CancelSessionRecord,
   Entitlement,
   EntitlementType,
   EntitlementUsageSummary,
@@ -195,6 +201,26 @@ export const api = {
     stats: (appId: string, id: string) => request<OfferStats>("GET", `${app(appId)}/offers/${enc(id)}/stats`),
     checkouts: (appId: string, opts: { offer?: string; status?: string; limit?: number } = {}) =>
       request<OfferCheckout[]>("GET", `${app(appId)}/checkouts`, undefined, opts),
+  },
+
+  cancelFlows: {
+    /** Resolves to null on an API version without cancel flows (e.g. the in-memory mock). */
+    list: (appId: string) => optional(request<CancelFlow[]>("GET", `${app(appId)}/cancel-flows`)),
+    get: (appId: string, id: string) => request<CancelFlow>("GET", `${app(appId)}/cancel-flows/${enc(id)}`),
+    create: (appId: string, input: CancelFlowInput = {}) => request<CancelFlow>("POST", `${app(appId)}/cancel-flows`, input),
+    update: (appId: string, id: string, patch: CancelFlowInput) =>
+      request<CancelFlow>("PATCH", `${app(appId)}/cancel-flows/${enc(id)}`, patch),
+    delete: (appId: string, id: string) => request<CancelFlow>("DELETE", `${app(appId)}/cancel-flows/${enc(id)}`),
+    stats: (appId: string, id: string, days = 30) =>
+      request<CancelFlowStats>("GET", `${app(appId)}/cancel-flows/${enc(id)}/stats`, undefined, { days }),
+    /** The offer a customer would see for these answers; a sample account when none is given. */
+    previewOffer: (
+      appId: string,
+      id: string,
+      body: { steps?: CancelFlowStep[]; answers: string[]; texts?: Record<string, string>; account?: string | null; dynamic?: boolean },
+    ) => request<CancelOfferPreview>("POST", `${app(appId)}/cancel-flows/${enc(id)}/preview-offer`, body),
+    sessions: (appId: string, opts: { flow?: string; account?: string; status?: string; limit?: number } = {}) =>
+      request<CancelSessionRecord[]>("GET", `${app(appId)}/cancel-sessions`, undefined, opts),
   },
 
   paypal: {

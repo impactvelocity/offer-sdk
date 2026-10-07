@@ -278,7 +278,7 @@ function ToolRow({
           <code className={cn("shrink-0 text-[13.5px]", on ? "text-fg" : "text-fg-placeholder")}>{tool.name}</code>
           <span className="hidden min-w-0 flex-1 truncate text-sm text-fg-tertiary md:block">{tool.title}</span>
           <span className="ml-auto hidden shrink-0 items-center gap-1.5 sm:flex">
-            {tool.endpoint.proposed ? <Badge color="purple">Proposed</Badge> : null}
+            {tool.endpoint.proposed ? <Badge color="brand">Proposed</Badge> : null}
             {overridden ? <Badge color="gray">Custom</Badge> : null}
             <KindBadge kind={tool.kind} />
           </span>
@@ -299,7 +299,7 @@ function ToolDetails({ tool, appId, examples }: { tool: McpTool; appId: string; 
   return (
     <div className="flex flex-col gap-4 px-5 pb-6 pt-1 sm:pl-[46px]">
       <div className="flex flex-wrap items-center gap-1.5 sm:hidden">
-        {e.proposed ? <Badge color="purple">Proposed</Badge> : null}
+        {e.proposed ? <Badge color="brand">Proposed</Badge> : null}
         <KindBadge kind={tool.kind} />
       </div>
       <div className="flex flex-col gap-2">

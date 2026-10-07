@@ -15,7 +15,7 @@ export function Checkbox({ className, ...props }: ComponentProps<typeof BaseChec
       {...props}
     >
       <BaseCheckbox.Indicator
-        className="flex text-white data-unchecked:hidden"
+        className="flex text-accent-contrast data-unchecked:hidden"
         render={(p, state) => <span {...p}>{state.indeterminate ? <Minus className="size-3" strokeWidth={3} /> : <Check className="size-3" strokeWidth={3} />}</span>}
       />
     </BaseCheckbox.Root>

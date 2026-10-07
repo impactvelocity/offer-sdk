@@ -1,8 +1,8 @@
 "use client";
 
-import { BadgePercent, Braces, ChartColumn, Code, Gift, House, Key, KeyRound, Layers, Plug, Puzzle, Settings, Sparkles, Users, Webhook } from "lucide-react";
+import { BadgePercent, Braces, ChartColumn, Code, DoorOpen, Gift, House, Key, KeyRound, Layers, Plug, Puzzle, Settings, Sparkles, Users, Webhook } from "lucide-react";
 import { usePathname } from "next/navigation";
-import { useAccountCount, useAddons, useApp, useEntitlements, useIncentives, useOffers, usePlans, useWebhooks } from "@/lib/api/hooks";
+import { useAccountCount, useAddons, useApp, useCancelFlows, useEntitlements, useIncentives, useOffers, usePlans, useWebhooks } from "@/lib/api/hooks";
 import { Skeleton } from "@/components/ui/skeleton";
 import { QuickActionsButton } from "./quick-actions";
 import { NavGroup, NavItem, NavPanel, NavPanelBody, NavPanelFooter, NavPanelHeader } from "./sidebar";
@@ -20,6 +20,7 @@ export function AppNav({ appId, className }: { appId: string; className?: string
   const addons = useAddons(appId);
   const incentives = useIncentives(appId);
   const offers = useOffers(appId);
+  const cancelFlows = useCancelFlows(appId);
   const accounts = useAccountCount(appId);
   const webhooks = useWebhooks(appId);
 
@@ -44,6 +45,11 @@ export function AppNav({ appId, className }: { appId: string; className?: string
           {offers.data !== null ? (
             <NavItem href={`${base}/offers`} icon={<BadgePercent />} active={is("/offers")} count={offers.data?.length}>
               Offers
+            </NavItem>
+          ) : null}
+          {cancelFlows.data !== null ? (
+            <NavItem href={`${base}/cancel-flow`} icon={<DoorOpen />} active={is("/cancel-flow")}>
+              Cancel flow
             </NavItem>
           ) : null}
         </div>

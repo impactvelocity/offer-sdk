@@ -23,7 +23,7 @@ export function PlansDiagram() {
               rect([0, 0], [next.h, next.h], t.z + T).map((c) => (
                 <Guide key={c.join()} d={path([p(c), p([c[0], c[1], next.z + LIFT / S])])} />
               ))}
-            <Marker at={p([t.h, t.h, t.z + T])} shape="square" tone="violet" />
+            <Marker at={p([t.h, t.h, t.z + T])} shape="square" tone="green" />
           </Move>
         );
       })}
@@ -56,9 +56,9 @@ export function EntitlementsDiagram() {
       })}
       <Box p={p} size={[0.26, 0.26]} z={[0, 0.52]} />
       <Guide d={path([p([0, 0, 0.52]), p([0, 0, 1.15])])} />
-      <Marker at={p([0, 0, 1.15])} shape="diamond" tone="teal" />
+      <Marker at={p([0, 0, 1.15])} shape="diamond" tone="violet" />
       {nodes.map((n) => (
-        <Marker key={n.at.join()} at={p(n.at)} shape="diamond" tone="teal" hollow={!n.on} unlock={!n.on} />
+        <Marker key={n.at.join()} at={p(n.at)} shape="diamond" tone="violet" hollow={!n.on} unlock={!n.on} />
       ))}
     </Diagram>
   );

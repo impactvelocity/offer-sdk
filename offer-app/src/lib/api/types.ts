@@ -1,4 +1,5 @@
 import type { Interval as OfferInterval } from "@/sdk/checkout/types";
+import type { SaveOfferDetails } from "@/sdk/cancel/types";
 
 // Shapes returned by the hosted Offer API (see /api in the monorepo).
 // The dashboard talks to it through the /api/admin BFF, which forwards paths unchanged.
@@ -360,4 +361,142 @@ export interface PaypalConnection {
   client_id?: string;
   webhook?: "registered" | "not_registered";
   updated_at?: string;
+}
+
+// ─── Cancel flows ──────────────────────────────────────
+
+export type SaveOfferKind = "discount" | "pause" | "downgrade" | "incentive";
+
+export interface SaveOfferCopy {
+  headline?: string;
+  body?: string;
+  cta?: string;
+}
+
+export type SaveOfferSpec =
+  | { kind: "discount"; percent: number; cycles: number; copy?: SaveOfferCopy }
+  | { kind: "pause"; months: number; copy?: SaveOfferCopy }
+  | { kind: "downgrade"; plan: string; copy?: SaveOfferCopy }
+  | { kind: "incentive"; incentive: string; months: number; copy?: SaveOfferCopy };
+
+export interface SaveOfferGuardrails {
+  kinds: SaveOfferKind[];
+  max_discount_percent: number;
+  max_discount_cycles: number;
+  max_pause_months: number;
+  max_incentive_months: number;
+  incentives: string[];
+  downgrade_plans: string[];
+  instructions: string;
+}
+
+export interface CancelFlowAnswer {
+  id: string;
+  label: string;
+  next?: string | null;
+  text?: boolean;
+}
+
+export type CancelFlowStep =
+  | { id: string; type: "question"; title: string; description?: string; answers: CancelFlowAnswer[]; next?: string | null }
+  | { id: string; type: "text"; title: string; description?: string; placeholder?: string; required?: boolean; next?: string | null }
+  | {
+      id: string;
+      type: "offer";
+      title?: string;
+      dynamic: boolean;
+      guardrails: SaveOfferGuardrails;
+      default: SaveOfferSpec | null;
+      by_answer: Record<string, SaveOfferSpec | null>;
+      decline_label?: string;
+      next?: string | null;
+    }
+  | { id: string; type: "confirm"; title: string; description?: string; cta?: string };
+
+export interface CancelFlow {
+  id: string;
+  app_id: string;
+  name: string;
+  status: "active" | "draft";
+  steps: CancelFlowStep[];
+  created_at: string;
+  updated_at: string;
+  capabilities?: { dynamic_offers: boolean; pause_workflows: boolean };
+  last_30_days?: { sessions: number; saved: number };
+}
+
+export interface CancelFlowInput {
+  id?: string;
+  name?: string;
+  status?: "active" | "draft";
+  steps?: CancelFlowStep[];
+}
+
+export interface PresentedSaveOffer {
+  kind: SaveOfferKind;
+  source: "static" | "dynamic";
+  details: SaveOfferDetails;
+  headline: string;
+  body: string;
+  cta: string;
+  reasoning?: string | null;
+  status: "shown" | "accepted" | "declined";
+  result?: Record<string, unknown>;
+}
+
+export interface CancelAccountSnapshot {
+  id: string;
+  name: string | null;
+  plan: string;
+  plan_name: string;
+  created_at: string | null;
+  subscription: {
+    provider: string | null;
+    status: string;
+    interval: string;
+    price: number;
+    currency: string;
+    renews_at: string | null;
+    payments: number;
+    offer_name: string | null;
+  } | null;
+  monthly_value: number;
+  billing_offers: boolean;
+}
+
+export interface CancelSessionRecord {
+  id: string;
+  app_id: string;
+  flow_id: string;
+  account_id: string;
+  status: "open" | "saved" | "cancelled" | "abandoned";
+  answers: { step: string; step_title: string; answer: string | null; label: string | null; text: string | null }[];
+  offer: PresentedSaveOffer | null;
+  decide: { used: boolean; skipped: string | null } | null;
+  account: CancelAccountSnapshot;
+  result: Record<string, unknown> | null;
+  created_at: string;
+  completed_at: string | null;
+}
+
+export interface CancelFlowStats {
+  days: number;
+  started: number;
+  saved: number;
+  cancelled: number;
+  abandoned: number;
+  open: number;
+  save_rate: number | null;
+  monthly_revenue_saved: number;
+  monthly_revenue_lost: number;
+  reasons: { step: string; step_title: string; answer: string; label: string; count: number; saved: number; cancelled: number }[];
+  offers: { kind: SaveOfferKind; source: "static" | "dynamic"; shown: number; accepted: number }[];
+  daily: { day: string; sessions: number; saved: number; cancelled: number }[];
+}
+
+export interface CancelOfferPreview {
+  account: CancelAccountSnapshot | null;
+  offer: PresentedSaveOffer | null;
+  dynamic: { used: boolean; skipped: string | null } | null;
+  static_offer: PresentedSaveOffer | null;
 }

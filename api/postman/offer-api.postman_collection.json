@@ -1,0 +1,5015 @@
+{
+  "info": {
+    "_postman_id": "6f2a9c3e-5b1d-4e8f-9a7c-2d4b6e8f0a13",
+    "name": "Offer API",
+    "description": "Every route of the Offer API (Offer SDK's Hono service).\n\n1. Start the API locally (`pnpm dev:api`) or point `baseUrl` at a deployed one with the environment file.\n2. Run the **Quickstart** folder top to bottom. It creates an app and saves its keys into the collection variables.\n3. Every other folder then works on that app. You can also run the whole collection in order.\n4. **Clean up** deletes what the run created, ending with the app.\n\nRequests send the app's secret key unless their Auth tab says otherwise: browser routes use the publishable key, cancel sessions use an account token, and the Admin folder uses the admin key.\n\nGenerated from api/postman/requests.ts. Run `bun run postman` in api/ after changing routes.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{secretKey}}",
+        "type": "string"
+      }
+    ]
+  },
+  "event": [
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "pm.test(\"No server error\", () => pm.expect(pm.response.code).to.be.below(500));"
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:6767",
+      "type": "string",
+      "description": "The Offer API. Override it with an environment for a deployed API."
+    },
+    {
+      "key": "adminKey",
+      "value": "dev-admin-key",
+      "type": "string",
+      "description": "The API's ADMIN_API_KEY. dev-admin-key is the local default."
+    },
+    {
+      "key": "appId",
+      "value": "",
+      "type": "string",
+      "description": "Saved by Create an app."
+    },
+    {
+      "key": "secretKey",
+      "value": "",
+      "type": "string",
+      "description": "The app's secret key (key_…). Saved by Create an app."
+    },
+    {
+      "key": "publicKey",
+      "value": "",
+      "type": "string",
+      "description": "The app's publishable key (pub_…). Saved by Create an app."
+    },
+    {
+      "key": "accountToken",
+      "value": "",
+      "type": "string",
+      "description": "An act_… token. Saved by Accounts → Mint an account token."
+    },
+    {
+      "key": "accountId",
+      "value": "user_42",
+      "type": "string",
+      "description": "The account the requests act on."
+    },
+    {
+      "key": "freePlanId",
+      "value": "free",
+      "type": "string",
+      "description": "The free plan."
+    },
+    {
+      "key": "planId",
+      "value": "pro",
+      "type": "string",
+      "description": "The paid plan."
+    },
+    {
+      "key": "entitlementId",
+      "value": "posts",
+      "type": "string",
+      "description": "A usage entitlement."
+    },
+    {
+      "key": "addonId",
+      "value": "priority_support",
+      "type": "string",
+      "description": "An add-on."
+    },
+    {
+      "key": "incentiveId",
+      "value": "launch_boost",
+      "type": "string",
+      "description": "An incentive."
+    },
+    {
+      "key": "offerId",
+      "value": "launch",
+      "type": "string",
+      "description": "A shareable offer's id."
+    },
+    {
+      "key": "checkoutId",
+      "value": "",
+      "type": "string",
+      "description": "Saved by Start a checkout."
+    },
+    {
+      "key": "flowId",
+      "value": "default",
+      "type": "string",
+      "description": "A cancel flow. The template creates default."
+    },
+    {
+      "key": "sessionId",
+      "value": "",
+      "type": "string",
+      "description": "Saved by Start a session."
+    },
+    {
+      "key": "reportId",
+      "value": "",
+      "type": "string",
+      "description": "Saved by Save a report."
+    },
+    {
+      "key": "webhookId",
+      "value": "",
+      "type": "string",
+      "description": "Saved by Add an endpoint."
+    },
+    {
+      "key": "deliveryId",
+      "value": "",
+      "type": "string",
+      "description": "Saved by Send a test event."
+    },
+    {
+      "key": "webhookUrl",
+      "value": "https://example.com/offer-webhooks",
+      "type": "string",
+      "description": "Where test endpoints point. Use your own receiver, such as webhook.site."
+    },
+    {
+      "key": "paypalClientId",
+      "value": "",
+      "type": "string",
+      "description": "A PayPal sandbox REST app's client id."
+    },
+    {
+      "key": "paypalClientSecret",
+      "value": "",
+      "type": "string",
+      "description": "That app's secret."
+    },
+    {
+      "key": "orgId",
+      "value": "postman_workspace",
+      "type": "string",
+      "description": "A dashboard workspace id."
+    },
+    {
+      "key": "userId",
+      "value": "postman_user",
+      "type": "string",
+      "description": "A dashboard user id, for agent threads."
+    },
+    {
+      "key": "threadId",
+      "value": "postman_thread",
+      "type": "string",
+      "description": "An agent thread id."
+    }
+  ],
+  "item": [
+    {
+      "name": "Quickstart",
+      "description": "Run this folder top to bottom on an empty API (Collection Runner works). It creates an app, saves its keys into the collection variables, builds a Free and a Pro plan, creates an account, records usage and upgrades it. Every other folder then has data to work with.",
+      "item": [
+        {
+          "name": "Create an app",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code < 300) {",
+                  "  let body = null;",
+                  "  try { body = pm.response.json(); } catch (e) {}",
+                  "  const pick = (path) => path.split(\".\").reduce((value, key) => (value == null ? value : value[key]), body);",
+                  "  if (pick(\"id\") != null) pm.collectionVariables.set(\"appId\", String(pick(\"id\")));",
+                  "  if (pick(\"api_key\") != null) pm.collectionVariables.set(\"secretKey\", String(pick(\"api_key\")));",
+                  "  if (pick(\"public_key\") != null) pm.collectionVariables.set(\"publicKey\", String(pick(\"public_key\")));",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"My app\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/apps",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps"
+              ]
+            },
+            "description": "No key needed. Saves the app's id, secret key and publishable key into the collection variables."
+          },
+          "response": []
+        },
+        {
+          "name": "Create a usage entitlement",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"{{entitlementId}}\",\n  \"type\": \"usage\",\n  \"name\": \"Posts\",\n  \"description\": \"Posts an account can publish.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/entitlements",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "entitlements"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create the Free plan",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"{{freePlanId}}\",\n  \"name\": \"Free\",\n  \"isFree\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/plans",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "plans"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Give Free 3 posts",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"{{entitlementId}}\",\n  \"max\": 3\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/plans/{{freePlanId}}/entitlements",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "plans",
+                "{{freePlanId}}",
+                "entitlements"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create the Pro plan",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"{{planId}}\",\n  \"name\": \"Pro\",\n  \"pricingCard\": {\n    \"title\": \"Pro\",\n    \"type\": \"subscription\",\n    \"monthlyPrice\": 29,\n    \"yearlyPrice\": 290,\n    \"currency\": \"USD\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/plans",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "plans"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Give Pro 100 posts",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"{{entitlementId}}\",\n  \"max\": 100\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/plans/{{planId}}/entitlements",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "plans",
+                "{{planId}}",
+                "entitlements"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create an account on Free",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"{{accountId}}\",\n  \"name\": \"Ada Lovelace\",\n  \"plan\": \"{{freePlanId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/namespaces",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "namespaces"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Read the account's access",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{publicKey}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/namespaces/{{accountId}}/full-plan",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "namespaces",
+                "{{accountId}}",
+                "full-plan"
+              ]
+            },
+            "description": "The plan with every entitlement resolved: usage, max, left and can. Sent with the publishable key, as a browser would. Works with the publishable key, the account's own token, the secret key or the admin key."
+          },
+          "response": []
+        },
+        {
+          "name": "Record a post",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{publicKey}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/namespaces/{{accountId}}/usage/{{entitlementId}}/add",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "namespaces",
+                "{{accountId}}",
+                "usage",
+                "{{entitlementId}}",
+                "add"
+              ]
+            },
+            "description": "Adds 1 to the counter. Works with the publishable key, the secret key or the admin key."
+          },
+          "response": []
+        },
+        {
+          "name": "Move the account to Pro",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"plan\": \"{{planId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/namespaces/{{accountId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "namespaces",
+                "{{accountId}}"
+              ]
+            },
+            "description": "Changes the plan directly, without a payment. Use it for comps and support fixes."
+          },
+          "response": []
+        },
+        {
+          "name": "Read the access again",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{publicKey}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/namespaces/{{accountId}}/plan",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "namespaces",
+                "{{accountId}}",
+                "plan"
+              ]
+            },
+            "description": "Same as full-plan, with private meta keys removed. posts now has a max of 100. Works with the publishable key, the account's own token, the secret key or the admin key."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Service",
+      "description": "Public routes with no key.",
+      "item": [
+        {
+          "name": "Banner",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": []
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Health check",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "health"
+              ]
+            },
+            "description": "Runs a query against Postgres. Render's health check."
+          },
+          "response": []
+        },
+        {
+          "name": "OpenAPI document",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/openapi.json",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "openapi.json"
+              ]
+            },
+            "description": "Covers the core routes only. This collection covers all of them."
+          },
+          "response": []
+        },
+        {
+          "name": "API reference page",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/docs",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "docs"
+              ]
+            },
+            "description": "HTML. Open it in a browser."
+          },
+          "response": []
+        },
+        {
+          "name": "Webhook event types",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/event-types",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "event-types"
+              ]
+            },
+            "description": "Every event type with a sample data payload."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Apps",
+      "description": "An app is one product you sell. Quickstart creates one; deleting it is in Clean up.",
+      "item": [
+        {
+          "name": "Get the app",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update the app",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"My app\",\n  \"checkout_url\": \"https://example.com/checkout\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}"
+              ]
+            },
+            "description": "Merges fields. id, api_key, public_key and created_at are ignored."
+          },
+          "response": []
+        },
+        {
+          "name": "Regenerate the secret key",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code < 300) {",
+                  "  let body = null;",
+                  "  try { body = pm.response.json(); } catch (e) {}",
+                  "  const pick = (path) => path.split(\".\").reduce((value, key) => (value == null ? value : value[key]), body);",
+                  "  if (pick(\"api_key\") != null) pm.collectionVariables.set(\"secretKey\", String(pick(\"api_key\")));",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/keys/regenerate",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "keys",
+                "regenerate"
+              ]
+            },
+            "description": "Replaces the secret key and revokes every account token. Saves the new key."
+          },
+          "response": []
+        },
+        {
+          "name": "Regenerate the publishable key",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code < 300) {",
+                  "  let body = null;",
+                  "  try { body = pm.response.json(); } catch (e) {}",
+                  "  const pick = (path) => path.split(\".\").reduce((value, key) => (value == null ? value : value[key]), body);",
+                  "  if (pick(\"public_key\") != null) pm.collectionVariables.set(\"publicKey\", String(pick(\"public_key\")));",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/public-key/regenerate",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "public-key",
+                "regenerate"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Entitlements",
+      "description": "Things an account can use: usage (counted against a limit) or boolean (on or off).",
+      "item": [
+        {
+          "name": "List entitlements",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/entitlements",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "entitlements"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create a boolean entitlement",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"pin_posts\",\n  \"type\": \"boolean\",\n  \"name\": \"Pin posts\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/entitlements",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "entitlements"
+              ]
+            },
+            "description": "A feature that is on or off. Quickstart already made the usage entitlement, posts; send type: \"usage\" for counted ones."
+          },
+          "response": []
+        },
+        {
+          "name": "Get an entitlement",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/entitlements/{{entitlementId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "entitlements",
+                "{{entitlementId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Block usage past the limit",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"overage\": {\n    \"mode\": \"block\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/entitlements/{{entitlementId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "entitlements",
+                "{{entitlementId}}"
+              ]
+            },
+            "description": "With mode block, usage past the limit gets a 402 with an upgrade offer. offer_id is optional."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Add-ons",
+      "description": "Named extras that plans, offers, incentives and accounts can include.",
+      "item": [
+        {
+          "name": "List add-ons",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/addons",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "addons"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create an add-on",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"{{addonId}}\",\n  \"name\": \"Priority support\",\n  \"description\": \"Replies within 4 hours.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/addons",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "addons"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get an add-on",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/addons/{{addonId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "addons",
+                "{{addonId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update an add-on",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"Replies within 2 hours.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/addons/{{addonId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "addons",
+                "{{addonId}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Incentives",
+      "description": "Per-account overrides on top of the plan: higher limits, extra entitlements and add-ons.",
+      "item": [
+        {
+          "name": "List incentives",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/incentives",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "incentives"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create an incentive",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"{{incentiveId}}\",\n  \"name\": \"Launch boost\",\n  \"description\": \"Double posts for early users\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/incentives",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "incentives"
+              ]
+            },
+            "description": "Add limits and add-ons here too (entitlements: [{ id, max }], addons: [id]), or attach them with the requests below."
+          },
+          "response": []
+        },
+        {
+          "name": "Get an incentive",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/incentives/{{incentiveId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "incentives",
+                "{{incentiveId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update an incentive",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Launch boost 2x\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/incentives/{{incentiveId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "incentives",
+                "{{incentiveId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Add an entitlement override",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"{{entitlementId}}\",\n  \"max\": 500\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/incentives/{{incentiveId}}/entitlements",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "incentives",
+                "{{incentiveId}}",
+                "entitlements"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Change an override's limit",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"max\": 1000\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/incentives/{{incentiveId}}/entitlements/{{entitlementId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "incentives",
+                "{{incentiveId}}",
+                "entitlements",
+                "{{entitlementId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Remove an override",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/incentives/{{incentiveId}}/entitlements/{{entitlementId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "incentives",
+                "{{incentiveId}}",
+                "entitlements",
+                "{{entitlementId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Add an add-on",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"{{addonId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/incentives/{{incentiveId}}/addons",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "incentives",
+                "{{incentiveId}}",
+                "addons"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Remove an add-on",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/incentives/{{incentiveId}}/addons/{{addonId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "incentives",
+                "{{incentiveId}}",
+                "addons",
+                "{{addonId}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Plans",
+      "description": "Bundles of entitlements and add-ons, with pricing.",
+      "item": [
+        {
+          "name": "List plans",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/plans",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "plans"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Pricing cards",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{publicKey}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/plans/pricing",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "plans",
+                "pricing"
+              ]
+            },
+            "description": "For a pricing table. Works with the publishable key, the secret key or the admin key."
+          },
+          "response": []
+        },
+        {
+          "name": "Create a plan",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"{{planId}}\",\n  \"name\": \"Pro\",\n  \"description\": \"For growing teams\",\n  \"pricingCard\": {\n    \"title\": \"Pro\",\n    \"type\": \"subscription\",\n    \"monthlyPrice\": 29,\n    \"yearlyPrice\": 290,\n    \"currency\": \"USD\",\n    \"featured\": true,\n    \"benefits\": [\n      {\n        \"id\": \"posts\",\n        \"title\": \"100 posts\"\n      }\n    ]\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/plans",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "plans"
+              ]
+            },
+            "description": "Ids are normalized: lowercase, spaces to underscores. 409 after Quickstart, which already created Pro."
+          },
+          "response": []
+        },
+        {
+          "name": "Get a plan",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/plans/{{planId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "plans",
+                "{{planId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update a plan",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"For growing teams\",\n  \"privateMetaKeys\": [\n    \"stripe_price\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/plans/{{planId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "plans",
+                "{{planId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get a plan's pricing card",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{publicKey}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/plans/{{planId}}/pricing",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "plans",
+                "{{planId}}",
+                "pricing"
+              ]
+            },
+            "description": "Works with the publishable key, the secret key or the admin key."
+          },
+          "response": []
+        },
+        {
+          "name": "Merge plan meta",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"color\": \"green\",\n  \"stripe_price\": \"price_123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/plans/{{planId}}/meta",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "plans",
+                "{{planId}}",
+                "meta"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Accounts on a plan",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/plans/{{planId}}/namespaces?page=1&per_page=25",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "plans",
+                "{{planId}}",
+                "namespaces"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "per_page",
+                  "value": "25"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Detach an entitlement",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/plans/{{planId}}/entitlements/{{entitlementId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "plans",
+                "{{planId}}",
+                "entitlements",
+                "{{entitlementId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Attach an entitlement",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"{{entitlementId}}\",\n  \"max\": 100\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/plans/{{planId}}/entitlements",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "plans",
+                "{{planId}}",
+                "entitlements"
+              ]
+            },
+            "description": "max: null means unlimited."
+          },
+          "response": []
+        },
+        {
+          "name": "Change an entitlement's limit",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"max\": 250\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/plans/{{planId}}/entitlements/{{entitlementId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "plans",
+                "{{planId}}",
+                "entitlements",
+                "{{entitlementId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Attach an add-on",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"{{addonId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/plans/{{planId}}/addons",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "plans",
+                "{{planId}}",
+                "addons"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Detach an add-on",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/plans/{{planId}}/addons/{{addonId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "plans",
+                "{{planId}}",
+                "addons",
+                "{{addonId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Check out a plan at list price",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code < 300) {",
+                  "  let body = null;",
+                  "  try { body = pm.response.json(); } catch (e) {}",
+                  "  const pick = (path) => path.split(\".\").reduce((value, key) => (value == null ? value : value[key]), body);",
+                  "  if (pick(\"id\") != null) pm.collectionVariables.set(\"checkoutId\", String(pick(\"id\")));",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{publicKey}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"interval\": \"month\",\n  \"account\": \"{{accountId}}\",\n  \"return_url\": \"https://example.com/welcome\",\n  \"cancel_url\": \"https://example.com/pricing\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/plans/{{planId}}/checkout",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "plans",
+                "{{planId}}",
+                "checkout"
+              ]
+            },
+            "description": "Needs PayPal connected. Saves the checkout id. Works with the publishable key, the secret key or the admin key."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Accounts",
+      "description": "Your customers, keyed by an id you choose. The API calls them namespaces.",
+      "item": [
+        {
+          "name": "Search accounts",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/namespaces?q=ada&page=1&per_page=25",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "namespaces"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "ada",
+                  "description": "Matches id or name"
+                },
+                {
+                  "key": "plan",
+                  "value": "{{planId}}",
+                  "disabled": true
+                },
+                {
+                  "key": "incentive",
+                  "value": "{{incentiveId}}",
+                  "disabled": true
+                },
+                {
+                  "key": "offer",
+                  "value": "{{offerId}}",
+                  "disabled": true
+                },
+                {
+                  "key": "has_incentive",
+                  "value": "true",
+                  "disabled": true
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "per_page",
+                  "value": "25"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Count accounts",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/namespaces/count",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "namespaces",
+                "count"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Accounts with an incentive",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/namespaces/with-incentive",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "namespaces",
+                "with-incentive"
+              ],
+              "query": [
+                {
+                  "key": "incentive",
+                  "value": "{{incentiveId}}",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create an account",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"{{accountId}}\",\n  \"name\": \"Ada Lovelace\",\n  \"plan\": \"{{freePlanId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/namespaces",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "namespaces"
+              ]
+            },
+            "description": "409 if the id already exists, as it does after Quickstart."
+          },
+          "response": []
+        },
+        {
+          "name": "Get an account",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/namespaces/{{accountId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "namespaces",
+                "{{accountId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update an account",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Ada\",\n  \"incentive\": \"{{incentiveId}}\",\n  \"incentive_expires_at\": \"2030-01-01T00:00:00Z\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/namespaces/{{accountId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "namespaces",
+                "{{accountId}}"
+              ]
+            },
+            "description": "Merges name, plan, incentive and incentive_expires_at. Changing the plan here skips payment."
+          },
+          "response": []
+        },
+        {
+          "name": "Remove the incentive",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/namespaces/{{accountId}}/incentive",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "namespaces",
+                "{{accountId}}",
+                "incentive"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Mint an account token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code < 300) {",
+                  "  let body = null;",
+                  "  try { body = pm.response.json(); } catch (e) {}",
+                  "  const pick = (path) => path.split(\".\").reduce((value, key) => (value == null ? value : value[key]), body);",
+                  "  if (pick(\"token\") != null) pm.collectionVariables.set(\"accountToken\", String(pick(\"token\")));",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ttl_seconds\": 3600\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/namespaces/{{accountId}}/token",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "namespaces",
+                "{{accountId}}",
+                "token"
+              ]
+            },
+            "description": "An act_… token for this one account, for browser flows such as cancelling. Saves it as accountToken. ttl_seconds is 60 to 86400 (default 3600). Secret key only."
+          },
+          "response": []
+        },
+        {
+          "name": "Get the account's plan",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{publicKey}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/namespaces/{{accountId}}/plan",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "namespaces",
+                "{{accountId}}",
+                "plan"
+              ]
+            },
+            "description": "Private meta keys removed. Works with the publishable key, the account's own token, the secret key or the admin key."
+          },
+          "response": []
+        },
+        {
+          "name": "Get the account's full plan",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{publicKey}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/namespaces/{{accountId}}/full-plan",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "namespaces",
+                "{{accountId}}",
+                "full-plan"
+              ]
+            },
+            "description": "Works with the publishable key, the account's own token, the secret key or the admin key."
+          },
+          "response": []
+        },
+        {
+          "name": "Give the account an add-on",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"{{addonId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/namespaces/{{accountId}}/addons",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "namespaces",
+                "{{accountId}}",
+                "addons"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Remove the account's add-on",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/namespaces/{{accountId}}/addons/{{addonId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "namespaces",
+                "{{accountId}}",
+                "addons",
+                "{{addonId}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Usage",
+      "description": "Counters for usage entitlements. A boolean entitlement returns 400. Works with the publishable key, the secret key or the admin key.",
+      "item": [
+        {
+          "name": "All counters",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{publicKey}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/namespaces/{{accountId}}/usage",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "namespaces",
+                "{{accountId}}",
+                "usage"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "One counter",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{publicKey}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/namespaces/{{accountId}}/usage/{{entitlementId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "namespaces",
+                "{{accountId}}",
+                "usage",
+                "{{entitlementId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Add 1",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{publicKey}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/namespaces/{{accountId}}/usage/{{entitlementId}}/add",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "namespaces",
+                "{{accountId}}",
+                "usage",
+                "{{entitlementId}}",
+                "add"
+              ]
+            },
+            "description": "Returns 402 with an upgrade offer when the entitlement blocks usage past its limit."
+          },
+          "response": []
+        },
+        {
+          "name": "Remove 1",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{publicKey}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/namespaces/{{accountId}}/usage/{{entitlementId}}/remove",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "namespaces",
+                "{{accountId}}",
+                "usage",
+                "{{entitlementId}}",
+                "remove"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Add an amount",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{publicKey}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 5\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/namespaces/{{accountId}}/usage/{{entitlementId}}/amount",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "namespaces",
+                "{{accountId}}",
+                "usage",
+                "{{entitlementId}}",
+                "amount"
+              ]
+            },
+            "description": "An integer. Negative amounts subtract."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Offers",
+      "description": "Ways to buy: plans at a price, with an intro discount, extras and order bumps. Publishing and checkout need PayPal connected (see the PayPal folder).",
+      "item": [
+        {
+          "name": "List offers",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/offers",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "offers"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create an offer",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"{{offerId}}\",\n  \"name\": \"Launch offer\",\n  \"copy\": {\n    \"headline\": \"Half off Pro for 3 months\"\n  },\n  \"discount\": {\n    \"percent\": 50,\n    \"cycles\": 3\n  },\n  \"intervals\": [\n    \"month\",\n    \"year\"\n  ],\n  \"plans\": [\n    {\n      \"plan_id\": \"{{planId}}\",\n      \"addons\": [\n        \"{{addonId}}\"\n      ]\n    }\n  ],\n  \"default_plan\": \"{{planId}}\",\n  \"bumps\": [\n    {\n      \"id\": \"welcome_call\",\n      \"label\": \"1:1 welcome call\",\n      \"price\": {\n        \"amount\": 50\n      },\n      \"grant\": {\n        \"credits\": {\n          \"entitlement\": \"{{entitlementId}}\",\n          \"amount\": 50\n        }\n      }\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/offers",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "offers"
+              ]
+            },
+            "description": "Creates a draft. Shareable offers use id as their slug. For one account, send type: targeted and account_id instead of id."
+          },
+          "response": []
+        },
+        {
+          "name": "Preview an unsaved offer",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Spring sale\",\n  \"plans\": [\n    \"{{planId}}\"\n  ],\n  \"discount\": {\n    \"amount_off\": 5\n  },\n  \"intervals\": [\n    \"month\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/offers/draft-preview",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "offers",
+                "draft-preview"
+              ]
+            },
+            "description": "Validates the fields and returns what a checkout page would show. Saves nothing."
+          },
+          "response": []
+        },
+        {
+          "name": "Get an offer",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/offers/{{offerId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "offers",
+                "{{offerId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update an offer",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"max_redemptions\": 100,\n  \"expires_at\": \"2030-01-01T00:00:00Z\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/offers/{{offerId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "offers",
+                "{{offerId}}"
+              ]
+            },
+            "description": "Applies to future purchases only."
+          },
+          "response": []
+        },
+        {
+          "name": "Publish an offer",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/offers/{{offerId}}/publish",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "offers",
+                "{{offerId}}",
+                "publish"
+              ]
+            },
+            "description": "Creates the PayPal billing plans. 409 without PayPal."
+          },
+          "response": []
+        },
+        {
+          "name": "Preview what an offer grants",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"account\": \"{{accountId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/offers/{{offerId}}/preview",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "offers",
+                "{{offerId}}",
+                "preview"
+              ]
+            },
+            "description": "With account, also shows what would change for that account."
+          },
+          "response": []
+        },
+        {
+          "name": "Offer stats",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/offers/{{offerId}}/stats",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "offers",
+                "{{offerId}}",
+                "stats"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Public offer for a checkout page",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{publicKey}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/offers/{{offerId}}/public",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "offers",
+                "{{offerId}}",
+                "public"
+              ],
+              "query": [
+                {
+                  "key": "fallback",
+                  "value": "default",
+                  "disabled": true
+                },
+                {
+                  "key": "account",
+                  "value": "{{accountId}}",
+                  "disabled": true
+                },
+                {
+                  "key": "ref",
+                  "value": "newsletter",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "What a checkout page shows, with PayPal's client id. Never 404s: falls back to fallback, then to list prices. Works with the publishable key, the secret key or the admin key."
+          },
+          "response": []
+        },
+        {
+          "name": "Start a checkout",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code < 300) {",
+                  "  let body = null;",
+                  "  try { body = pm.response.json(); } catch (e) {}",
+                  "  const pick = (path) => path.split(\".\").reduce((value, key) => (value == null ? value : value[key]), body);",
+                  "  if (pick(\"id\") != null) pm.collectionVariables.set(\"checkoutId\", String(pick(\"id\")));",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{publicKey}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"plan\": \"{{planId}}\",\n  \"interval\": \"month\",\n  \"bumps\": [\n    \"welcome_call\"\n  ],\n  \"account\": \"{{accountId}}\",\n  \"ref\": \"newsletter\",\n  \"return_url\": \"https://example.com/welcome\",\n  \"cancel_url\": \"https://example.com/pricing\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/offers/{{offerId}}/checkout",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "offers",
+                "{{offerId}}",
+                "checkout"
+              ]
+            },
+            "description": "The API prices the selection from the stored offer and creates the PayPal subscription or order. Open approve_url to pay in the sandbox. Saves the checkout id. Works with the publishable key, the secret key or the admin key."
+          },
+          "response": []
+        },
+        {
+          "name": "Archive an offer",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/offers/{{offerId}}/archive",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "offers",
+                "{{offerId}}",
+                "archive"
+              ]
+            },
+            "description": "Stops new purchases. Buyers keep their terms."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Checkouts",
+      "description": "One attempt to buy through an offer. Start one in the Offers folder.",
+      "item": [
+        {
+          "name": "List checkouts",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/checkouts?limit=50",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "checkouts"
+              ],
+              "query": [
+                {
+                  "key": "offer",
+                  "value": "{{offerId}}",
+                  "disabled": true
+                },
+                {
+                  "key": "status",
+                  "value": "completed",
+                  "disabled": true
+                },
+                {
+                  "key": "limit",
+                  "value": "50"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get a checkout",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{publicKey}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/checkouts/{{checkoutId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "checkouts",
+                "{{checkoutId}}"
+              ]
+            },
+            "description": "Works with the publishable key, the secret key or the admin key."
+          },
+          "response": []
+        },
+        {
+          "name": "Complete a checkout",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{publicKey}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/checkouts/{{checkoutId}}/complete",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "checkouts",
+                "{{checkoutId}}",
+                "complete"
+              ]
+            },
+            "description": "Run it after approving the payment in PayPal. Returns status created while PayPal is still activating; send it again. Works with the publishable key, the secret key or the admin key."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Subscriptions",
+      "description": "An account's paid PayPal subscription. These return 404 until the account has completed a checkout.",
+      "item": [
+        {
+          "name": "Get the subscription",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/namespaces/{{accountId}}/subscription",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "namespaces",
+                "{{accountId}}",
+                "subscription"
+              ]
+            },
+            "description": "Works with the account's own token, the secret key or the admin key."
+          },
+          "response": []
+        },
+        {
+          "name": "Change plan",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"plan\": \"{{planId}}\",\n  \"interval\": \"year\",\n  \"return_url\": \"https://example.com/account\",\n  \"cancel_url\": \"https://example.com/account\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/namespaces/{{accountId}}/subscription/change",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "namespaces",
+                "{{accountId}}",
+                "subscription",
+                "change"
+              ]
+            },
+            "description": "Returns PayPal's approve_url. The change applies once PayPal reports it."
+          },
+          "response": []
+        },
+        {
+          "name": "Sync from PayPal",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/namespaces/{{accountId}}/subscription/sync",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "namespaces",
+                "{{accountId}}",
+                "subscription",
+                "sync"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Pause",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"months\": 2,\n  \"reason\": \"Taking a break\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/namespaces/{{accountId}}/subscription/pause",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "namespaces",
+                "{{accountId}}",
+                "subscription",
+                "pause"
+              ]
+            },
+            "description": "Suspends billing for 1 to 12 months and moves the account to the free plan."
+          },
+          "response": []
+        },
+        {
+          "name": "Resume",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/namespaces/{{accountId}}/subscription/resume",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "namespaces",
+                "{{accountId}}",
+                "subscription",
+                "resume"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Cancel",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Too expensive\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/namespaces/{{accountId}}/subscription/cancel",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "namespaces",
+                "{{accountId}}",
+                "subscription",
+                "cancel"
+              ]
+            },
+            "description": "Cancels in PayPal and moves the account to the free plan."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "PayPal",
+      "description": "Each app connects its own PayPal REST app. Use sandbox credentials from developer.paypal.com.",
+      "item": [
+        {
+          "name": "Connection status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/paypal",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "paypal"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Connect PayPal",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"client_id\": \"{{paypalClientId}}\",\n  \"client_secret\": \"{{paypalClientSecret}}\",\n  \"env\": \"sandbox\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/paypal",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "paypal"
+              ]
+            },
+            "description": "Checks the credentials with PayPal and stores the secret encrypted. Registers PayPal's webhook when the API has a public HTTPS PUBLIC_API_URL."
+          },
+          "response": []
+        },
+        {
+          "name": "PayPal webhook (sent by PayPal)",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"WH-EXAMPLE\",\n  \"event_type\": \"BILLING.SUBSCRIPTION.ACTIVATED\",\n  \"resource\": {\n    \"id\": \"I-EXAMPLE\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/paypal/webhooks/{{appId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "paypal",
+                "webhooks",
+                "{{appId}}"
+              ]
+            },
+            "description": "PayPal posts here. Every delivery is verified with PayPal's verify-webhook-signature API, so a request sent from Postman is rejected. Included so the collection lists every route."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Cancel flows",
+      "description": "The steps, questions and save offers a customer sees when they cancel.",
+      "item": [
+        {
+          "name": "List flows",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/cancel-flows",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "cancel-flows"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Capabilities",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/cancel-flows/capabilities",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "cancel-flows",
+                "capabilities"
+              ]
+            },
+            "description": "Whether dynamic save offers (ANTHROPIC_API_KEY) and workflow pauses (RENDER_API_KEY) are configured."
+          },
+          "response": []
+        },
+        {
+          "name": "Create a flow from the template",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code < 300) {",
+                  "  let body = null;",
+                  "  try { body = pm.response.json(); } catch (e) {}",
+                  "  const pick = (path) => path.split(\".\").reduce((value, key) => (value == null ? value : value[key]), body);",
+                  "  if (pick(\"id\") != null) pm.collectionVariables.set(\"flowId\", String(pick(\"id\")));",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/cancel-flows",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "cancel-flows"
+              ]
+            },
+            "description": "An empty body creates the default flow from the built-in template: a reason question, a save offer and a confirm step."
+          },
+          "response": []
+        },
+        {
+          "name": "Get a flow",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/cancel-flows/{{flowId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "cancel-flows",
+                "{{flowId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update a flow",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Default cancel flow\",\n  \"status\": \"active\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/cancel-flows/{{flowId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "cancel-flows",
+                "{{flowId}}"
+              ]
+            },
+            "description": "status is active or draft. steps replaces the whole list."
+          },
+          "response": []
+        },
+        {
+          "name": "Flow stats",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/cancel-flows/{{flowId}}/stats?days=30",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "cancel-flows",
+                "{{flowId}}",
+                "stats"
+              ],
+              "query": [
+                {
+                  "key": "days",
+                  "value": "30"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Preview the save offer",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"account\": \"{{accountId}}\",\n  \"answers\": [\n    \"too_expensive\"\n  ],\n  \"dynamic\": false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/cancel-flows/{{flowId}}/preview-offer",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "cancel-flows",
+                "{{flowId}}",
+                "preview-offer"
+              ]
+            },
+            "description": "The offer a customer would get for these answers. dynamic: true asks Claude when the API has a key."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Cancel sessions",
+      "description": "One customer going through a flow, as the SDK runs it: with the account token from Accounts → Mint an account token. Every call returns the session view.",
+      "item": [
+        {
+          "name": "Start a session",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code < 300) {",
+                  "  let body = null;",
+                  "  try { body = pm.response.json(); } catch (e) {}",
+                  "  const pick = (path) => path.split(\".\").reduce((value, key) => (value == null ? value : value[key]), body);",
+                  "  if (pick(\"id\") != null) pm.collectionVariables.set(\"sessionId\", String(pick(\"id\")));",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accountToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"flow\": \"{{flowId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/cancel-sessions",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "cancel-sessions"
+              ]
+            },
+            "description": "With a token, the account comes from the token. With the secret key, send account. Works with the account's own token, the secret key or the admin key."
+          },
+          "response": []
+        },
+        {
+          "name": "List sessions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/cancel-sessions?limit=50",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "cancel-sessions"
+              ],
+              "query": [
+                {
+                  "key": "flow",
+                  "value": "{{flowId}}",
+                  "disabled": true
+                },
+                {
+                  "key": "account",
+                  "value": "{{accountId}}",
+                  "disabled": true
+                },
+                {
+                  "key": "status",
+                  "value": "saved",
+                  "disabled": true
+                },
+                {
+                  "key": "limit",
+                  "value": "50"
+                }
+              ]
+            },
+            "description": "Secret key only."
+          },
+          "response": []
+        },
+        {
+          "name": "Get a session",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accountToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/cancel-sessions/{{sessionId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "cancel-sessions",
+                "{{sessionId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Answer the reason question",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accountToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"step\": \"reason\",\n  \"answer\": \"too_expensive\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/cancel-sessions/{{sessionId}}/answer",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "cancel-sessions",
+                "{{sessionId}}",
+                "answer"
+              ]
+            },
+            "description": "step and answer ids come from the flow. The template's reason step answers include too_expensive, not_using and temporary."
+          },
+          "response": []
+        },
+        {
+          "name": "Accept the save offer",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accountToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"return_url\": \"https://example.com/account\",\n  \"cancel_url\": \"https://example.com/account\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/cancel-sessions/{{sessionId}}/accept",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "cancel-sessions",
+                "{{sessionId}}",
+                "accept"
+              ]
+            },
+            "description": "Discounts and downgrades return approve_url for PayPal. Needs a PayPal subscription on the account."
+          },
+          "response": []
+        },
+        {
+          "name": "Decline the save offer",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accountToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/cancel-sessions/{{sessionId}}/decline",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "cancel-sessions",
+                "{{sessionId}}",
+                "decline"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Go back",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accountToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/cancel-sessions/{{sessionId}}/back",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "cancel-sessions",
+                "{{sessionId}}",
+                "back"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Confirm cancellation",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accountToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/cancel-sessions/{{sessionId}}/cancel",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "cancel-sessions",
+                "{{sessionId}}",
+                "cancel"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Close (abandon) a session",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accountToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/cancel-sessions/{{sessionId}}/close",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "cancel-sessions",
+                "{{sessionId}}",
+                "close"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Analytics",
+      "description": "Aggregates of recorded usage. interval is 7d, 30d, 60d, 6m, year or alltime.",
+      "item": [
+        {
+          "name": "Usage summary",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/analytics?interval=30d",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "analytics"
+              ],
+              "query": [
+                {
+                  "key": "interval",
+                  "value": "30d",
+                  "description": "Required"
+                },
+                {
+                  "key": "namespace",
+                  "value": "{{accountId}}",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Top accounts",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/analytics/top-namespaces?interval=30d&limit=10",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "analytics",
+                "top-namespaces"
+              ],
+              "query": [
+                {
+                  "key": "interval",
+                  "value": "30d"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "entitlement",
+                  "value": "{{entitlementId}}",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Time series",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/analytics/timeseries?interval=30d",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "analytics",
+                "timeseries"
+              ],
+              "query": [
+                {
+                  "key": "interval",
+                  "value": "30d"
+                },
+                {
+                  "key": "namespace",
+                  "value": "{{accountId}}",
+                  "disabled": true
+                },
+                {
+                  "key": "entitlement",
+                  "value": "{{entitlementId}}",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Daily buckets up to 60 days, weekly beyond."
+          },
+          "response": []
+        },
+        {
+          "name": "Usage events",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/analytics/events?limit=50",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "analytics",
+                "events"
+              ],
+              "query": [
+                {
+                  "key": "namespace",
+                  "value": "{{accountId}}",
+                  "disabled": true
+                },
+                {
+                  "key": "entitlement",
+                  "value": "{{entitlementId}}",
+                  "disabled": true
+                },
+                {
+                  "key": "limit",
+                  "value": "50"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "List saved reports",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/analytics/reports",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "analytics",
+                "reports"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Save a report",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code < 300) {",
+                  "  let body = null;",
+                  "  try { body = pm.response.json(); } catch (e) {}",
+                  "  const pick = (path) => path.split(\".\").reduce((value, key) => (value == null ? value : value[key]), body);",
+                  "  if (pick(\"id\") != null) pm.collectionVariables.set(\"reportId\", String(pick(\"id\")));",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Posts this month\",\n  \"entitlements\": [\n    \"{{entitlementId}}\"\n  ],\n  \"interval\": \"30d\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/analytics/reports",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "analytics",
+                "reports"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get a report",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/analytics/reports/{{reportId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "analytics",
+                "reports",
+                "{{reportId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update a report",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Posts, last 60 days\",\n  \"interval\": \"60d\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/analytics/reports/{{reportId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "analytics",
+                "reports",
+                "{{reportId}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Webhooks and events",
+      "description": "Endpoints that receive signed events (Standard Webhooks), their delivery logs, and the app's event log.",
+      "item": [
+        {
+          "name": "List endpoints",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/webhooks",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "webhooks"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Add an endpoint",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code < 300) {",
+                  "  let body = null;",
+                  "  try { body = pm.response.json(); } catch (e) {}",
+                  "  const pick = (path) => path.split(\".\").reduce((value, key) => (value == null ? value : value[key]), body);",
+                  "  if (pick(\"id\") != null) pm.collectionVariables.set(\"webhookId\", String(pick(\"id\")));",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"url\": \"{{webhookUrl}}\",\n  \"events\": [\n    \"*\"\n  ],\n  \"description\": \"From Postman\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/webhooks",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "webhooks"
+              ]
+            },
+            "description": "Up to 25 per app. events: [\"*\"] subscribes to everything. Use a public URL, such as one from webhook.site. Saves the endpoint id."
+          },
+          "response": []
+        },
+        {
+          "name": "Get an endpoint",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/webhooks/{{webhookId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "webhooks",
+                "{{webhookId}}"
+              ]
+            },
+            "description": "Includes the signing secret."
+          },
+          "response": []
+        },
+        {
+          "name": "Update an endpoint",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"events\": [\n    \"account.plan_changed\",\n    \"usage.limit_reached\",\n    \"checkout.completed\"\n  ],\n  \"enabled\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/webhooks/{{webhookId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "webhooks",
+                "{{webhookId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Rotate the signing secret",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/webhooks/{{webhookId}}/secret/regenerate",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "webhooks",
+                "{{webhookId}}",
+                "secret",
+                "regenerate"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Send a test event",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code < 300) {",
+                  "  let body = null;",
+                  "  try { body = pm.response.json(); } catch (e) {}",
+                  "  const pick = (path) => path.split(\".\").reduce((value, key) => (value == null ? value : value[key]), body);",
+                  "  if (pick(\"id\") != null) pm.collectionVariables.set(\"deliveryId\", String(pick(\"id\")));",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"account.created\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/webhooks/{{webhookId}}/test",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "webhooks",
+                "{{webhookId}}",
+                "test"
+              ]
+            },
+            "description": "Sends a sample event once and returns the delivery. Saves its id."
+          },
+          "response": []
+        },
+        {
+          "name": "Delivery log",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/webhooks/{{webhookId}}/deliveries?limit=50",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "webhooks",
+                "{{webhookId}}",
+                "deliveries"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "failed",
+                  "disabled": true
+                },
+                {
+                  "key": "limit",
+                  "value": "50"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Retry a delivery",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/webhooks/{{webhookId}}/deliveries/{{deliveryId}}/retry",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "webhooks",
+                "{{webhookId}}",
+                "deliveries",
+                "{{deliveryId}}",
+                "retry"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Event log",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/events?limit=50",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "events"
+              ],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "account.plan_changed",
+                  "disabled": true
+                },
+                {
+                  "key": "limit",
+                  "value": "50"
+                }
+              ]
+            },
+            "description": "The last 30 days, newest first."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Admin",
+      "description": "Routes the dashboard and the Render Workflow call. They need the admin key ({{adminKey}}, the API's ADMIN_API_KEY). Locally it is dev-admin-key.",
+      "item": [
+        {
+          "name": "List workspaces",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminKey}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/orgs",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "orgs"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create a workspace record",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminKey}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"{{orgId}}\",\n  \"app_ids\": [\n    \"{{appId}}\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/orgs",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "orgs"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get a workspace",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminKey}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/orgs/{{orgId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "orgs",
+                "{{orgId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update a workspace's apps",
+          "request": {
+            "method": "PATCH",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminKey}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"app_ids\": [\n    \"{{appId}}\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/orgs/{{orgId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "orgs",
+                "{{orgId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "A workspace's apps",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminKey}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/orgs/{{orgId}}/apps",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "orgs",
+                "{{orgId}}",
+                "apps"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Import history",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminKey}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"namespaces\": [\n    {\n      \"id\": \"{{accountId}}\",\n      \"created_at\": \"2026-01-15T00:00:00Z\"\n    }\n  ],\n  \"usage_events\": [\n    {\n      \"namespace_id\": \"{{accountId}}\",\n      \"entitlement_id\": \"{{entitlementId}}\",\n      \"operation\": \"add\",\n      \"amount\": 1,\n      \"created_at\": \"2026-02-01T12:00:00Z\"\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/import",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "import"
+              ]
+            },
+            "description": "Backdates accounts and usage, up to 10,000 of each per request. No webhooks fire. operation is add, remove or amount."
+          },
+          "response": []
+        },
+        {
+          "name": "Pauses due to resume",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminKey}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/pauses/due?limit=100",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pauses",
+                "due"
+              ],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "100"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Apply a pause",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminKey}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"app_id\": \"{{appId}}\",\n  \"account_id\": \"{{accountId}}\",\n  \"months\": 2,\n  \"reason\": \"Taking a break\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/pauses/apply",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pauses",
+                "apply"
+              ]
+            },
+            "description": "What the pause-subscription workflow task calls."
+          },
+          "response": []
+        },
+        {
+          "name": "Resume a pause",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminKey}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"app_id\": \"{{appId}}\",\n  \"account_id\": \"{{accountId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/pauses/resume",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pauses",
+                "resume"
+              ]
+            },
+            "description": "What the resume-subscription workflow task calls."
+          },
+          "response": []
+        },
+        {
+          "name": "Agent threads for a user",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminKey}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/agent/threads?user_id={{userId}}&limit=50",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "agent",
+                "threads"
+              ],
+              "query": [
+                {
+                  "key": "user_id",
+                  "value": "{{userId}}",
+                  "description": "Required"
+                },
+                {
+                  "key": "limit",
+                  "value": "50"
+                }
+              ]
+            },
+            "description": "The dashboard agent's chats."
+          },
+          "response": []
+        },
+        {
+          "name": "Save a thread",
+          "request": {
+            "method": "PUT",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminKey}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"user_id\": \"{{userId}}\",\n  \"title\": \"From Postman\",\n  \"messages\": []\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/agent/threads/{{threadId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "agent",
+                "threads",
+                "{{threadId}}"
+              ]
+            },
+            "description": "Creates the thread or replaces its messages. A thread never changes owner."
+          },
+          "response": []
+        },
+        {
+          "name": "Get a thread",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminKey}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/agent/threads/{{threadId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "agent",
+                "threads",
+                "{{threadId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Rename a thread",
+          "request": {
+            "method": "PATCH",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminKey}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Renamed from Postman\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/agent/threads/{{threadId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "agent",
+                "threads",
+                "{{threadId}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Clean up",
+      "description": "Deletes what the other folders created, in an order that works, ending with the app itself. Run it last, or skip it to keep the data.",
+      "item": [
+        {
+          "name": "Delete the agent thread",
+          "request": {
+            "method": "DELETE",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminKey}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/agent/threads/{{threadId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "agent",
+                "threads",
+                "{{threadId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete the workspace record",
+          "request": {
+            "method": "DELETE",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminKey}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/orgs/{{orgId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "orgs",
+                "{{orgId}}"
+              ]
+            },
+            "description": "Its apps stay."
+          },
+          "response": []
+        },
+        {
+          "name": "Delete the webhook endpoint",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/webhooks/{{webhookId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "webhooks",
+                "{{webhookId}}"
+              ]
+            },
+            "description": "Also deletes its deliveries."
+          },
+          "response": []
+        },
+        {
+          "name": "Delete the report",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/analytics/reports/{{reportId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "analytics",
+                "reports",
+                "{{reportId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete the cancel flow",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/cancel-flows/{{flowId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "cancel-flows",
+                "{{flowId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete the offer",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/offers/{{offerId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "offers",
+                "{{offerId}}"
+              ]
+            },
+            "description": "Buyers keep their price and extras."
+          },
+          "response": []
+        },
+        {
+          "name": "Delete the account",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/namespaces/{{accountId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "namespaces",
+                "{{accountId}}"
+              ]
+            },
+            "description": "Resets its usage counters. Analytics events stay."
+          },
+          "response": []
+        },
+        {
+          "name": "Delete the incentive",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/incentives/{{incentiveId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "incentives",
+                "{{incentiveId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete the Pro plan",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/plans/{{planId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "plans",
+                "{{planId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete the Free plan",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/plans/{{freePlanId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "plans",
+                "{{freePlanId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete the add-on",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/addons/{{addonId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "addons",
+                "{{addonId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete the entitlement",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/entitlements/{{entitlementId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "entitlements",
+                "{{entitlementId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Disconnect PayPal",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/paypal",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "paypal"
+              ]
+            },
+            "description": "404 when PayPal was never connected. Existing subscriptions keep billing."
+          },
+          "response": []
+        },
+        {
+          "name": "Delete the app",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}"
+              ]
+            },
+            "description": "Deletes the app and anything left in it."
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

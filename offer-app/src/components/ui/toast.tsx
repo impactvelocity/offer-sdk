@@ -22,7 +22,7 @@ export const toast = {
 const icons: Record<Tone, ReactNode> = {
   success: <CircleCheck className="size-4 text-success" />,
   error: <CircleAlert className="size-4 text-danger" />,
-  info: <Info className="size-4 text-accent" />,
+  info: <Info className="size-4 text-accent-fg" />,
 };
 
 export function Toaster({ children }: { children: ReactNode }) {

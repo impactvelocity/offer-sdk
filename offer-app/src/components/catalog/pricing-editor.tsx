@@ -319,7 +319,7 @@ export function PricingEditor({ appId, plan }: { appId: string; plan: Plan }) {
               </span>
             ) : null}
           </div>
-          <div className={cn("mt-4 flex h-8 items-center justify-center rounded-md text-sm font-medium", card.featured ? "bg-accent text-white" : "border border-border-strong text-fg")}>
+          <div className={cn("mt-4 flex h-8 items-center justify-center rounded-md text-sm font-medium", card.featured ? "bg-accent text-accent-contrast" : "border border-border-strong text-fg")}>
             Choose {card.title || "plan"}
           </div>
           {card.benefits.length ? (

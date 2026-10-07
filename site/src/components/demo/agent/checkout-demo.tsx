@@ -166,7 +166,7 @@ export function CheckoutDemo() {
 
       <AppWindow url={`acmedocs.dev/checkout${visitor.query}`} className="h-[600px]">
         <div className="flex h-11 shrink-0 items-center gap-2 border-b border-border px-4">
-          <span className="inline-flex size-6 items-center justify-center rounded-md bg-brand font-display text-[11px] font-semibold text-white">A</span>
+          <span className="inline-flex size-6 items-center justify-center rounded-md bg-brand font-display text-[11px] font-semibold text-accent-contrast">A</span>
           <span className="font-display text-sm font-semibold">Acme Docs</span>
           <span className={cn("ml-auto rounded-md px-1.5 py-0.5 font-mono text-[10px]", variant === "agent" ? "bg-accent-subtle text-accent-fg" : "bg-bg-active text-fg-tertiary")}>
             {variant === "agent" ? "variant B · agent" : "variant A · control"}
@@ -222,7 +222,7 @@ export function CheckoutDemo() {
                         )}
                       >
                         <span className={cn("inline-flex size-4 shrink-0 items-center justify-center rounded-full ring-1 ring-border-strong", selected && "bg-accent ring-accent")}>
-                          {selected ? <Check className="size-2.5 text-white" strokeWidth={4} /> : null}
+                          {selected ? <Check className="size-2.5 text-accent-contrast" strokeWidth={4} /> : null}
                         </span>
                         <span className="min-w-0 flex-1">
                           <span className="flex items-center gap-2 text-sm font-medium text-fg">

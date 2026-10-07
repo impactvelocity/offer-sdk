@@ -52,10 +52,15 @@ export async function proxyAuthRequest(request: Request): Promise<Response> {
   return new Response(res.body, { status: res.status, statusText: res.statusText, headers: out });
 }
 
-/** Server-side better-auth call on behalf of the current request's user. */
-export async function remoteAuthCall<T>(method: "GET" | "POST", path: string, body?: unknown): Promise<T> {
+/**
+ * Server-side better-auth request from inside a request handler. Sends the current
+ * request's cookies, or `cookie` instead when given ("" for none).
+ */
+async function serverAuthFetch(method: "GET" | "POST", path: string, body: unknown, cookie?: string): Promise<Response> {
   const incoming = await headers();
   const { url, headers: forwarded } = upstream(`/api/auth${path}`, incoming);
+  if (cookie) forwarded.set("cookie", cookie);
+  else if (cookie !== undefined) forwarded.delete("cookie");
   if (body !== undefined) forwarded.set("content-type", "application/json");
   // better-auth checks the Origin of cookie-authenticated POSTs; this app is that origin.
   if (method === "POST" && !forwarded.has("origin")) {
@@ -64,9 +69,8 @@ export async function remoteAuthCall<T>(method: "GET" | "POST", path: string, bo
     if (host) forwarded.set("origin", `${proto.split(",")[0]}://${host}`);
   }
 
-  let res: Response;
   try {
-    res = await fetch(url, {
+    return await fetch(url, {
       method,
       headers: forwarded,
       body: body !== undefined ? JSON.stringify(body) : undefined,
@@ -78,10 +82,41 @@ export async function remoteAuthCall<T>(method: "GET" | "POST", path: string, bo
       { cause: e },
     );
   }
+}
+
+/** Server-side better-auth call on behalf of the current request's user. */
+export async function remoteAuthCall<T>(method: "GET" | "POST", path: string, body?: unknown): Promise<T> {
+  const res = await serverAuthFetch(method, path, body);
   const data = await res.json().catch(() => null);
   if (!res.ok) {
     const message = (data as { message?: string; error?: string } | null)?.message ?? (data as { error?: string })?.error;
     throw new Error(`Offer API auth ${method} ${path} failed (${res.status})${message ? `: ${message}` : ""}`);
   }
   return data as T;
+}
+
+/**
+ * Server-side better-auth call with a session of its own instead of the current
+ * request's user: sends `cookie` ("" for none) and returns it updated with any
+ * cookies the API set (e.g. after signing in). Doesn't throw on error statuses.
+ */
+export async function remoteAuthCallAs<T>(
+  cookie: string,
+  method: "GET" | "POST",
+  path: string,
+  body?: unknown,
+): Promise<{ status: number; data: T | null; cookie: string }> {
+  const res = await serverAuthFetch(method, path, body, cookie);
+  const jar = new Map<string, string>();
+  const keep = (pair: string) => {
+    const i = pair.indexOf("=");
+    if (i > 0) jar.set(pair.slice(0, i), pair.slice(i + 1));
+  };
+  cookie.split("; ").forEach(keep);
+  for (const setCookie of res.headers.getSetCookie()) keep(setCookie.split(";")[0]);
+  return {
+    status: res.status,
+    data: (await res.json().catch(() => null)) as T | null,
+    cookie: [...jar].map(([name, value]) => `${name}=${value}`).join("; "),
+  };
 }

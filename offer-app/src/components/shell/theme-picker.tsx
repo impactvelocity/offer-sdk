@@ -17,13 +17,13 @@ function Preview({ mode }: { mode: "light" | "dark" }) {
   const id = `tp${useId().replace(/[^a-zA-Z0-9]/g, "")}`;
   const c =
     mode === "dark"
-      ? { canvas: "#0f0f11", surface: "#18181b", line: "#2a2a2f", text: "#ececee", accent: "#8f6bff" }
-      : { canvas: "#efeff1", surface: "#ffffff", line: "#e4e4e7", text: "#1b1c1e", accent: "#7c4dff" };
+      ? { canvas: "#0f0f11", surface: "#18181b", line: "#2a2a2f", text: "#ececee", accent: "#34d599" }
+      : { canvas: "#efeff1", surface: "#ffffff", line: "#e4e4e7", text: "#1b1c1e", accent: "#34d599" };
   return (
     <svg viewBox="0 0 120 72" className="h-full w-full" aria-hidden>
       <rect width="120" height="72" fill={c.canvas} />
       <rect x="4" y="6" width="8" height="8" rx="2.5" fill={c.text} />
-      <rect x="4" y="20" width="8" height="8" rx="2.5" fill="#7c4dff" />
+      <rect x="4" y="20" width="8" height="8" rx="2.5" fill="#34d599" />
       <rect x="4" y="32" width="8" height="8" rx="2.5" fill="#2563eb" />
       <rect x="16" y="4" width="30" height="64" rx="4" fill={c.surface} />
       <rect x="20" y="10" width="18" height="3" rx="1.5" fill={c.text} />
@@ -38,8 +38,8 @@ function Preview({ mode }: { mode: "light" | "dark" }) {
       <path d="M56 58 C66 50 72 54 80 47 S98 44 110 38" fill="none" stroke={`url(#${id})`} strokeWidth="2" strokeLinecap="round" />
       <defs>
         <linearGradient id={id} x1="0" x2="1">
-          <stop offset="0" stopColor="#7c4dff" />
-          <stop offset="1" stopColor="#e0457b" />
+          <stop offset="0" stopColor="#34d599" />
+          <stop offset="1" stopColor="#1fb2d0" />
         </linearGradient>
       </defs>
     </svg>

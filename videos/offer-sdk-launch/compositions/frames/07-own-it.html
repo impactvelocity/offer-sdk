@@ -1,0 +1,825 @@
+<template>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+  <style>
+/* ==========================================================================
+   Offer SDK app kit — the offer-app dashboard (dark theme), rebuilt for video.
+   Values are copied from offer-app/src/app/globals.css (data-theme="dark") and
+   measured from the real screens in capture/assets/app/*.png.
+
+   HOW TO USE IN A FRAME
+   1. Paste this whole file inside the style block that lives inside your frame template.
+      (Template transport: styles must live inside the frame template.)
+   2. Build the window from shell.html. Author it at its LOGICAL size
+      (.ak-window is 1366×800 — a real laptop viewport, real 14px UI text) and
+      scale the wrapper with GSAP (scale ≈ 1.08–1.12 to fill the top 83%;
+      punch in to 1.5–1.9 on the region the VO is talking about).
+   3. Copy icons from icons.html (Lucide, the icon set the app uses).
+   All classes are prefixed ak- so they never collide with frame-local names.
+   ========================================================================== */
+
+@font-face { font-family: "Cal Sans"; src: url("assets/fonts/CalSansVF.woff2") format("woff2"); font-weight: 400 700; font-display: block; }
+@font-face { font-family: "Geist Mono"; src: url("assets/fonts/geist-mono-latin.woff2") format("woff2"); font-weight: 400 600; font-display: block; }
+
+.ak {
+  --canvas: #0f0f11; --panel: #161618; --bg: #18181b; --bg-subtle: #1c1c1f; --bg-muted: #222226;
+  --bg-hover: #27272c; --bg-active: #2e2e34; --bg-elevated: #202024; --bg-inverse: #f1f1f3;
+  --fg: #ececee; --fg-secondary: rgb(236 236 238 / .93); --fg-tertiary: rgb(236 236 238 / .86);
+  --fg-muted: rgb(236 236 238 / .68); --fg-placeholder: #6f7178; --fg-icon: #9c9ea5;
+  --border: #2a2a2f; --border-strong: #37373d; --border-input: #323238;
+  --accent: #34d599; --accent-hover: #5ce0b0; --accent-subtle: rgb(52 213 153 / .13); --accent-fg: #5fe3b1; --accent-contrast: #03140c; --ring: rgb(52 213 153 / .4);
+  --btn-neon-bg: rgb(52 213 153 / .08); --shadow-brand: inset 0 0 0 1px rgb(52 213 153 / .85), inset 0 0 14px -6px rgb(52 213 153 / .35), 0 0 16px -6px rgb(52 213 153 / .4);
+  --brand-vertical: linear-gradient(180deg, #4fe0b0, #2fc48c);
+  --success: #30a46c; --success-subtle: rgb(48 164 108 / .16); --success-fg: #5ed29a;
+  --danger: #e5484d; --danger-subtle: rgb(229 72 77 / .15); --danger-fg: #ff8a8d;
+  --warning: #f0a020; --warning-subtle: rgb(240 160 32 / .14); --warning-fg: #ffc35f;
+  --brand-from: #34d599; --brand-to: #2cc0de; --brand-gradient: linear-gradient(90deg, #34d599, #2cc0de);
+  --code-comment: #7f828a; --code-keyword: #5fe3b1; --code-string: #6fd69f; --code-key: #93b8ff; --code-number: #ffa072;
+  --zapier: #ff5f1f; --paypal: #0070e0;
+  --shadow-soft: 0 14px 36px -14px rgb(0 0 0 / .75), 0 2px 8px -2px rgb(0 0 0 / .45);
+  --shadow-lg: 0 18px 44px -10px rgb(0 0 0 / .7), 0 4px 12px -4px rgb(0 0 0 / .5);
+  font-family: "Cal Sans", ui-sans-serif, system-ui, sans-serif;
+  font-variation-settings: "GEOM" 25;           /* the app's UI geometry */
+  color: var(--fg); -webkit-font-smoothing: antialiased; font-size: 14px; line-height: 1.4;
+}
+.ak * { box-sizing: border-box; }
+.ak .ak-display { font-variation-settings: "GEOM" 50; letter-spacing: -0.01em; }
+/* Neon-style eyebrow: small mono caps (site + app section kickers). */
+.ak .ak-eyebrow { font-family: "Geist Mono", monospace; font-variation-settings: normal; font-size: 11px; line-height: 16px; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; color: var(--fg-muted); }
+.ak .ak-mono, .ak code { font-family: "Geist Mono", ui-monospace, monospace; font-variation-settings: normal; }
+.ak svg { display: block; flex-shrink: 0; }
+
+/* ---------- window + shell ---------- */
+.ak-window { position: absolute; width: 1366px; height: 800px; background: var(--canvas); border-radius: 18px;
+  border: 1px solid var(--border); box-shadow: 0 40px 120px -30px rgb(0 0 0 / .9), 0 0 0 1px rgb(255 255 255 / .03);
+  overflow: hidden; display: flex; padding: 6px 6px 6px 0; transform-origin: 50% 50%; }
+.ak-rail { width: 52px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; gap: 10px; padding-top: 8px; }
+.ak-rail .ak-rail-logo { width: 30px; height: 30px; border-radius: 8px; display: grid; place-items: center; color: var(--fg); }
+.ak-rail .ak-rail-logo svg { width: 18px; height: 18px; }
+.ak-rail .ak-rail-sep { width: 22px; height: 1px; background: var(--border); }
+.ak-rail .ak-app-tile { width: 28px; height: 28px; border-radius: 7px; display: grid; place-items: center; font-size: 11px; font-weight: 600; color: var(--accent-contrast);
+  background: var(--brand-vertical); }
+.ak-rail .ak-app-tile.is-active { box-shadow: 0 0 0 2px var(--canvas), 0 0 0 3.5px var(--accent); }
+.ak-rail .ak-app-tile.alt { opacity: .8; }
+.ak-rail .ak-rail-plus { color: var(--fg-icon); width: 16px; height: 16px; }
+.ak-rail .ak-rail-foot { margin-top: auto; padding-bottom: 6px; display: flex; flex-direction: column; align-items: center; gap: 14px; color: var(--fg-icon); }
+.ak-rail .ak-rail-foot svg { width: 15px; height: 15px; }
+.ak-rail .ak-avatar { width: 26px; height: 26px; border-radius: 50%; background: var(--bg-muted); color: var(--fg-secondary); font-size: 10px; display: grid; place-items: center; }
+
+.ak-nav { width: 222px; flex-shrink: 0; background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
+  margin-right: 6px; display: flex; flex-direction: column; padding: 12px 10px; box-shadow: var(--shadow-soft); }
+.ak-nav-title { font-size: 15px; font-weight: 600; padding: 2px 6px 10px; font-variation-settings: "GEOM" 50; }
+.ak-quick { height: 30px; border: 1px solid var(--border-input); border-radius: 8px; display: flex; align-items: center; gap: 8px; padding: 0 8px;
+  color: var(--fg-muted); font-size: 13px; margin-bottom: 10px; }
+.ak-quick svg { width: 14px; height: 14px; color: var(--fg-icon); }
+.ak-quick .ak-kbd { margin-left: auto; font-size: 10.5px; border: 1px solid var(--border); border-radius: 4px; padding: 0 4px; color: var(--fg-placeholder); }
+.ak-nav-group { display: flex; flex-direction: column; gap: 1px; padding: 6px 0; border-top: 1px solid var(--border); }
+.ak-nav-group:first-of-type { border-top: 0; padding-top: 0; }
+.ak-nav-item { height: 31px; border-radius: 7px; display: flex; align-items: center; gap: 10px; padding: 0 8px; font-size: 13.5px; color: var(--fg-secondary); }
+.ak-nav-item svg { width: 15px; height: 15px; color: var(--fg-icon); }
+.ak-nav-item .ak-count { margin-left: auto; font-size: 12px; color: var(--fg-muted); font-variant-numeric: tabular-nums; }
+.ak-nav-item.is-active { background: var(--accent-subtle); color: var(--accent-fg); }
+.ak-nav-item.is-active svg { color: var(--accent-fg); }
+.ak-nav-foot { margin-top: auto; }
+
+.ak-main { flex: 1; min-width: 0; background: var(--bg); border: 1px solid var(--border); border-radius: 12px; display: flex; flex-direction: column;
+  overflow: hidden; box-shadow: var(--shadow-soft); position: relative; }
+.ak-header { height: 50px; flex-shrink: 0; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; padding: 0 12px 0 16px; }
+.ak-header .ak-crumb { display: flex; align-items: center; gap: 9px; font-size: 14px; font-weight: 500; }
+.ak-header .ak-crumb svg { width: 15px; height: 15px; color: var(--fg-icon); }
+.ak-header .ak-crumb .ak-sep { color: var(--fg-placeholder); }
+.ak-header .ak-actions { margin-left: auto; display: flex; align-items: center; gap: 4px; }
+.ak-toolbar { height: 50px; flex-shrink: 0; display: flex; align-items: center; gap: 10px; padding: 0 16px; border-bottom: 1px solid var(--border); }
+.ak-body { flex: 1; min-height: 0; position: relative; overflow: hidden; }
+.ak-page { padding: 28px 40px; }
+.ak-page-title { font-size: 22px; font-weight: 600; font-variation-settings: "GEOM" 50; letter-spacing: -0.01em; }
+.ak-page-sub { color: var(--fg-muted); font-size: 13.5px; margin-top: 4px; }
+
+/* ---------- controls ---------- */
+.ak-btn { height: 30px; border-radius: 8px; display: inline-flex; align-items: center; gap: 7px; padding: 0 10px; font-size: 13.5px; color: var(--fg-secondary);
+  border: 1px solid transparent; white-space: nowrap; }
+.ak-btn svg { width: 14px; height: 14px; }
+.ak-btn.is-outline { border-color: var(--border-strong); background: var(--bg-subtle); }
+/* Primary = the app's neon button: hairline neon border, faint green wash, green ink. */
+.ak-btn.is-primary { background: var(--btn-neon-bg); color: var(--accent-fg); font-weight: 500; box-shadow: var(--shadow-brand); }
+.ak-btn.is-gradient { background: var(--btn-neon-bg); color: var(--accent-fg); font-weight: 500; box-shadow: var(--shadow-brand), 0 0 32px -8px rgb(52 213 153 / .55); }
+.ak-btn.is-solid { background: var(--brand-vertical); color: var(--accent-contrast); font-weight: 600; }
+.ak-btn.is-paypal { background: #ffc439; color: #111; font-weight: 600; }
+.ak-btn.is-lg { height: 40px; padding: 0 16px; font-size: 15px; border-radius: 10px; }
+.ak-input { height: 32px; border: 1px solid var(--border-input); background: var(--bg-subtle); border-radius: 8px; display: flex; align-items: center; gap: 8px;
+  padding: 0 10px; font-size: 13.5px; color: var(--fg); }
+.ak-input.is-placeholder { color: var(--fg-placeholder); }
+.ak-input.is-focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--ring); }
+.ak-input svg { width: 14px; height: 14px; color: var(--fg-icon); }
+.ak-label { font-size: 13px; color: var(--fg-secondary); font-weight: 500; margin-bottom: 6px; }
+.ak-seg { display: inline-flex; background: var(--bg-muted); border-radius: 8px; padding: 2px; gap: 2px; }
+.ak-seg > span { height: 26px; padding: 0 10px; border-radius: 6px; display: inline-flex; align-items: center; font-size: 13px; color: var(--fg-muted); }
+.ak-seg > span.is-on { background: var(--bg-active); color: var(--fg); }
+.ak-switch { width: 30px; height: 18px; border-radius: 9px; background: var(--bg-active); position: relative; flex-shrink: 0; }
+.ak-switch::after { content: ""; position: absolute; top: 2px; left: 2px; width: 14px; height: 14px; border-radius: 50%; background: #fff; }
+.ak-switch.is-on { background: var(--accent); }
+.ak-switch.is-on::after { background: var(--accent-contrast); }
+.ak-switch.is-on::after { left: 14px; }
+.ak-check { width: 16px; height: 16px; border-radius: 4px; border: 1px solid var(--border-strong); display: grid; place-items: center; }
+.ak-check.is-on { background: var(--accent); border-color: var(--accent); color: var(--accent-contrast); }
+.ak-check svg { width: 11px; height: 11px; }
+
+/* ---------- table (Plans / Entitlements / Add-ons / Incentives / Accounts) ---------- */
+.ak-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+.ak-table th { height: 42px; text-align: left; font-weight: 400; color: var(--fg-muted); padding: 0 14px; border-bottom: 1px solid var(--border); border-right: 1px solid var(--border); white-space: nowrap; }
+.ak-table th:last-child, .ak-table td:last-child { border-right: 0; }
+.ak-table th .ak-th { display: inline-flex; align-items: center; gap: 7px; }
+.ak-table th svg { width: 13px; height: 13px; color: var(--fg-icon); }
+.ak-table td { height: 46px; padding: 0 14px; border-bottom: 1px solid var(--border); border-right: 1px solid var(--border); white-space: nowrap; color: var(--fg-secondary); }
+.ak-table td.is-num { text-align: right; font-variant-numeric: tabular-nums; }
+.ak-table .ak-row-name { display: flex; align-items: center; gap: 9px; color: var(--fg); }
+.ak-table .ak-row-icon { width: 22px; height: 22px; border-radius: 6px; background: rgb(59 123 246 / .18); color: #93b8ff; display: grid; place-items: center; }
+.ak-table .ak-row-icon svg { width: 13px; height: 13px; }
+.ak-table tr.is-hl td { background: rgb(52 213 153 / .07); }
+.ak-table-foot { padding: 12px 16px; color: var(--fg-muted); font-size: 13px; }
+
+/* ---------- chips + tags ---------- */
+.ak-id { font-family: "Geist Mono", monospace; font-variation-settings: normal; font-size: 12px; background: var(--bg-muted); color: var(--fg-secondary);
+  border-radius: 5px; padding: 2px 6px; }
+.ak-tag { display: inline-flex; align-items: center; gap: 5px; height: 21px; padding: 0 7px; border-radius: 5px; font-size: 12px; white-space: nowrap;
+  background: rgb(255 255 255 / .08); color: #c6c7cc; }
+.ak-tag svg { width: 11px; height: 11px; }
+.ak-tag.blue { background: rgb(59 123 246 / .18); color: #93b8ff; }
+.ak-tag.green { background: rgb(48 164 108 / .18); color: #6fd69f; }
+.ak-tag.yellow { background: rgb(240 180 40 / .16); color: #f5c451; }
+.ak-tag.orange { background: rgb(235 104 52 / .18); color: #ffa072; }
+.ak-tag.red { background: rgb(229 72 77 / .18); color: #ff8a8d; }
+.ak-tag.purple { background: rgb(143 107 255 / .2); color: #bba6ff; }
+.ak-tag.brand { background: rgb(52 213 153 / .14); color: #5fe3b1; }
+.ak-tag.pink { background: rgb(224 69 123 / .18); color: #ff8fba; }
+.ak-tag.teal { background: rgb(20 163 157 / .18); color: #62d6cf; }
+.ak-more { color: var(--fg-muted); font-size: 12px; }
+
+/* ---------- cards, stats, meters ---------- */
+.ak-card { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; }
+.ak-card-head { height: 46px; display: flex; align-items: center; padding: 0 16px; border-bottom: 1px solid var(--border); font-weight: 500; font-size: 14px; }
+.ak-card-body { padding: 16px; }
+.ak-elevated { background: var(--bg-elevated); border: 1px solid var(--border-strong); border-radius: 12px; box-shadow: var(--shadow-lg); }
+.ak-stat-strip { display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+.ak-stat { padding: 16px 18px; border-right: 1px solid var(--border); }
+.ak-stat:last-child { border-right: 0; }
+.ak-stat-label { display: flex; align-items: center; gap: 7px; font-size: 13px; color: var(--fg-secondary); }
+.ak-stat-label svg { width: 13px; height: 13px; color: var(--fg-icon); }
+.ak-stat-value { font-size: 26px; font-weight: 600; margin-top: 8px; font-variant-numeric: tabular-nums; font-variation-settings: "GEOM" 50; }
+.ak-stat-sub { font-size: 12px; color: var(--fg-muted); margin-top: 4px; }
+.ak-meter { height: 8px; border-radius: 4px; background: var(--bg-active); overflow: hidden; }
+.ak-meter > i { display: block; height: 100%; width: 0; border-radius: 4px; background: var(--brand-gradient); }
+.ak-meter.is-warn > i { background: linear-gradient(90deg, #f0a020, #e5484d); }
+.ak-bar-row { position: relative; height: 30px; border-radius: 6px; display: flex; align-items: center; padding: 0 10px; font-size: 13.5px; }
+.ak-bar-row > b { position: absolute; inset: 0 auto 0 0; border-radius: 6px; background: linear-gradient(90deg, rgb(52 213 153 / .32), rgb(44 192 222 / .22)); font-weight: 400; }
+.ak-bar-row > span { position: relative; }
+.ak-bar-row > .ak-bar-val { margin-left: auto; color: var(--fg-secondary); font-variant-numeric: tabular-nums; }
+
+/* ---------- code block (site CodeBlock look) ---------- */
+.ak-code { background: #131315; border: 1px solid var(--border); border-radius: 14px; overflow: hidden; box-shadow: var(--shadow-lg); }
+.ak-code-bar { height: 40px; display: flex; align-items: center; gap: 8px; padding: 0 14px; border-bottom: 1px solid var(--border); color: var(--fg-muted); font-size: 13px; }
+.ak-code-bar .ak-dots { display: flex; gap: 6px; margin-right: 6px; }
+.ak-code-bar .ak-dots i { width: 10px; height: 10px; border-radius: 50%; background: var(--bg-active); }
+.ak-code pre { margin: 0; padding: 18px 20px; font-family: "Geist Mono", monospace; font-variation-settings: normal; font-size: 15px; line-height: 1.65; color: var(--fg-secondary); white-space: pre; }
+.ak-code .k { color: var(--code-keyword); } .ak-code .s { color: var(--code-string); } .ak-code .p { color: var(--code-key); }
+.ak-code .n { color: var(--code-number); } .ak-code .c { color: var(--code-comment); } .ak-code .f { color: #ececee; }
+.ak-code .del { background: rgb(229 72 77 / .14); } .ak-code .add { background: rgb(48 164 108 / .14); }
+
+/* ---------- feedback ---------- */
+.ak-toast { position: absolute; display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 10px; background: var(--bg-elevated);
+  border: 1px solid var(--border-strong); box-shadow: var(--shadow-lg); font-size: 13.5px; white-space: nowrap; }
+.ak-toast svg { width: 15px; height: 15px; }
+.ak-toast.is-ok svg { color: var(--success-fg); }
+.ak-toast.is-warn svg { color: var(--warning-fg); }
+.ak-toast.is-bad svg { color: var(--danger-fg); }
+.ak-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--success); display: inline-block; }
+.ak-dot.is-warn { background: var(--warning); } .ak-dot.is-bad { background: var(--danger); }
+.ak-cursor { position: absolute; width: 22px; height: 22px; z-index: 50; pointer-events: none; filter: drop-shadow(0 2px 4px rgb(0 0 0 / .6)); }
+.ak-ripple { position: absolute; width: 36px; height: 36px; margin: -18px 0 0 -18px; border-radius: 50%; border: 2px solid var(--accent-fg); z-index: 49; opacity: 0; }
+
+/* ---------- avatars + misc ---------- */
+.ak-av { width: 22px; height: 22px; border-radius: 6px; display: grid; place-items: center; font-size: 9.5px; font-weight: 600; background: rgb(52 213 153 / .14); color: #5fe3b1; }
+.ak-av.round { border-radius: 50%; }
+.ak-kv { display: flex; justify-content: space-between; font-size: 13px; padding: 7px 0; border-bottom: 1px solid var(--border); color: var(--fg-muted); }
+.ak-kv b { font-weight: 400; color: var(--fg); }
+.ak-divider { height: 1px; background: var(--border); }
+
+    /* ---------- frame 07-own-it (frame-local; class names prefixed 07-own-it-) ---------- */
+    #root {
+      position: absolute;
+      inset: 0;
+      width: 1920px;
+      height: 1080px;
+      overflow: hidden;
+    }
+    .\30 7-own-it-bg {
+      position: absolute;
+      inset: 0;
+      background: #0f0f11;
+      overflow: hidden;
+    }
+    .\30 7-own-it-bg img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0.46;
+    }
+    /* canvas radial fade behind the diagram + a calm band under the rail */
+    .\30 7-own-it-fade {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(64% 58% at 50% 44%, #0f0f11 0%, rgba(15, 15, 17, 0.86) 54%, rgba(15, 15, 17, 0) 100%);
+    }
+    .\30 7-own-it-fade-low {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 600px;
+      height: 480px;
+      background: linear-gradient(180deg, rgba(15, 15, 17, 0) 0%, rgba(15, 15, 17, 0.72) 40%, rgba(15, 15, 17, 0.9) 100%);
+    }
+    .\30 7-own-it-glow {
+      position: absolute;
+      left: 230px;
+      top: 0px;
+      width: 1300px;
+      height: 760px;
+      background: radial-gradient(closest-side, rgba(52, 213, 153, 0.16), rgba(52, 213, 153, 0));
+    }
+    .\30 7-own-it-stage {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 1920px;
+      height: 1080px;
+      transform-origin: 960px 480px;
+    }
+    .\30 7-own-it-svg {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 1920px;
+      height: 1080px;
+      z-index: 2;
+      overflow: visible;
+    }
+    .\30 7-own-it-svg path {
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    /* boundary label tab */
+    .\30 7-own-it-tab {
+      position: absolute;
+      left: 410px;
+      top: 129px;
+      height: 42px;
+      padding: 0 20px 0 16px;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      border-radius: 999px;
+      background-color: #0f0f11;
+      border: 1px solid #37373d;
+      box-shadow: 0px 0px 0px 0px rgba(52, 213, 153, 0);
+      font-size: 20px;
+      font-weight: 500;
+      color: rgba(236, 236, 238, 0.68);
+      z-index: 4;
+      white-space: nowrap;
+      transform-origin: 50% 50%;
+    }
+    .\30 7-own-it-tab svg { width: 20px; height: 20px; color: #9c9ea5; }
+    .\30 7-own-it-tab b {
+      color: #ececee;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      font-variation-settings: "GEOM" 50;
+    }
+
+    /* service nodes */
+    .\30 7-own-it-node {
+      position: absolute;
+      height: 112px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 0 20px;
+      background: #18181b;
+      border: 1px solid #37373d;
+      border-radius: 14px;
+      box-shadow: 0 18px 44px -10px rgb(0 0 0 / .7), 0 4px 12px -4px rgb(0 0 0 / .5);
+      z-index: 3;
+      transform-origin: 50% 50%;
+    }
+    .\30 7-own-it-flash {
+      position: absolute;
+      inset: -1px;
+      border-radius: 14px;
+      pointer-events: none;
+      box-shadow: inset 0 0 0 1px rgba(52, 213, 153, 0.85), inset 0 0 14px -6px rgba(52, 213, 153, 0.35), 0 0 26px -4px rgba(52, 213, 153, 0.5);
+      opacity: 0;
+    }
+    .\30 7-own-it-ico {
+      width: 52px;
+      height: 52px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+    }
+    .\30 7-own-it-ico svg { width: 26px; height: 26px; }
+    .\30 7-own-it-ico.is-green { background: rgb(52 213 153 / .14); color: #5fe3b1; }
+    .\30 7-own-it-ico.is-cyan { background: rgb(44 192 222 / .16); color: #6fd8ee; }
+    .\30 7-own-it-ico.is-blue { background: rgb(59 123 246 / .18); color: #93b8ff; }
+    .\30 7-own-it-ico.is-neutral { background: rgb(255 255 255 / .08); color: #c6c7cc; }
+    .\30 7-own-it-meta { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; min-width: 0; }
+    .\30 7-own-it-name {
+      font-size: 24px;
+      font-weight: 600;
+      color: #ececee;
+      line-height: 1.1;
+      white-space: nowrap;
+      letter-spacing: -0.005em;
+    }
+    .\30 7-own-it-name.ak-mono { font-size: 22px; font-weight: 500; letter-spacing: -0.01em; }
+    .ak .\30 7-own-it-live {
+      height: 26px;
+      padding: 0 9px;
+      gap: 7px;
+      font-size: 15px;
+      transform-origin: 0% 50%;
+    }
+    .ak .\30 7-own-it-live .ak-dot { width: 8px; height: 8px; box-shadow: 0 0 8px rgba(94, 210, 154, 0.85); }
+
+    .\30 7-own-it-app { height: 88px; gap: 14px; padding: 0 18px; border-style: dashed; }
+    .\30 7-own-it-app .\30 7-own-it-ico { width: 44px; height: 44px; border-radius: 10px; }
+    .\30 7-own-it-app .\30 7-own-it-ico svg { width: 22px; height: 22px; }
+
+    /* PayPal tile + checkout pill */
+    .\30 7-own-it-paypal {
+      position: absolute;
+      left: 1510px;
+      top: 314px;
+      width: 260px;
+      height: 112px;
+      border-radius: 14px;
+      background: #18181b;
+      border: 1px solid rgba(0, 112, 224, 0.45);
+      display: grid;
+      place-items: center;
+      z-index: 3;
+      box-shadow: 0 18px 44px -10px rgb(0 0 0 / .7), 0 4px 12px -4px rgb(0 0 0 / .5);
+    }
+    .\30 7-own-it-paypal span {
+      font-size: 50px;
+      font-weight: 700;
+      color: #0070e0;
+      letter-spacing: -0.02em;
+      font-variation-settings: "GEOM" 50;
+      line-height: 1;
+    }
+    .\30 7-own-it-ppring {
+      position: absolute;
+      inset: -1px;
+      border-radius: 14px;
+      pointer-events: none;
+      box-shadow: inset 0 0 0 1px #0070e0, 0 0 28px -2px rgba(0, 112, 224, 0.55);
+      opacity: 0;
+    }
+    .\30 7-own-it-checkout {
+      position: absolute;
+      left: 1530px;
+      top: 452px;
+      width: 220px;
+      height: 56px;
+      z-index: 3;
+    }
+    .\30 7-own-it-burst {
+      position: absolute;
+      inset: 0;
+      border-radius: 999px;
+      background: radial-gradient(closest-side, rgba(255, 196, 57, 0.95), rgba(255, 196, 57, 0));
+      filter: blur(12px);
+      z-index: 1;
+      opacity: 0;
+    }
+    .\30 7-own-it-btn {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      border-radius: 999px;
+      background: #ffc439;
+      color: #111;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      font-size: 22px;
+      font-weight: 600;
+      box-shadow: 0 12px 30px -10px rgba(255, 196, 57, 0.55), 0 2px 6px rgba(0, 0, 0, 0.4);
+      transform-origin: 50% 50%;
+    }
+    .\30 7-own-it-btn svg { width: 22px; height: 22px; }
+
+    /* lifecycle rail */
+    .\30 7-own-it-station {
+      position: absolute;
+      top: 748px;
+      width: 300px;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 3;
+    }
+    .\30 7-own-it-pill {
+      height: 60px;
+      padding: 0 24px 0 20px;
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      border-radius: 999px;
+      background: #18181b;
+      border: 1px solid #2a2a2f;
+      color: #85878e;
+      font-size: 23px;
+      font-weight: 500;
+      white-space: nowrap;
+      transform-origin: 50% 50%;
+    }
+    .\30 7-own-it-pill svg { width: 24px; height: 24px; color: #6f7178; }
+  </style>
+
+  <div id="root" data-composition-id="07-own-it" data-start="0" data-duration="10.85" data-width="1920" data-height="1080">
+    <!-- full-bleed ground (lowest track) -->
+    <div id="07-own-it-bg" class="07-own-it-bg clip" data-start="0" data-duration="10.85" data-track-index="0">
+      <img src="assets/hero-bg-neon.webp" alt="" />
+      <div class="07-own-it-fade"></div>
+      <div class="07-own-it-fade-low"></div>
+      <div class="07-own-it-glow" id="07-own-it-glow"></div>
+    </div>
+
+    <div class="ak">
+      <div class="07-own-it-stage" id="07-own-it-stage">
+        <!-- lines, boundary, rail -->
+        <svg class="07-own-it-svg" viewBox="0 0 1920 1080" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <!-- soft neon glow; userSpace region so straight (zero-height) lines keep their glow -->
+            <filter id="07-own-it-neon" filterUnits="userSpaceOnUse" x="0" y="0" width="1920" height="1080">
+              <feGaussianBlur in="SourceGraphic" stdDeviation="4" result="b1" />
+              <feGaussianBlur in="SourceGraphic" stdDeviation="10" result="b2" />
+              <feMerge><feMergeNode in="b2" /><feMergeNode in="b1" /><feMergeNode in="SourceGraphic" /></feMerge>
+            </filter>
+            <filter id="07-own-it-haze" filterUnits="userSpaceOnUse" x="0" y="0" width="1920" height="1080">
+              <feGaussianBlur in="SourceGraphic" stdDeviation="9" />
+            </filter>
+            <mask id="07-own-it-bmask" maskUnits="userSpaceOnUse" x="0" y="0" width="1920" height="1080">
+              <path id="07-own-it-bdraw" d="M 740 150 H 1352 A 28 28 0 0 1 1380 178 V 562 A 28 28 0 0 1 1352 590 H 408 A 28 28 0 0 1 380 562 V 178 A 28 28 0 0 1 408 150 H 740 Z" stroke="#fff" stroke-width="44" fill="none" style="stroke-linecap: butt;" />
+            </mask>
+            <linearGradient id="07-own-it-railgrad" gradientUnits="userSpaceOnUse" x1="200" y1="0" x2="1600" y2="0">
+              <stop offset="0" stop-color="#34d599" />
+              <stop offset="1" stop-color="#2cc0de" />
+            </linearGradient>
+            <linearGradient id="07-own-it-tailgrad" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0" stop-color="#5fe3b1" stop-opacity="0" />
+              <stop offset="1" stop-color="#d4fff0" stop-opacity="1" />
+            </linearGradient>
+          </defs>
+
+          <!-- boundary: faint green tint + neon dashed outline revealed by a drawing mask -->
+          <rect id="07-own-it-bfill" x="380" y="150" width="1000" height="440" rx="28" fill="rgba(52,213,153,0.035)" opacity="0" />
+          <path id="07-own-it-bhalo" d="M 740 150 H 1352 A 28 28 0 0 1 1380 178 V 562 A 28 28 0 0 1 1352 590 H 408 A 28 28 0 0 1 380 562 V 178 A 28 28 0 0 1 408 150 H 740 Z" stroke="rgba(52,213,153,0.55)" stroke-width="6" filter="url(#07-own-it-haze)" mask="url(#07-own-it-bmask)" opacity="0.35" />
+          <path id="07-own-it-boundary" d="M 740 150 H 1352 A 28 28 0 0 1 1380 178 V 562 A 28 28 0 0 1 1352 590 H 408 A 28 28 0 0 1 380 562 V 178 A 28 28 0 0 1 408 150 H 740 Z" stroke="rgba(52,213,153,0.9)" stroke-width="2" stroke-dasharray="11 9" filter="url(#07-own-it-neon)" mask="url(#07-own-it-bmask)" />
+          <circle id="07-own-it-spark" cx="740" cy="150" r="5" fill="#d4fff0" filter="url(#07-own-it-neon)" opacity="0" />
+
+          <!-- connectors (each lands on a node edge) -->
+          <path id="07-own-it-c-admin" d="M 770 352 C 890 352, 880 250, 1000 250" stroke="rgba(52,213,153,0.8)" stroke-width="2.5" filter="url(#07-own-it-neon)" />
+          <path id="07-own-it-c-pg" d="M 770 388 C 890 388, 880 490, 1000 490" stroke="rgba(52,213,153,0.8)" stroke-width="2.5" filter="url(#07-own-it-neon)" />
+          <path id="07-own-it-c-app" d="M 280 370 L 430 370" stroke="rgba(52,213,153,0.55)" stroke-width="2.5" filter="url(#07-own-it-neon)" />
+          <path id="07-own-it-c-pp" d="M 770 370 L 1510 370" stroke="rgba(52,213,153,0.8)" stroke-width="2.5" filter="url(#07-own-it-neon)" />
+          <circle id="07-own-it-packet" cx="770" cy="370" r="7" fill="#d4fff0" filter="url(#07-own-it-neon)" opacity="0" />
+
+          <!-- lifecycle rail: base track, neon progress fill, travelling pulse -->
+          <path id="07-own-it-rail" d="M 200 780 L 1600 780" stroke="#37373d" stroke-width="3" />
+          <path id="07-own-it-railfill" d="M 200 780 L 1600 780" stroke="url(#07-own-it-railgrad)" stroke-width="3" filter="url(#07-own-it-neon)" />
+          <g id="07-own-it-origin">
+            <circle id="07-own-it-origin-ring" cx="200" cy="780" r="14" fill="#0f0f11" stroke="rgba(52,213,153,0.7)" stroke-width="2" />
+            <circle cx="200" cy="780" r="4" fill="rgba(52,213,153,0.55)" />
+          </g>
+          <rect id="07-own-it-tail" x="200" y="778" width="0" height="4" rx="2" fill="url(#07-own-it-tailgrad)" filter="url(#07-own-it-neon)" opacity="0" />
+          <circle id="07-own-it-pulse" cx="200" cy="780" r="6" fill="#d4fff0" filter="url(#07-own-it-neon)" opacity="0" />
+        </svg>
+
+        <!-- "Your Render account" tab -->
+        <div class="07-own-it-tab" id="07-own-it-tab">
+          <svg id="07-own-it-cloud" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg>
+          <span>Your</span><b id="07-own-it-render">Render</b><span>account</span>
+        </div>
+
+        <!-- services inside the boundary -->
+        <div class="07-own-it-node" id="07-own-it-api" style="left: 430px; top: 314px; width: 340px;">
+          <div class="07-own-it-flash" id="07-own-it-api-flash"></div>
+          <div class="07-own-it-ico is-green">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="8" x="2" y="2" rx="2" ry="2"/><rect width="20" height="8" x="2" y="14" rx="2" ry="2"/><line x1="6" x2="6.01" y1="6" y2="6"/><line x1="6" x2="6.01" y1="18" y2="18"/></svg>
+          </div>
+          <div class="07-own-it-meta">
+            <div class="07-own-it-name ak-mono">offersdk-api</div>
+            <span class="ak-tag green 07-own-it-live" id="07-own-it-live-api"><i class="ak-dot"></i>Live</span>
+          </div>
+        </div>
+
+        <div class="07-own-it-node" id="07-own-it-pg" style="left: 1000px; top: 434px; width: 340px;">
+          <div class="07-own-it-flash" id="07-own-it-pg-flash"></div>
+          <div class="07-own-it-ico is-blue">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5V19A9 3 0 0 0 21 19V5"/><path d="M3 12A9 3 0 0 0 21 12"/></svg>
+          </div>
+          <div class="07-own-it-meta">
+            <div class="07-own-it-name">Postgres</div>
+            <span class="ak-tag green 07-own-it-live" id="07-own-it-live-pg"><i class="ak-dot"></i>Live</span>
+          </div>
+        </div>
+
+        <div class="07-own-it-node" id="07-own-it-admin" style="left: 1000px; top: 194px; width: 340px;">
+          <div class="07-own-it-flash" id="07-own-it-admin-flash"></div>
+          <div class="07-own-it-ico is-cyan">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 13.74a2 2 0 0 1-2 0L2.5 8.87a1 1 0 0 1 0-1.74L11 2.26a2 2 0 0 1 2 0l8.5 4.87a1 1 0 0 1 0 1.74z"/><path d="m20 14.285 1.5.845a1 1 0 0 1 0 1.74L13 21.74a2 2 0 0 1-2 0l-8.5-4.87a1 1 0 0 1 0-1.74l1.5-.845"/></svg>
+          </div>
+          <div class="07-own-it-meta">
+            <div class="07-own-it-name">offer-app · admin</div>
+            <span class="ak-tag green 07-own-it-live" id="07-own-it-live-admin"><i class="ak-dot"></i>Live</span>
+          </div>
+        </div>
+
+        <!-- outside the boundary: the customer's own app -->
+        <div class="07-own-it-node 07-own-it-app" id="07-own-it-yourapp" style="left: 70px; top: 326px; width: 210px;">
+          <div class="07-own-it-ico is-neutral">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 18 6-6-6-6"/><path d="m8 6-6 6 6 6"/></svg>
+          </div>
+          <div class="07-own-it-name">Your app</div>
+        </div>
+
+        <!-- PayPal, outside the boundary on the right -->
+        <div class="07-own-it-paypal" id="07-own-it-paypal"><div class="07-own-it-ppring" id="07-own-it-ppring"></div><span>PayPal</span></div>
+        <div class="07-own-it-checkout" id="07-own-it-checkout">
+          <div class="07-own-it-burst" id="07-own-it-burst"></div>
+          <div class="07-own-it-btn" id="07-own-it-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/><path d="M6 14h2"/></svg>
+            <span>Checkout</span>
+          </div>
+        </div>
+
+        <!-- lifecycle rail -->
+        <div class="07-own-it-station" id="07-own-it-st-0" style="left: 370px;">
+          <div class="07-own-it-pill" data-word="renewals">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
+            <span>Renewals</span>
+          </div>
+        </div>
+        <div class="07-own-it-station" id="07-own-it-st-1" style="left: 730px;">
+          <div class="07-own-it-pill" data-word="upgrades">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 7h6v6"/><path d="m22 7-8.5 8.5-5-5L2 17"/></svg>
+            <span>Upgrades</span>
+          </div>
+        </div>
+        <div class="07-own-it-station" id="07-own-it-st-2" style="left: 1090px;">
+          <div class="07-own-it-pill" data-word="pauses">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="10" x2="10" y1="15" y2="9"/><line x1="14" x2="14" y1="15" y2="9"/></svg>
+            <span>Pauses</span>
+          </div>
+        </div>
+        <div class="07-own-it-station" id="07-own-it-st-3" style="left: 1450px;">
+          <div class="07-own-it-pill" data-word="cancellations">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 21H2"/><path d="M10 3H7a2 2 0 00-2 2v16"/><path d="M14 12h.01"/><path d="M19 21V5a2 2 0 00-1.675-1.974l-6.163-1.013A1 1 0 0010 3v18a1 1 0 001.124.992z"/><path d="M22 21h-3"/></svg>
+            <span>Cancellations</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      var ID = "07-own-it";
+      var DUR = 10.35;
+      function $(name) { return document.getElementById(ID + "-" + name); }
+      function clamp01(v) { return v < 0 ? 0 : v > 1 ? 1 : v; }
+      function measure(el, fallback) {
+        var len = 0;
+        try { len = el.getTotalLength(); } catch (e) { len = 0; }
+        return len > 0 ? len : fallback;
+      }
+      // svg-path-draw: dash = measured length; hidden offset sits a hair past the start so no cap dot shows
+      function prepDraw(el, fallback) {
+        var len = measure(el, fallback);
+        el.style.strokeDasharray = len + " " + (len + 8);
+        el.style.strokeDashoffset = String(len + 4);
+        return len;
+      }
+
+      var tl = gsap.timeline({ paused: true });
+      var E_DRAW = gsap.parseEase("sine.inOut");
+      var E_IN2 = gsap.parseEase("power2.in");
+
+      // ---- elements ----
+      var stage = $("stage"), glow = $("glow");
+      var bdraw = $("bdraw"), bfill = $("bfill"), bhalo = $("bhalo"), spark = $("spark");
+      var tab = $("tab"), renderWord = $("render"), cloud = $("cloud");
+      var api = $("api"), pg = $("pg"), admin = $("admin"), yourapp = $("yourapp");
+      var liveApi = $("live-api"), livePg = $("live-pg"), liveAdmin = $("live-admin");
+      var cAdmin = $("c-admin"), cPg = $("c-pg"), cApp = $("c-app"), cPp = $("c-pp");
+      var packet = $("packet");
+      var paypal = $("paypal"), ppring = $("ppring"), checkout = $("checkout"), btn = $("btn"), burst = $("burst");
+      var rail = $("rail"), railFill = $("railfill");
+      var origin = $("origin"), originRing = $("origin-ring"), pulse = $("pulse"), tail = $("tail");
+      var stations = [$("st-0"), $("st-1"), $("st-2"), $("st-3")];
+
+      // ---- measured stroke lengths ----
+      var L_BOUND = measure(bdraw, 2832);
+      bdraw.style.strokeDasharray = L_BOUND + " " + (L_BOUND + 8);
+      var L_ADMIN = prepDraw(cAdmin, 290);
+      var L_PG = prepDraw(cPg, 290);
+      var L_APP = prepDraw(cApp, 150);
+      var L_PP = prepDraw(cPp, 740);
+      var L_RAIL = prepDraw(rail, 1400);
+      var L_FILL = measure(railFill, 1400);
+      railFill.style.strokeDasharray = L_FILL + " " + (L_FILL + 8);
+
+      function draw(el, len, at, dur) {
+        tl.fromTo(el, { strokeDashoffset: len + 4 }, { strokeDashoffset: 0, duration: dur, ease: "power3.out" }, at);
+      }
+
+      // ---- macro camera: slow push-in under the whole shot + the one green bloom ----
+      tl.fromTo(stage, { scale: 0.97 }, { scale: 1, duration: DUR, ease: "power1.inOut" }, 0);
+      tl.fromTo(glow, { opacity: 0, scale: 0.92 }, { opacity: 1, scale: 1, duration: 1.2, ease: "power2.out" }, 0.02);
+
+      // ---- "self-hosted" (0.69): boundary draws (painted below), tab pops on the word ----
+      var B0 = 0.04, B1 = 1.25;
+      tl.fromTo(tab, { opacity: 0, y: 10, scale: 0.9 }, { opacity: 1, y: 0, scale: 1, duration: 0.45, ease: "expo.out" }, 0.48);
+      tl.fromTo(bfill, { opacity: 0 }, { opacity: 1, duration: 0.7, ease: "power2.out" }, 0.9);
+
+      // ---- "the API" (1.96) / "data" (2.75) / "yours" (3.08): services spring in, connectors draw ----
+      function nodeIn(el, flash, at) {
+        tl.fromTo(el, { opacity: 0, scale: 0.85, y: 18 }, { opacity: 1, scale: 1, y: 0, duration: 0.5, ease: "expo.out" }, at);
+        tl.fromTo(flash, { opacity: 0 }, { opacity: 1, duration: 0.14, ease: "power2.out" }, at + 0.08);
+        tl.fromTo(flash, { opacity: 1 }, { opacity: 0.2, duration: 0.6, ease: "power2.out", immediateRender: false }, at + 0.22);
+      }
+      function liveIn(el, at) {
+        tl.fromTo(el, { opacity: 0, scale: 0.85 }, { opacity: 1, scale: 1, duration: 0.35, ease: "expo.out" }, at);
+      }
+      nodeIn(api, $("api-flash"), 1.84);     liveIn(liveApi, 2.1);
+      nodeIn(pg, $("pg-flash"), 2.62);       draw(cPg, L_PG, 2.8, 0.32);       liveIn(livePg, 2.88);
+      nodeIn(admin, $("admin-flash"), 2.96); draw(cAdmin, L_ADMIN, 3.12, 0.32); liveIn(liveAdmin, 3.22);
+      // "running" (3.51): your own app plugs into the API from outside
+      tl.fromTo(yourapp, { opacity: 0, x: -36 }, { opacity: 1, x: 0, duration: 0.5, ease: "expo.out" }, 3.4);
+      draw(cApp, L_APP, 3.62, 0.28);
+
+      // ---- "your own Render account" (4.09-4.59): the tab lights up neon, the boundary flares ----
+      var T_RENDER = 4.12;
+      tl.fromTo(tab, { borderColor: "#37373d", backgroundColor: "#0f0f11", color: "rgba(236, 236, 238, 0.68)" },
+        { borderColor: "#34d599", backgroundColor: "#11241d", color: "rgba(236, 236, 238, 0.86)", duration: 0.3, ease: "power3.out", immediateRender: false }, T_RENDER);
+      tl.fromTo(tab, { boxShadow: "0px 0px 0px 0px rgba(52, 213, 153, 0)" },
+        { boxShadow: "0px 0px 34px 3px rgba(52, 213, 153, 0.6)", duration: 0.16, ease: "power2.out", immediateRender: false }, T_RENDER);
+      tl.fromTo(tab, { boxShadow: "0px 0px 34px 3px rgba(52, 213, 153, 0.6)" },
+        { boxShadow: "0px 0px 18px 0px rgba(52, 213, 153, 0.32)", duration: 0.55, ease: "power2.out", immediateRender: false }, T_RENDER + 0.16);
+      tl.fromTo(tab, { scale: 1 }, { scale: 1.07, duration: 0.12, ease: "power2.out", immediateRender: false }, T_RENDER);
+      tl.fromTo(tab, { scale: 1.07 }, { scale: 1, duration: 0.4, ease: "expo.out", immediateRender: false }, T_RENDER + 0.12);
+      tl.fromTo(renderWord, { color: "#ececee", textShadow: "0px 0px 0px rgba(52, 213, 153, 0)" },
+        { color: "#5fe3b1", textShadow: "0px 0px 16px rgba(52, 213, 153, 0.75)", duration: 0.25, ease: "power2.out", immediateRender: false }, T_RENDER + 0.06);
+      tl.fromTo(cloud, { color: "#9c9ea5" }, { color: "#5fe3b1", duration: 0.25, ease: "power2.out", immediateRender: false }, T_RENDER);
+      tl.fromTo(bhalo, { opacity: 0.35 }, { opacity: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, T_RENDER + 0.04);
+      tl.fromTo(bhalo, { opacity: 1 }, { opacity: 0.6, duration: 0.7, ease: "power2.out", immediateRender: false }, T_RENDER + 0.22);
+
+      // ---- "PayPal handles checkout" (5.11 / 5.58): tile slides in, line draws, packet zips, pill pops + press ----
+      tl.fromTo(paypal, { opacity: 0, x: 70 }, { opacity: 1, x: 0, duration: 0.5, ease: "expo.out" }, 4.98);
+      draw(cPp, L_PP, 5.08, 0.34);
+      tl.fromTo(packet, { opacity: 0 }, { opacity: 1, duration: 0.05, ease: "none" }, 5.3);
+      tl.fromTo(packet, { attr: { cx: 770 } }, { attr: { cx: 1532 }, duration: 0.3, ease: "power2.in" }, 5.3);
+      tl.fromTo(ppring, { opacity: 0 }, { opacity: 1, duration: 0.12, ease: "power2.out" }, 5.58);
+      tl.fromTo(ppring, { opacity: 1 }, { opacity: 0.45, duration: 0.6, ease: "power2.out", immediateRender: false }, 5.7);
+      tl.fromTo(checkout, { opacity: 0, y: -10, scale: 0.85 }, { opacity: 1, y: 0, scale: 1, duration: 0.4, ease: "expo.out" }, 5.4);
+      var PRESS_START = 5.68, PRESS_DUR = 0.08, RELEASE_START = PRESS_START + PRESS_DUR;
+      tl.fromTo(btn, { scale: 1 }, { scale: 0.95, duration: PRESS_DUR, ease: "power1.in", immediateRender: false }, PRESS_START);
+      tl.fromTo(btn, { scale: 0.95 }, { scale: 1, duration: 0.42, ease: "expo.out", immediateRender: false }, RELEASE_START);
+      tl.fromTo(burst, { scale: 1, opacity: 0 }, { scale: 2, opacity: 0.55, duration: 0.3, ease: "power2.out" }, RELEASE_START);
+      tl.fromTo(burst, { opacity: 0.55 }, { opacity: 0, duration: 0.45, ease: "power2.in", immediateRender: false }, RELEASE_START + 0.3);
+
+      // ---- "the whole subscription lifecycle" (6.19-6.90): rail draws, stations pop in dim ----
+      tl.fromTo(origin, { opacity: 0, scale: 0.4, svgOrigin: "200 780" }, { opacity: 1, scale: 1, svgOrigin: "200 780", duration: 0.4, ease: "expo.out" }, 6.1);
+      tl.fromTo(rail, { strokeDashoffset: L_RAIL + 4 }, { strokeDashoffset: 0, duration: 0.6, ease: "power2.out" }, 6.14);
+      // each station pops as the drawing track reaches it (power2.out reach times: 6.21 / 6.31 / 6.44 / ~6.62)
+      [6.17, 6.27, 6.39, 6.56].forEach(function (at, i) {
+        tl.fromTo(stations[i], { opacity: 0, y: 14, scale: 0.9 }, { opacity: 1, y: 0, scale: 1, duration: 0.45, ease: "expo.out" }, at);
+      });
+
+      // ---- the neon pulse: charges at the origin on "lifecycle", then hops station to station on each word ----
+      // Renewals 7.59 · Upgrades 8.13 · Pauses 8.74 · Cancellations 9.53 — each hop lands just before its word.
+      var X0 = 200;
+      var SEGS = [
+        { a: 7.22, b: 7.55, x0: 200, x1: 520 },
+        { a: 7.80, b: 8.08, x0: 520, x1: 880 },
+        { a: 8.42, b: 8.69, x0: 880, x1: 1240 },
+        { a: 9.18, b: 9.48, x0: 1240, x1: 1600 }
+      ];
+      function pulseX(t) {
+        var x = X0;
+        for (var i = 0; i < SEGS.length; i++) {
+          var s = SEGS[i];
+          if (t >= s.b) { x = s.x1; continue; }
+          if (t > s.a) { x = s.x0 + (s.x1 - s.x0) * E_IN2((t - s.a) / (s.b - s.a)); }
+          break;
+        }
+        return x;
+      }
+      var CHARGE_A = 6.82, CHARGE_B = SEGS[0].a;
+
+      // asr-keyword-glow (karaoke): one linear driver lights every station from scene time
+      var TIMINGS = {
+        renewals: { start: 7.55, end: 8.0 },
+        upgrades: { start: 8.08, end: 8.6 },
+        pauses: { start: 8.69, end: 9.15 },
+        cancellations: { start: 9.48, end: 99 }
+      };
+      var ATTACK_DUR = 0.12, RELEASE = 0.4, REST_LEVEL = 0.55;
+      function envelope(time, start, end) {
+        if (time < start) return 0;
+        if (time < end) return Math.min((time - start) / ATTACK_DUR, 1);
+        var releaseEnd = end + RELEASE;
+        if (time < releaseEnd) return 1 - ((time - end) / RELEASE) * (1 - REST_LEVEL);
+        return REST_LEVEL;
+      }
+      function flashEnv(time, start) {
+        if (time < start) return 0;
+        if (time < start + 0.06) return (time - start) / 0.06;
+        return Math.max(0, 1 - (time - start - 0.06) / 0.45);
+      }
+      var REST_TXT = { r: 133, g: 135, b: 142 }, ACTIVE_TXT = { r: 236, g: 236, b: 238 };
+      var REST_ICO = { r: 111, g: 113, b: 120 }, ACTIVE_ICO = { r: 95, g: 227, b: 177 };
+      var REST_BG = { r: 24, g: 24, b: 27 }, ACTIVE_BG = { r: 19, g: 42, b: 34 };
+      var REST_BD = { r: 42, g: 42, b: 47 }, ACTIVE_BD = { r: 52, g: 213, b: 153 };
+      function lerp(a, b, t) { return Math.round(a + (b - a) * t); }
+      function mix(a, b, t) { return "rgb(" + lerp(a.r, b.r, t) + ", " + lerp(a.g, b.g, t) + ", " + lerp(a.b, b.b, t) + ")"; }
+      var pills = stations.map(function (st) {
+        var pill = st.firstElementChild;
+        return { el: pill, label: pill.querySelector("span"), icon: pill.querySelector("svg"), key: pill.getAttribute("data-word") };
+      });
+
+      function paint(t) {
+        // boundary draw (svg-path-draw on the mask) + a neon spark riding the draw head
+        var p = E_DRAW(clamp01((t - B0) / (B1 - B0)));
+        bdraw.style.strokeDashoffset = p <= 0 ? String(L_BOUND + 4) : (L_BOUND * (1 - p)).toFixed(2);
+        if (p > 0 && p < 1) {
+          var pt = bdraw.getPointAtLength(p * L_BOUND);
+          spark.setAttribute("cx", pt.x.toFixed(2));
+          spark.setAttribute("cy", pt.y.toFixed(2));
+          spark.setAttribute("opacity", Math.min(1, p / 0.03, (1 - p) / 0.06).toFixed(3));
+        } else {
+          spark.setAttribute("opacity", "0");
+        }
+
+        // rail pulse: position, comet tail, progress fill
+        var x = pulseX(t);
+        var xPrev = pulseX(t - 0.05);
+        var tailLen = Math.max(0, Math.min(170, (x - xPrev) * 2.2));
+        var charge = (t > CHARGE_A && t < CHARGE_B) ? (t - CHARGE_A) / (CHARGE_B - CHARGE_A) : 0;
+        pulse.setAttribute("cx", x.toFixed(2));
+        pulse.setAttribute("r", (5 + 3.5 * charge).toFixed(2));
+        pulse.setAttribute("opacity", clamp01((t - 6.14) / 0.2).toFixed(3));
+        tail.setAttribute("x", (x - tailLen).toFixed(2));
+        tail.setAttribute("width", tailLen.toFixed(2));
+        tail.setAttribute("opacity", tailLen > 2 ? "1" : "0");
+        var filled = x - X0;
+        railFill.style.strokeDashoffset = filled < 0.5 ? String(L_FILL + 4) : (L_FILL - filled).toFixed(2);
+        originRing.setAttribute("stroke-width", (2 + 2 * charge).toFixed(2));
+
+        // stations: lit envelope (breadcrumb rest) + arrival flash
+        pills.forEach(function (pl) {
+          var w = TIMINGS[pl.key];
+          var lit = envelope(t, w.start, w.end);
+          var fl = flashEnv(t, w.start);
+          pl.el.style.transform = "scale(" + (1 + 0.05 * lit + 0.07 * fl).toFixed(4) + ")";
+          pl.el.style.backgroundColor = mix(REST_BG, ACTIVE_BG, lit);
+          pl.el.style.borderColor = mix(REST_BD, ACTIVE_BD, lit);
+          pl.el.style.boxShadow = "0 0 " + (14 * lit + 30 * fl).toFixed(2) + "px rgba(52, 213, 153, " + (0.28 * lit + 0.42 * fl).toFixed(3) + ")";
+          pl.label.style.color = mix(REST_TXT, ACTIVE_TXT, lit);
+          pl.label.style.textShadow = "0 0 " + (18 * lit).toFixed(2) + "px rgba(52, 213, 153, " + (0.6 * lit).toFixed(3) + ")";
+          pl.icon.style.color = mix(REST_ICO, ACTIVE_ICO, lit);
+        });
+      }
+      // The driver is an accessor: every timeline render writes driver.t, which repaints the
+      // painted layers deterministically from scene time (works with or without seek events).
+      var driver = {
+        _t: 0,
+        get t() { return this._t; },
+        set t(v) { this._t = v; paint(v); }
+      };
+      paint(0);
+      tl.fromTo(driver, { t: 0 }, { t: DUR, duration: DUR, ease: "none" }, 0);
+
+      window.__timelines = window.__timelines || {};
+      window.__timelines["07-own-it"] = tl;
+    })();
+  </script>
+</template>

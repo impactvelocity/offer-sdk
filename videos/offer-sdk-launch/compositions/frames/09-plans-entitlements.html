@@ -1,0 +1,712 @@
+<template>
+  <style>
+    /* ==========================================================================
+       Offer SDK app kit — the offer-app dashboard (dark theme), rebuilt for video.
+       Values are copied from offer-app/src/app/globals.css (data-theme="dark") and
+       measured from the real screens in capture/assets/app/*.png.
+
+       HOW TO USE IN A FRAME
+       1. Paste this whole file inside the style block that lives inside your frame template.
+          (Template transport: styles must live inside the frame template.)
+       2. Build the window from shell.html. Author it at its LOGICAL size
+          (.ak-window is 1366×800 — a real laptop viewport, real 14px UI text) and
+          scale the wrapper with GSAP (scale ≈ 1.08–1.12 to fill the top 83%;
+          punch in to 1.5–1.9 on the region the VO is talking about).
+       3. Copy icons from icons.html (Lucide, the icon set the app uses).
+       All classes are prefixed ak- so they never collide with frame-local names.
+       ========================================================================== */
+
+    @font-face { font-family: "Cal Sans"; src: url("assets/fonts/CalSansVF.woff2") format("woff2"); font-weight: 400 700; font-display: block; }
+    @font-face { font-family: "Geist Mono"; src: url("assets/fonts/geist-mono-latin.woff2") format("woff2"); font-weight: 400 600; font-display: block; }
+
+    .ak {
+      --canvas: #0f0f11; --panel: #161618; --bg: #18181b; --bg-subtle: #1c1c1f; --bg-muted: #222226;
+      --bg-hover: #27272c; --bg-active: #2e2e34; --bg-elevated: #202024; --bg-inverse: #f1f1f3;
+      --fg: #ececee; --fg-secondary: rgb(236 236 238 / .93); --fg-tertiary: rgb(236 236 238 / .86);
+      --fg-muted: rgb(236 236 238 / .68); --fg-placeholder: #6f7178; --fg-icon: #9c9ea5;
+      --border: #2a2a2f; --border-strong: #37373d; --border-input: #323238;
+      --accent: #34d599; --accent-hover: #5ce0b0; --accent-subtle: rgb(52 213 153 / .13); --accent-fg: #5fe3b1; --accent-contrast: #03140c; --ring: rgb(52 213 153 / .4);
+      --btn-neon-bg: rgb(52 213 153 / .08); --shadow-brand: inset 0 0 0 1px rgb(52 213 153 / .85), inset 0 0 14px -6px rgb(52 213 153 / .35), 0 0 16px -6px rgb(52 213 153 / .4);
+      --brand-vertical: linear-gradient(180deg, #4fe0b0, #2fc48c);
+      --success: #30a46c; --success-subtle: rgb(48 164 108 / .16); --success-fg: #5ed29a;
+      --danger: #e5484d; --danger-subtle: rgb(229 72 77 / .15); --danger-fg: #ff8a8d;
+      --warning: #f0a020; --warning-subtle: rgb(240 160 32 / .14); --warning-fg: #ffc35f;
+      --brand-from: #34d599; --brand-to: #2cc0de; --brand-gradient: linear-gradient(90deg, #34d599, #2cc0de);
+      --code-comment: #7f828a; --code-keyword: #5fe3b1; --code-string: #6fd69f; --code-key: #93b8ff; --code-number: #ffa072;
+      --zapier: #ff5f1f; --paypal: #0070e0;
+      --shadow-soft: 0 14px 36px -14px rgb(0 0 0 / .75), 0 2px 8px -2px rgb(0 0 0 / .45);
+      --shadow-lg: 0 18px 44px -10px rgb(0 0 0 / .7), 0 4px 12px -4px rgb(0 0 0 / .5);
+      font-family: "Cal Sans", ui-sans-serif, system-ui, sans-serif;
+      font-variation-settings: "GEOM" 25;           /* the app's UI geometry */
+      color: var(--fg); -webkit-font-smoothing: antialiased; font-size: 14px; line-height: 1.4;
+    }
+    .ak * { box-sizing: border-box; }
+    .ak .ak-display { font-variation-settings: "GEOM" 50; letter-spacing: -0.01em; }
+    /* Neon-style eyebrow: small mono caps (site + app section kickers). */
+    .ak .ak-eyebrow { font-family: "Geist Mono", monospace; font-variation-settings: normal; font-size: 11px; line-height: 16px; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; color: var(--fg-muted); }
+    .ak .ak-mono, .ak code { font-family: "Geist Mono", ui-monospace, monospace; font-variation-settings: normal; }
+    .ak svg { display: block; flex-shrink: 0; }
+
+    /* ---------- window + shell ---------- */
+    .ak-window { position: absolute; width: 1366px; height: 800px; background: var(--canvas); border-radius: 18px;
+      border: 1px solid var(--border); box-shadow: 0 40px 120px -30px rgb(0 0 0 / .9), 0 0 0 1px rgb(255 255 255 / .03);
+      overflow: hidden; display: flex; padding: 6px 6px 6px 0; transform-origin: 50% 50%; }
+    .ak-rail { width: 52px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; gap: 10px; padding-top: 8px; }
+    .ak-rail .ak-rail-logo { width: 30px; height: 30px; border-radius: 8px; display: grid; place-items: center; color: var(--fg); }
+    .ak-rail .ak-rail-logo svg { width: 18px; height: 18px; }
+    .ak-rail .ak-rail-sep { width: 22px; height: 1px; background: var(--border); }
+    .ak-rail .ak-app-tile { width: 28px; height: 28px; border-radius: 7px; display: grid; place-items: center; font-size: 11px; font-weight: 600; color: var(--accent-contrast);
+      background: var(--brand-vertical); }
+    .ak-rail .ak-app-tile.is-active { box-shadow: 0 0 0 2px var(--canvas), 0 0 0 3.5px var(--accent); }
+    .ak-rail .ak-app-tile.alt { opacity: .8; }
+    .ak-rail .ak-rail-plus { color: var(--fg-icon); width: 16px; height: 16px; }
+    .ak-rail .ak-rail-foot { margin-top: auto; padding-bottom: 6px; display: flex; flex-direction: column; align-items: center; gap: 14px; color: var(--fg-icon); }
+    .ak-rail .ak-rail-foot svg { width: 15px; height: 15px; }
+    .ak-rail .ak-avatar { width: 26px; height: 26px; border-radius: 50%; background: var(--bg-muted); color: var(--fg-secondary); font-size: 10px; display: grid; place-items: center; }
+
+    .ak-nav { width: 222px; flex-shrink: 0; background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
+      margin-right: 6px; display: flex; flex-direction: column; padding: 12px 10px; box-shadow: var(--shadow-soft); }
+    .ak-nav-title { font-size: 15px; font-weight: 600; padding: 2px 6px 10px; font-variation-settings: "GEOM" 50; }
+    .ak-quick { height: 30px; border: 1px solid var(--border-input); border-radius: 8px; display: flex; align-items: center; gap: 8px; padding: 0 8px;
+      color: var(--fg-muted); font-size: 13px; margin-bottom: 10px; }
+    .ak-quick svg { width: 14px; height: 14px; color: var(--fg-icon); }
+    .ak-quick .ak-kbd { margin-left: auto; font-size: 10.5px; border: 1px solid var(--border); border-radius: 4px; padding: 0 4px; color: var(--fg-placeholder); }
+    .ak-nav-group { display: flex; flex-direction: column; gap: 1px; padding: 6px 0; border-top: 1px solid var(--border); }
+    .ak-nav-group:first-of-type { border-top: 0; padding-top: 0; }
+    .ak-nav-item { height: 31px; border-radius: 7px; display: flex; align-items: center; gap: 10px; padding: 0 8px; font-size: 13.5px; color: var(--fg-secondary); }
+    .ak-nav-item svg { width: 15px; height: 15px; color: var(--fg-icon); }
+    .ak-nav-item .ak-count { margin-left: auto; font-size: 12px; color: var(--fg-muted); font-variant-numeric: tabular-nums; }
+    .ak-nav-item.is-active { background: var(--accent-subtle); color: var(--accent-fg); }
+    .ak-nav-item.is-active svg { color: var(--accent-fg); }
+    .ak-nav-foot { margin-top: auto; }
+
+    .ak-main { flex: 1; min-width: 0; background: var(--bg); border: 1px solid var(--border); border-radius: 12px; display: flex; flex-direction: column;
+      overflow: hidden; box-shadow: var(--shadow-soft); position: relative; }
+    .ak-header { height: 50px; flex-shrink: 0; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; padding: 0 12px 0 16px; }
+    .ak-header .ak-crumb { display: flex; align-items: center; gap: 9px; font-size: 14px; font-weight: 500; }
+    .ak-header .ak-crumb svg { width: 15px; height: 15px; color: var(--fg-icon); }
+    .ak-header .ak-crumb .ak-sep { color: var(--fg-placeholder); }
+    .ak-header .ak-actions { margin-left: auto; display: flex; align-items: center; gap: 4px; }
+    .ak-toolbar { height: 50px; flex-shrink: 0; display: flex; align-items: center; gap: 10px; padding: 0 16px; border-bottom: 1px solid var(--border); }
+    .ak-body { flex: 1; min-height: 0; position: relative; overflow: hidden; }
+    .ak-page { padding: 28px 40px; }
+    .ak-page-title { font-size: 22px; font-weight: 600; font-variation-settings: "GEOM" 50; letter-spacing: -0.01em; }
+    .ak-page-sub { color: var(--fg-muted); font-size: 13.5px; margin-top: 4px; }
+
+    /* ---------- controls ---------- */
+    .ak-btn { height: 30px; border-radius: 8px; display: inline-flex; align-items: center; gap: 7px; padding: 0 10px; font-size: 13.5px; color: var(--fg-secondary);
+      border: 1px solid transparent; white-space: nowrap; }
+    .ak-btn svg { width: 14px; height: 14px; }
+    .ak-btn.is-outline { border-color: var(--border-strong); background: var(--bg-subtle); }
+    /* Primary = the app's neon button: hairline neon border, faint green wash, green ink. */
+    .ak-btn.is-primary { background: var(--btn-neon-bg); color: var(--accent-fg); font-weight: 500; box-shadow: var(--shadow-brand); }
+    .ak-btn.is-gradient { background: var(--btn-neon-bg); color: var(--accent-fg); font-weight: 500; box-shadow: var(--shadow-brand), 0 0 32px -8px rgb(52 213 153 / .55); }
+    .ak-btn.is-solid { background: var(--brand-vertical); color: var(--accent-contrast); font-weight: 600; }
+    .ak-btn.is-paypal { background: #ffc439; color: #111; font-weight: 600; }
+    .ak-btn.is-lg { height: 40px; padding: 0 16px; font-size: 15px; border-radius: 10px; }
+    .ak-input { height: 32px; border: 1px solid var(--border-input); background: var(--bg-subtle); border-radius: 8px; display: flex; align-items: center; gap: 8px;
+      padding: 0 10px; font-size: 13.5px; color: var(--fg); }
+    .ak-input.is-placeholder { color: var(--fg-placeholder); }
+    .ak-input.is-focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--ring); }
+    .ak-input svg { width: 14px; height: 14px; color: var(--fg-icon); }
+    .ak-label { font-size: 13px; color: var(--fg-secondary); font-weight: 500; margin-bottom: 6px; }
+    .ak-seg { display: inline-flex; background: var(--bg-muted); border-radius: 8px; padding: 2px; gap: 2px; }
+    .ak-seg > span { height: 26px; padding: 0 10px; border-radius: 6px; display: inline-flex; align-items: center; font-size: 13px; color: var(--fg-muted); }
+    .ak-seg > span.is-on { background: var(--bg-active); color: var(--fg); }
+    .ak-switch { width: 30px; height: 18px; border-radius: 9px; background: var(--bg-active); position: relative; flex-shrink: 0; }
+    .ak-switch::after { content: ""; position: absolute; top: 2px; left: 2px; width: 14px; height: 14px; border-radius: 50%; background: #fff; }
+    .ak-switch.is-on { background: var(--accent); }
+    .ak-switch.is-on::after { background: var(--accent-contrast); }
+    .ak-switch.is-on::after { left: 14px; }
+    .ak-check { width: 16px; height: 16px; border-radius: 4px; border: 1px solid var(--border-strong); display: grid; place-items: center; }
+    .ak-check.is-on { background: var(--accent); border-color: var(--accent); color: var(--accent-contrast); }
+    .ak-check svg { width: 11px; height: 11px; }
+
+    /* ---------- table (Plans / Entitlements / Add-ons / Incentives / Accounts) ---------- */
+    .ak-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+    .ak-table th { height: 42px; text-align: left; font-weight: 400; color: var(--fg-muted); padding: 0 14px; border-bottom: 1px solid var(--border); border-right: 1px solid var(--border); white-space: nowrap; }
+    .ak-table th:last-child, .ak-table td:last-child { border-right: 0; }
+    .ak-table th .ak-th { display: inline-flex; align-items: center; gap: 7px; }
+    .ak-table th svg { width: 13px; height: 13px; color: var(--fg-icon); }
+    .ak-table td { height: 46px; padding: 0 14px; border-bottom: 1px solid var(--border); border-right: 1px solid var(--border); white-space: nowrap; color: var(--fg-secondary); }
+    .ak-table td.is-num { text-align: right; font-variant-numeric: tabular-nums; }
+    .ak-table .ak-row-name { display: flex; align-items: center; gap: 9px; color: var(--fg); }
+    .ak-table .ak-row-icon { width: 22px; height: 22px; border-radius: 6px; background: rgb(59 123 246 / .18); color: #93b8ff; display: grid; place-items: center; }
+    .ak-table .ak-row-icon svg { width: 13px; height: 13px; }
+    .ak-table tr.is-hl td { background: rgb(52 213 153 / .07); }
+    .ak-table-foot { padding: 12px 16px; color: var(--fg-muted); font-size: 13px; }
+
+    /* ---------- chips + tags ---------- */
+    .ak-id { font-family: "Geist Mono", monospace; font-variation-settings: normal; font-size: 12px; background: var(--bg-muted); color: var(--fg-secondary);
+      border-radius: 5px; padding: 2px 6px; }
+    .ak-tag { display: inline-flex; align-items: center; gap: 5px; height: 21px; padding: 0 7px; border-radius: 5px; font-size: 12px; white-space: nowrap;
+      background: rgb(255 255 255 / .08); color: #c6c7cc; }
+    .ak-tag svg { width: 11px; height: 11px; }
+    .ak-tag.blue { background: rgb(59 123 246 / .18); color: #93b8ff; }
+    .ak-tag.green { background: rgb(48 164 108 / .18); color: #6fd69f; }
+    .ak-tag.yellow { background: rgb(240 180 40 / .16); color: #f5c451; }
+    .ak-tag.orange { background: rgb(235 104 52 / .18); color: #ffa072; }
+    .ak-tag.red { background: rgb(229 72 77 / .18); color: #ff8a8d; }
+    .ak-tag.purple { background: rgb(143 107 255 / .2); color: #bba6ff; }
+    .ak-tag.brand { background: rgb(52 213 153 / .14); color: #5fe3b1; }
+    .ak-tag.pink { background: rgb(224 69 123 / .18); color: #ff8fba; }
+    .ak-tag.teal { background: rgb(20 163 157 / .18); color: #62d6cf; }
+    .ak-more { color: var(--fg-muted); font-size: 12px; }
+
+    /* ---------- cards, stats, meters ---------- */
+    .ak-card { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; }
+    .ak-card-head { height: 46px; display: flex; align-items: center; padding: 0 16px; border-bottom: 1px solid var(--border); font-weight: 500; font-size: 14px; }
+    .ak-card-body { padding: 16px; }
+    .ak-elevated { background: var(--bg-elevated); border: 1px solid var(--border-strong); border-radius: 12px; box-shadow: var(--shadow-lg); }
+    .ak-stat-strip { display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+    .ak-stat { padding: 16px 18px; border-right: 1px solid var(--border); }
+    .ak-stat:last-child { border-right: 0; }
+    .ak-stat-label { display: flex; align-items: center; gap: 7px; font-size: 13px; color: var(--fg-secondary); }
+    .ak-stat-label svg { width: 13px; height: 13px; color: var(--fg-icon); }
+    .ak-stat-value { font-size: 26px; font-weight: 600; margin-top: 8px; font-variant-numeric: tabular-nums; font-variation-settings: "GEOM" 50; }
+    .ak-stat-sub { font-size: 12px; color: var(--fg-muted); margin-top: 4px; }
+    .ak-meter { height: 8px; border-radius: 4px; background: var(--bg-active); overflow: hidden; }
+    .ak-meter > i { display: block; height: 100%; width: 0; border-radius: 4px; background: var(--brand-gradient); }
+    .ak-meter.is-warn > i { background: linear-gradient(90deg, #f0a020, #e5484d); }
+    .ak-bar-row { position: relative; height: 30px; border-radius: 6px; display: flex; align-items: center; padding: 0 10px; font-size: 13.5px; }
+    .ak-bar-row > b { position: absolute; inset: 0 auto 0 0; border-radius: 6px; background: linear-gradient(90deg, rgb(52 213 153 / .32), rgb(44 192 222 / .22)); font-weight: 400; }
+    .ak-bar-row > span { position: relative; }
+    .ak-bar-row > .ak-bar-val { margin-left: auto; color: var(--fg-secondary); font-variant-numeric: tabular-nums; }
+
+    /* ---------- code block (site CodeBlock look) ---------- */
+    .ak-code { background: #131315; border: 1px solid var(--border); border-radius: 14px; overflow: hidden; box-shadow: var(--shadow-lg); }
+    .ak-code-bar { height: 40px; display: flex; align-items: center; gap: 8px; padding: 0 14px; border-bottom: 1px solid var(--border); color: var(--fg-muted); font-size: 13px; }
+    .ak-code-bar .ak-dots { display: flex; gap: 6px; margin-right: 6px; }
+    .ak-code-bar .ak-dots i { width: 10px; height: 10px; border-radius: 50%; background: var(--bg-active); }
+    .ak-code pre { margin: 0; padding: 18px 20px; font-family: "Geist Mono", monospace; font-variation-settings: normal; font-size: 15px; line-height: 1.65; color: var(--fg-secondary); white-space: pre; }
+    .ak-code .k { color: var(--code-keyword); } .ak-code .s { color: var(--code-string); } .ak-code .p { color: var(--code-key); }
+    .ak-code .n { color: var(--code-number); } .ak-code .c { color: var(--code-comment); } .ak-code .f { color: #ececee; }
+    .ak-code .del { background: rgb(229 72 77 / .14); } .ak-code .add { background: rgb(48 164 108 / .14); }
+
+    /* ---------- feedback ---------- */
+    .ak-toast { position: absolute; display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 10px; background: var(--bg-elevated);
+      border: 1px solid var(--border-strong); box-shadow: var(--shadow-lg); font-size: 13.5px; white-space: nowrap; }
+    .ak-toast svg { width: 15px; height: 15px; }
+    .ak-toast.is-ok svg { color: var(--success-fg); }
+    .ak-toast.is-warn svg { color: var(--warning-fg); }
+    .ak-toast.is-bad svg { color: var(--danger-fg); }
+    .ak-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--success); display: inline-block; }
+    .ak-dot.is-warn { background: var(--warning); } .ak-dot.is-bad { background: var(--danger); }
+    .ak-cursor { position: absolute; width: 22px; height: 22px; z-index: 50; pointer-events: none; filter: drop-shadow(0 2px 4px rgb(0 0 0 / .6)); }
+    .ak-ripple { position: absolute; width: 36px; height: 36px; margin: -18px 0 0 -18px; border-radius: 50%; border: 2px solid var(--accent-fg); z-index: 49; opacity: 0; }
+
+    /* ---------- avatars + misc ---------- */
+    .ak-av { width: 22px; height: 22px; border-radius: 6px; display: grid; place-items: center; font-size: 9.5px; font-weight: 600; background: rgb(52 213 153 / .14); color: #5fe3b1; }
+    .ak-av.round { border-radius: 50%; }
+    .ak-kv { display: flex; justify-content: space-between; font-size: 13px; padding: 7px 0; border-bottom: 1px solid var(--border); color: var(--fg-muted); }
+    .ak-kv b { font-weight: 400; color: var(--fg); }
+    .ak-divider { height: 1px; background: var(--border); }
+
+    /* ===== frame-local (09-plans-entitlements) ===== */
+    #root {
+      position: absolute;
+      inset: 0;
+      width: 1920px;
+      height: 1080px;
+      overflow: hidden;
+    }
+    .\30 9-plans-entitlements-bg {
+      position: absolute;
+      inset: 0;
+      width: 1920px;
+      height: 1080px;
+      overflow: hidden;
+      background: #0f0f11;
+    }
+    /* the one soft neon bloom behind the window */
+    .\30 9-plans-entitlements-glow {
+      position: absolute;
+      left: 160px;
+      top: 20px;
+      width: 1600px;
+      height: 900px;
+      background: radial-gradient(closest-side, rgba(52, 213, 153, 0.2), transparent);
+      opacity: 0.7;
+    }
+    .\30 9-plans-entitlements-stage {
+      position: absolute;
+      inset: 0;
+      width: 1920px;
+      height: 1080px;
+      overflow: hidden;
+    }
+    /* camera: outer scales around the window centre (960, 470); inner counter-translates */
+    .\30 9-plans-entitlements-cam-outer {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 1920px;
+      height: 1080px;
+      transform-origin: 960px 470px;
+      will-change: transform;
+    }
+    .\30 9-plans-entitlements-cam-inner {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 1920px;
+      height: 1080px;
+      will-change: transform;
+    }
+    /* logical 1366x800 window, centre at (960, 470) */
+    .\30 9-plans-entitlements-window {
+      box-sizing: border-box;
+      left: 277px;
+      top: 70px;
+    }
+    .\30 9-plans-entitlements-window .ak-nav-item.is-active .ak-count { color: #5fe3b1; }
+    .\30 9-plans-entitlements-page {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+    }
+    .\30 9-plans-entitlements-table { table-layout: fixed; border-collapse: separate; border-spacing: 0; }
+    .\30 9-plans-entitlements-table td { overflow: hidden; text-overflow: ellipsis; }
+    /* entitlements table: 1080px, 4px wider than the card (the real app scrolls horizontally) */
+    .\30 9-plans-entitlements-etable { width: 1080px; }
+    .\30 9-plans-entitlements-etable th, .\30 9-plans-entitlements-etable td { padding: 0 10px; }
+    .\30 9-plans-entitlements-dim { color: var(--fg-placeholder) !important; }
+    .\30 9-plans-entitlements-clip-cell { overflow: hidden; }
+    .\30 9-plans-entitlements-ent-icon { width: 20px !important; height: 20px !important; background: rgb(255 255 255 / .06) !important; color: var(--fg-icon) !important; }
+    .\30 9-plans-entitlements-ent-icon svg { width: 12px !important; height: 12px !important; }
+    .\30 9-plans-entitlements-type { display: inline-flex; align-items: center; gap: 8px; }
+    /* inline toggle beside PDF export's tag: grey + white knob (off) -> neon green + dark knob (on) */
+    .\30 9-plans-entitlements-switch {
+      position: relative;
+      display: inline-block;
+      width: 30px;
+      height: 18px;
+      border-radius: 9px;
+      background: #3a3a41;
+      flex-shrink: 0;
+    }
+    .\30 9-plans-entitlements-switch i {
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #ffffff;
+      box-shadow: 0 1px 3px rgb(0 0 0 / .45);
+    }
+    /* inline limit chip beside AI credits' Usage tag (neon hairline, counting value) */
+    .\30 9-plans-entitlements-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      height: 21px;
+      padding: 0 7px;
+      border-radius: 5px;
+      background: rgb(52 213 153 / .08);
+      box-shadow: inset 0 0 0 1px rgba(52, 213, 153, 0.7), 0 0 0px 0px rgba(52, 213, 153, 0);
+      color: rgb(236 236 238 / .8);
+      font-family: "Geist Mono", ui-monospace, monospace;
+      font-variation-settings: normal;
+      font-size: 11.5px;
+      white-space: nowrap;
+      font-variant-numeric: tabular-nums;
+    }
+    .\30 9-plans-entitlements-chip b {
+      display: inline-block;
+      min-width: 5ch;
+      text-align: right;
+      font-weight: 500;
+      color: #5fe3b1;
+    }
+  </style>
+
+  <div id="root" data-composition-id="09-plans-entitlements" data-width="1920" data-height="1080" data-duration="7.95">
+    <!-- Ground: flat canvas + one soft neon-green glow behind the window -->
+    <div class="clip 09-plans-entitlements-bg" id="09-plans-entitlements-bg" data-start="0" data-duration="7.95" data-track-index="0">
+      <div class="09-plans-entitlements-glow"></div>
+    </div>
+
+    <!-- Stage: the dashboard window under a coordinate-target-zoom camera -->
+    <div class="clip 09-plans-entitlements-stage" id="09-plans-entitlements-stage" data-start="0" data-duration="7.95" data-track-index="1">
+      <div class="09-plans-entitlements-cam-outer" id="09-plans-entitlements-cam-outer">
+        <div class="09-plans-entitlements-cam-inner" id="09-plans-entitlements-cam-inner">
+          <div class="ak ak-window 09-plans-entitlements-window" id="09-plans-entitlements-window">
+  <aside class="ak-rail">
+    <div class="ak-rail-logo"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 13.74a2 2 0 0 1-2 0L2.5 8.87a1 1 0 0 1 0-1.74L11 2.26a2 2 0 0 1 2 0l8.5 4.87a1 1 0 0 1 0 1.74z"/><path d="m20 14.285 1.5.845a1 1 0 0 1 0 1.74L13 21.74a2 2 0 0 1-2 0l-8.5-4.87a1 1 0 0 1 0-1.74l1.5-.845"/></svg></div>
+    <div class="ak-rail-sep"></div>
+    <div class="ak-app-tile is-active">AA</div>
+    <div class="ak-app-tile alt">CH</div>
+    <div class="ak-rail-plus"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg></div>
+    <div class="ak-rail-foot"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"/><circle cx="12" cy="12" r="3"/></svg><div class="ak-avatar">DA</div></div>
+  </aside>
+  <nav class="ak-nav">
+    <div class="ak-nav-title">AmazingApp AI</div>
+    <div class="ak-quick"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg><span>Quick actions</span><span class="ak-kbd">⌘K</span></div>
+    <div class="ak-nav-group">
+      <div class="ak-nav-item" data-nav="overview"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Overview</div>
+      <div class="ak-nav-item" data-nav="analytics"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>Analytics</div>
+      <div class="ak-nav-item" data-nav="agent"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z"/><path d="M20 2v4"/><path d="M22 4h-4"/><circle cx="4" cy="20" r="2"/></svg>Agent</div>
+      <div class="ak-nav-item" data-nav="offers"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z"/><path d="m15 9-6 6"/><path d="M9 9h.01"/><path d="M15 15h.01"/></svg>Offers</div>
+      <div class="ak-nav-item" data-nav="cancel-flow"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 21H2"/><path d="M10 3H7a2 2 0 00-2 2v16"/><path d="M14 12h.01"/><path d="M19 21V5a2 2 0 00-1.675-1.974l-6.163-1.013A1 1 0 0010 3v18a1 1 0 001.124.992z"/><path d="M22 21h-3"/></svg>Cancel flow</div>
+    </div>
+    <div class="ak-nav-group">
+      <div class="ak-nav-item is-active" data-nav="plans" id="09-plans-entitlements-nav-plans"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83z"/><path d="M2 12a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 12"/><path d="M2 17a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 17"/></svg>Plans<span class="ak-count">5</span></div>
+      <div class="ak-nav-item" data-nav="entitlements" id="09-plans-entitlements-nav-ent"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z"/><circle cx="16.5" cy="7.5" r=".5" fill="currentColor"/></svg>Entitlements<span class="ak-count">9</span></div>
+      <div class="ak-nav-item" data-nav="addons"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15.39 4.39a1 1 0 0 0 1.68-.474 2.5 2.5 0 1 1 3.014 3.015 1 1 0 0 0-.474 1.68l1.683 1.682a2.414 2.414 0 0 1 0 3.414L19.61 15.39a1 1 0 0 1-1.68-.474 2.5 2.5 0 1 0-3.014 3.015 1 1 0 0 1 .474 1.68l-1.683 1.682a2.414 2.414 0 0 1-3.414 0L8.61 19.61a1 1 0 0 0-1.68.474 2.5 2.5 0 1 1-3.014-3.015 1 1 0 0 0 .474-1.68l-1.683-1.682a2.414 2.414 0 0 1 0-3.414L4.39 8.61a1 1 0 0 1 1.68.474 2.5 2.5 0 1 0 3.014-3.015 1 1 0 0 1-.474-1.68l1.683-1.682a2.414 2.414 0 0 1 3.414 0z"/></svg>Add-ons<span class="ak-count">3</span></div>
+      <div class="ak-nav-item" data-nav="incentives"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 7v14"/><path d="M20 11v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-8"/><path d="M7.5 7a1 1 0 0 1 0-5A4.8 8 0 0 1 12 7a4.8 8 0 0 1 4.5-5 1 1 0 0 1 0 5"/><rect x="3" y="7" width="18" height="4" rx="1"/></svg>Incentives<span class="ak-count">4</span></div>
+    </div>
+    <div class="ak-nav-group">
+      <div class="ak-nav-item" data-nav="accounts"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><path d="M16 3.128a4 4 0 0 1 0 7.744"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><circle cx="9" cy="7" r="4"/></svg>Accounts<span class="ak-count">64</span></div>
+    </div>
+    <div class="ak-nav-group">
+      <div class="ak-nav-item" data-nav="integration"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 18 6-6-6-6"/><path d="m8 6-6 6 6 6"/></svg>Integration</div>
+      <div class="ak-nav-item" data-nav="api"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H7a2 2 0 0 0-2 2v5a2 2 0 0 1-2 2 2 2 0 0 1 2 2v5c0 1.1.9 2 2 2h1"/><path d="M16 21h1a2 2 0 0 0 2-2v-5c0-1.1.9-2 2-2a2 2 0 0 1-2-2V5a2 2 0 0 0-2-2h-1"/></svg>API reference</div>
+      <div class="ak-nav-item" data-nav="mcp"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22v-5"/><path d="M15 8V2"/><path d="M17 8a1 1 0 0 1 1 1v4a4 4 0 0 1-4 4h-4a4 4 0 0 1-4-4V9a1 1 0 0 1 1-1z"/><path d="M9 8V2"/></svg>MCP server</div>
+      <div class="ak-nav-item" data-nav="keys"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m2 21 9.6-9.6"/><path d="m7.5 15.5 2.3 2.3a1 1 0 0 1 0 1.4l-2.1 2.1a1 1 0 0 1-1.4 0L4 19"/><circle cx="15.5" cy="7.5" r="5.5"/></svg>API keys</div>
+      <div class="ak-nav-item" data-nav="webhooks"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 16.98h-5.99c-1.1 0-1.95.94-2.48 1.9A4 4 0 0 1 2 17c.01-.7.2-1.4.57-2"/><path d="m6 17 3.13-5.78c.53-.97.1-2.18-.5-3.1a4 4 0 1 1 6.89-4.06"/><path d="m12 6 3.13 5.73C15.66 12.7 16.9 13 18 13a4 4 0 0 1 0 8"/></svg>Webhooks</div>
+    </div>
+    <div class="ak-nav-foot"><div class="ak-nav-item"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"/><circle cx="12" cy="12" r="3"/></svg>App settings</div></div>
+  </nav>
+            <main class="ak-main">
+          <div class="09-plans-entitlements-page" id="09-plans-entitlements-page-plans">
+            <header class="ak-header">
+              <div class="ak-crumb"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83z"/><path d="M2 12a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 12"/><path d="M2 17a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 17"/></svg>Plans</div>
+              <div class="ak-actions">
+                <span class="ak-btn"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 18 6-6-6-6"/><path d="m8 6-6 6 6 6"/></svg>Use SDK</span>
+                <span class="ak-btn"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H7a2 2 0 0 0-2 2v5a2 2 0 0 1-2 2 2 2 0 0 1 2 2v5c0 1.1.9 2 2 2h1"/><path d="M16 21h1a2 2 0 0 0 2-2v-5c0-1.1.9-2 2-2a2 2 0 0 1-2-2V5a2 2 0 0 0-2-2h-1"/></svg>Use API</span>
+                <span class="ak-btn"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>How Plans Work</span>
+                <span class="ak-btn is-primary" id="09-plans-entitlements-newplan"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>New plan</span>
+              </div>
+            </header>
+            <div class="ak-toolbar"><div class="ak-input is-placeholder" style="width:240px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg>Search plans</div></div>
+            <div class="ak-body">
+              <table class="ak-table 09-plans-entitlements-table">
+                <colgroup><col style="width:186px"><col style="width:128px"><col style="width:110px"><col style="width:330px"><col style="width:100px"><col style="width:100px"><col style="width:122px"></colgroup>
+                <thead><tr>
+                  <th><span class="ak-th"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83z"/><path d="M2 12a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 12"/><path d="M2 17a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 17"/></svg>Plan</span></th>
+                  <th><span class="ak-th"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="20" y1="9" y2="9"/><line x1="4" x2="20" y1="15" y2="15"/><line x1="10" x2="8" y1="3" y2="21"/><line x1="16" x2="14" y1="3" y2="21"/></svg>ID</span></th>
+                  <th><span class="ak-th"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" x2="12" y1="2" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Price</span></th>
+                  <th><span class="ak-th"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z"/><circle cx="16.5" cy="7.5" r=".5" fill="currentColor"/></svg>Entitlements</span></th>
+                  <th><span class="ak-th"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15.39 4.39a1 1 0 0 0 1.68-.474 2.5 2.5 0 1 1 3.014 3.015 1 1 0 0 0-.474 1.68l1.683 1.682a2.414 2.414 0 0 1 0 3.414L19.61 15.39a1 1 0 0 1-1.68-.474 2.5 2.5 0 1 0-3.014 3.015 1 1 0 0 1 .474 1.68l-1.683 1.682a2.414 2.414 0 0 1-3.414 0L8.61 19.61a1 1 0 0 0-1.68.474 2.5 2.5 0 1 1-3.014-3.015 1 1 0 0 0 .474-1.68l-1.683-1.682a2.414 2.414 0 0 1 0-3.414L4.39 8.61a1 1 0 0 1 1.68.474 2.5 2.5 0 1 0 3.014-3.015 1 1 0 0 1-.474-1.68l1.683-1.682a2.414 2.414 0 0 1 3.414 0z"/></svg>Add-ons</span></th>
+                  <th style="text-align:right"><span class="ak-th">Accounts<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><path d="M16 3.128a4 4 0 0 1 0 7.744"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><circle cx="9" cy="7" r="4"/></svg></span></th>
+                  <th><span class="ak-th"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v3"/><path d="M16 2v3"/><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/></svg>Created</span></th>
+                </tr></thead>
+                <tbody>
+              <tr class="09-plans-entitlements-prow" id="09-plans-entitlements-prow-0">
+                <td><span class="ak-row-name"><span class="ak-row-icon" style="background:rgb(52 213 153 / .14);color:#5fe3b1"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83z"/><path d="M2 12a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 12"/><path d="M2 17a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 17"/></svg></span>Free <span class="ak-tag brand">Free</span></span></td>
+                <td><span class="ak-id">free</span></td>
+                <td>Free</td>
+                <td class="09-plans-entitlements-clip-cell"><span class="ak-tag">Projects 3</span> <span class="ak-tag">AI credits 50</span> <span class="ak-more">+3</span></td>
+                <td class="09-plans-entitlements-dim">—</td>
+                <td class="is-num">27</td>
+                <td>Oct 5, 2026</td>
+              </tr>
+              <tr class="09-plans-entitlements-prow" id="09-plans-entitlements-prow-1">
+                <td><span class="ak-row-name"><span class="ak-row-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83z"/><path d="M2 12a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 12"/><path d="M2 17a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 17"/></svg></span>Starter</span></td>
+                <td><span class="ak-id">starter</span></td>
+                <td>$12/mo</td>
+                <td class="09-plans-entitlements-clip-cell"><span class="ak-tag">Projects 20</span> <span class="ak-tag">AI credits 500</span> <span class="ak-more">+4</span></td>
+                <td class="09-plans-entitlements-dim">—</td>
+                <td class="is-num">14</td>
+                <td>Oct 5, 2026</td>
+              </tr>
+              <tr class="09-plans-entitlements-prow" id="09-plans-entitlements-prow-2">
+                <td><span class="ak-row-name"><span class="ak-row-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83z"/><path d="M2 12a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 12"/><path d="M2 17a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 17"/></svg></span>Pro <span class="ak-tag brand" id="09-plans-entitlements-featured">Featured</span></span></td>
+                <td><span class="ak-id">pro</span></td>
+                <td>$29/mo</td>
+                <td class="09-plans-entitlements-clip-cell"><span class="ak-tag">Projects Unlimited</span> <span class="ak-tag">AI credits 2,500</span> <span class="ak-more">+6</span></td>
+                <td>1</td>
+                <td class="is-num">16</td>
+                <td>Oct 5, 2026</td>
+              </tr>
+              <tr class="09-plans-entitlements-prow" id="09-plans-entitlements-prow-3">
+                <td><span class="ak-row-name"><span class="ak-row-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83z"/><path d="M2 12a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 12"/><path d="M2 17a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 17"/></svg></span>Enterprise</span></td>
+                <td><span class="ak-id">enterprise</span></td>
+                <td class="09-plans-entitlements-dim">—</td>
+                <td class="09-plans-entitlements-clip-cell"><span class="ak-tag">Projects Unlimited</span> <span class="ak-tag">AI credits Unlimited</span> <span class="ak-more">+7</span></td>
+                <td>3</td>
+                <td class="is-num">1</td>
+                <td>Oct 5, 2026</td>
+              </tr>
+              <tr class="09-plans-entitlements-prow" id="09-plans-entitlements-prow-4">
+                <td><span class="ak-row-name"><span class="ak-row-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83z"/><path d="M2 12a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 12"/><path d="M2 17a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 17"/></svg></span>Lifetime deal</span></td>
+                <td><span class="ak-id">lifetime</span></td>
+                <td>$199 once</td>
+                <td class="09-plans-entitlements-clip-cell"><span class="ak-tag">Projects Unlimited</span> <span class="ak-tag">AI credits 1,000</span> <span class="ak-more">+4</span></td>
+                <td class="09-plans-entitlements-dim">—</td>
+                <td class="is-num">6</td>
+                <td>Oct 5, 2026</td>
+              </tr>
+                </tbody>
+              </table>
+              <div class="ak-table-foot" id="09-plans-entitlements-pfoot">5 plans</div>
+            </div>
+          </div>
+          <div class="09-plans-entitlements-page" id="09-plans-entitlements-page-ent">
+            <header class="ak-header" id="09-plans-entitlements-ehead">
+              <div class="ak-crumb"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z"/><circle cx="16.5" cy="7.5" r=".5" fill="currentColor"/></svg>Entitlements</div>
+              <div class="ak-actions">
+                <span class="ak-btn"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 18 6-6-6-6"/><path d="m8 6-6 6 6 6"/></svg>Use SDK</span>
+                <span class="ak-btn"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H7a2 2 0 0 0-2 2v5a2 2 0 0 1-2 2 2 2 0 0 1 2 2v5c0 1.1.9 2 2 2h1"/><path d="M16 21h1a2 2 0 0 0 2-2v-5c0-1.1.9-2 2-2a2 2 0 0 1-2-2V5a2 2 0 0 0-2-2h-1"/></svg>Use API</span>
+                <span class="ak-btn"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>How Entitlements Work</span>
+                <span class="ak-btn is-primary"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>New entitlement</span>
+              </div>
+            </header>
+            <div class="ak-toolbar" id="09-plans-entitlements-etool">
+              <div class="ak-input is-placeholder" style="width:240px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg>Search entitlements</div>
+              <div class="ak-seg"><span class="is-on">All</span><span>Usage</span><span>Feature flags</span></div>
+            </div>
+            <div class="ak-body">
+              <table class="ak-table 09-plans-entitlements-table 09-plans-entitlements-etable">
+                <colgroup><col style="width:151px"><col style="width:152px"><col style="width:168px"><col style="width:349px"><col style="width:163px"><col style="width:97px"></colgroup>
+                <thead id="09-plans-entitlements-ethead"><tr>
+                  <th><span class="ak-th"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z"/><circle cx="16.5" cy="7.5" r=".5" fill="currentColor"/></svg>Entitlement</span></th>
+                  <th><span class="ak-th"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="20" y1="9" y2="9"/><line x1="4" x2="20" y1="15" y2="15"/><line x1="10" x2="8" y1="3" y2="21"/><line x1="16" x2="14" y1="3" y2="21"/></svg>ID</span></th>
+                  <th><span class="ak-th"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="3"/><rect width="20" height="14" x="2" y="5" rx="7"/></svg>Type</span></th>
+                  <th><span class="ak-th"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"/><path d="M14 2v5a1 1 0 0 0 1 1h5"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>Description</span></th>
+                  <th><span class="ak-th"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83z"/><path d="M2 12a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 12"/><path d="M2 17a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 17"/></svg>Used in</span></th>
+                  <th><span class="ak-th"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v3"/><path d="M16 2v3"/><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/></svg>Created</span></th>
+                </tr></thead>
+                <tbody>
+              <tr class="09-plans-entitlements-erow" id="09-plans-entitlements-erow-0">
+                <td><span class="ak-row-name"><span class="ak-row-icon 09-plans-entitlements-ent-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="20" y1="9" y2="9"/><line x1="4" x2="20" y1="15" y2="15"/><line x1="10" x2="8" y1="3" y2="21"/><line x1="16" x2="14" y1="3" y2="21"/></svg></span>Projects</span></td>
+                <td><span class="ak-id">projects</span></td>
+                <td><span class="09-plans-entitlements-type"><span class="ak-tag blue" id="09-plans-entitlements-etag-0">Usage</span></span></td>
+                <td class="09-plans-entitlements-desc">Active projects a workspace can create.</td>
+                <td><span class="ak-tag">5 plans</span> <span class="ak-tag orange">1 incentive</span></td>
+                <td>Oct 5, 2026</td>
+              </tr>
+              <tr class="09-plans-entitlements-erow" id="09-plans-entitlements-erow-1">
+                <td><span class="ak-row-name"><span class="ak-row-icon 09-plans-entitlements-ent-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="20" y1="9" y2="9"/><line x1="4" x2="20" y1="15" y2="15"/><line x1="10" x2="8" y1="3" y2="21"/><line x1="16" x2="14" y1="3" y2="21"/></svg></span>AI credits</span></td>
+                <td><span class="ak-id">ai_credits</span></td>
+                <td><span class="09-plans-entitlements-type"><span class="ak-tag blue" id="09-plans-entitlements-etag-1">Usage</span><span class="09-plans-entitlements-chip" id="09-plans-entitlements-chip"><b id="09-plans-entitlements-chip-num">0</b> / mo</span></span></td>
+                <td class="09-plans-entitlements-desc">Credits spent on AI generations each billing period.</td>
+                <td><span class="ak-tag">5 plans</span> <span class="ak-tag orange">3 incentives</span></td>
+                <td>Oct 5, 2026</td>
+              </tr>
+              <tr class="09-plans-entitlements-erow" id="09-plans-entitlements-erow-2">
+                <td><span class="ak-row-name"><span class="ak-row-icon 09-plans-entitlements-ent-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="20" y1="9" y2="9"/><line x1="4" x2="20" y1="15" y2="15"/><line x1="10" x2="8" y1="3" y2="21"/><line x1="16" x2="14" y1="3" y2="21"/></svg></span>Team seats</span></td>
+                <td><span class="ak-id">seats</span></td>
+                <td><span class="09-plans-entitlements-type"><span class="ak-tag blue" id="09-plans-entitlements-etag-2">Usage</span></span></td>
+                <td class="09-plans-entitlements-desc">Members who can be invited to the workspace.</td>
+                <td><span class="ak-tag">5 plans</span> <span class="ak-tag orange">1 incentive</span></td>
+                <td>Oct 5, 2026</td>
+              </tr>
+              <tr class="09-plans-entitlements-erow" id="09-plans-entitlements-erow-3">
+                <td><span class="ak-row-name"><span class="ak-row-icon 09-plans-entitlements-ent-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="20" y1="9" y2="9"/><line x1="4" x2="20" y1="15" y2="15"/><line x1="10" x2="8" y1="3" y2="21"/><line x1="16" x2="14" y1="3" y2="21"/></svg></span>Storage (GB)</span></td>
+                <td><span class="ak-id">storage_gb</span></td>
+                <td><span class="09-plans-entitlements-type"><span class="ak-tag blue" id="09-plans-entitlements-etag-3">Usage</span></span></td>
+                <td class="09-plans-entitlements-desc">File storage across all projects.</td>
+                <td><span class="ak-tag">5 plans</span> <span class="ak-tag orange">1 incentive</span></td>
+                <td>Oct 5, 2026</td>
+              </tr>
+              <tr class="09-plans-entitlements-erow" id="09-plans-entitlements-erow-4">
+                <td><span class="ak-row-name"><span class="ak-row-icon 09-plans-entitlements-ent-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="3"/><rect width="20" height="14" x="2" y="5" rx="7"/></svg></span>PDF export</span></td>
+                <td><span class="ak-id">export_pdf</span></td>
+                <td><span class="09-plans-entitlements-type"><span class="ak-tag brand" id="09-plans-entitlements-etag-4">Feature flag</span><span class="09-plans-entitlements-switch" id="09-plans-entitlements-switch"><i id="09-plans-entitlements-knob"></i></span></span></td>
+                <td class="09-plans-entitlements-desc">Export documents as PDF.</td>
+                <td><span class="ak-tag">5 plans</span></td>
+                <td>Oct 5, 2026</td>
+              </tr>
+              <tr class="09-plans-entitlements-erow" id="09-plans-entitlements-erow-5">
+                <td><span class="ak-row-name"><span class="ak-row-icon 09-plans-entitlements-ent-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="3"/><rect width="20" height="14" x="2" y="5" rx="7"/></svg></span>API access</span></td>
+                <td><span class="ak-id">api_access</span></td>
+                <td><span class="09-plans-entitlements-type"><span class="ak-tag brand" id="09-plans-entitlements-etag-5">Feature flag</span></span></td>
+                <td class="09-plans-entitlements-desc">Programmatic access with personal tokens.</td>
+                <td><span class="ak-tag">4 plans</span></td>
+                <td>Oct 5, 2026</td>
+              </tr>
+              <tr class="09-plans-entitlements-erow" id="09-plans-entitlements-erow-6">
+                <td><span class="ak-row-name"><span class="ak-row-icon 09-plans-entitlements-ent-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="3"/><rect width="20" height="14" x="2" y="5" rx="7"/></svg></span>Custom domain</span></td>
+                <td><span class="ak-id">custom_domain</span></td>
+                <td><span class="09-plans-entitlements-type"><span class="ak-tag brand" id="09-plans-entitlements-etag-6">Feature flag</span></span></td>
+                <td class="09-plans-entitlements-desc">Publish pages on your own domain.</td>
+                <td><span class="ak-tag">2 plans</span></td>
+                <td>Oct 5, 2026</td>
+              </tr>
+              <tr class="09-plans-entitlements-erow" id="09-plans-entitlements-erow-7">
+                <td><span class="ak-row-name"><span class="ak-row-icon 09-plans-entitlements-ent-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="3"/><rect width="20" height="14" x="2" y="5" rx="7"/></svg></span>Priority support</span></td>
+                <td><span class="ak-id">priority_support</span></td>
+                <td><span class="09-plans-entitlements-type"><span class="ak-tag brand" id="09-plans-entitlements-etag-7">Feature flag</span></span></td>
+                <td class="09-plans-entitlements-desc">Same-day responses from the support team.</td>
+                <td><span class="ak-tag">2 plans</span></td>
+                <td>Oct 5, 2026</td>
+              </tr>
+              <tr class="09-plans-entitlements-erow" id="09-plans-entitlements-erow-8">
+                <td><span class="ak-row-name"><span class="ak-row-icon 09-plans-entitlements-ent-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="3"/><rect width="20" height="14" x="2" y="5" rx="7"/></svg></span>SSO / SAML</span></td>
+                <td><span class="ak-id">sso</span></td>
+                <td><span class="09-plans-entitlements-type"><span class="ak-tag brand" id="09-plans-entitlements-etag-8">Feature flag</span></span></td>
+                <td class="09-plans-entitlements-desc">Single sign-on with Okta, Azure AD and Google.</td>
+                <td><span class="ak-tag">1 plan</span></td>
+                <td>Oct 5, 2026</td>
+              </tr>
+                </tbody>
+              </table>
+              <div class="ak-table-foot" id="09-plans-entitlements-efoot">9 entitlements</div>
+            </div>
+          </div>
+            </main>
+            <div class="ak-ripple" id="09-plans-entitlements-ripple"></div>
+            <svg class="ak-cursor" id="09-plans-entitlements-cursor" viewBox="0 0 24 24" style="left:0;top:0;opacity:0"><path d="M4 2.5 L4 19 L8.6 14.8 L11.6 21.5 L14.4 20.3 L11.5 13.7 L17.8 13.4 Z" fill="#fff" stroke="#111" stroke-width="1.3" stroke-linejoin="round"/></svg>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+  <script>
+    (function () {
+      window.__timelines = window.__timelines || {};
+      var ID = "09-plans-entitlements";
+      var P = ID + "-";
+      var DUR = 7.45;
+      var $ = function (s) { return document.getElementById(P + s); };
+      var arr = function (list) { return Array.prototype.slice.call(list); };
+      var tl = gsap.timeline({ paused: true });
+
+      // ---- Camera (coordinate-target-zoom, nested wrappers) ----
+      // outer scales around the window centre O; inner translates by -(target - O), so a canvas
+      // point p lands on screen at O + s * (p - target). handoff_in/out = scale 1.1 at target O.
+      var OX = 960, OY = 470;
+      var REST = { x: OX, y: OY };
+      var T_PLANS = { x: 936, y: 330 };  // Plan / Price / Entitlements columns x the 5 rows
+      var T_ENT = { x: 920, y: 420 };    // the whole Entitlements table
+      var T_FLAGS = { x: 880, y: 505 };  // Feature flag rows (PDF export .. SSO / SAML)
+      var T_USAGE = { x: 886, y: 345 };  // Usage rows down to API access
+      var outer = $("cam-outer"), inner = $("cam-inner");
+      gsap.set(outer, { scale: 1.1 });
+      gsap.set(inner, { x: 0, y: 0 });
+      var camTo = function (at, s, t, dur, ease) {
+        tl.to(outer, { scale: s, duration: dur, ease: ease }, at);
+        tl.to(inner, { x: OX - t.x, y: OY - t.y, duration: dur, ease: ease }, at);
+      };
+
+      // ---- Cursor (window-local px; the tip is the element's top-left) ----
+      var C_IN = { x: 1010, y: 610 };
+      var C_ROWS = { x: 760, y: 300 };
+      var C_NAV = { x: 132, y: 316 };     // "Entitlements" nav item
+      var C_PARK = { x: 560, y: 470 };
+      var C_SWITCH = { x: 693, y: 360 };  // PDF export toggle
+      var C_CHIP = { x: 734, y: 224 };    // AI credits limit chip
+      var C_API = { x: 668, y: 406 };     // API access "Feature flag" tag
+      var cursor = $("cursor"), ripple = $("ripple");
+      gsap.set(cursor, { x: C_IN.x, y: C_IN.y, transformOrigin: "0% 0%" });
+
+      var click = function (at, pt, target) {
+        tl.to(cursor, { scale: 0.85, duration: 0.07, ease: "power2.in" }, at);
+        tl.to(cursor, { scale: 1, duration: 0.14, ease: "power3.out" }, at + 0.07);
+        if (target) {
+          tl.to(target, { scale: 0.96, duration: 0.07, ease: "power2.in" }, at);
+          tl.to(target, { scale: 1, duration: 0.14, ease: "power3.out" }, at + 0.07);
+        }
+        tl.set(ripple, { left: pt.x + 3, top: pt.y + 3, scale: 0.35, opacity: 0.9 }, at + 0.02);
+        tl.to(ripple, { scale: 2.6, opacity: 0, duration: 0.5, ease: "expo.out" }, at + 0.02);
+      };
+      var tds = function (row) { return row.querySelectorAll("td"); };
+
+      // Neon glow strings (same shadow count/shape so GSAP interpolates them)
+      var G0 = "0 0 0px 0px rgba(52,213,153,0)";
+      var G_FLASH = "0 0 14px 2px rgba(52,213,153,0.65)";
+      var G_SOFT = "0 0 8px 0px rgba(52,213,153,0.3)";
+      var B0 = "0 0 0px 0px rgba(59,123,246,0)";
+      var B_FLASH = "0 0 14px 2px rgba(59,123,246,0.7)";
+      var BTN_BASE = "inset 0 0 0 1px rgba(52,213,153,0.85), inset 0 0 14px -6px rgba(52,213,153,0.35), 0 0 16px -6px rgba(52,213,153,0.4)";
+      var BTN_HOT = "inset 0 0 0 1px rgba(52,213,153,1), inset 0 0 16px -4px rgba(52,213,153,0.6), 0 0 28px -2px rgba(52,213,153,0.75)";
+      var CHIP_BASE = "inset 0 0 0 1px rgba(52,213,153,0.7), 0 0 0px 0px rgba(52,213,153,0)";
+      var CHIP_HOT = "inset 0 0 0 1px rgba(52,213,153,1), 0 0 16px 2px rgba(52,213,153,0.6)";
+      var CHIP_SET = "inset 0 0 0 1px rgba(52,213,153,0.85), 0 0 8px 0px rgba(52,213,153,0.3)";
+
+      // ===== A (0.0–1.45) "Start building your plans." — push in, New plan lights, rows cascade =====
+      camTo(0.05, 1.38, T_PLANS, 1.35, "power2.inOut");
+      tl.fromTo(cursor, { opacity: 0 }, { opacity: 1, duration: 0.25, ease: "power2.out" }, 0.08);
+      tl.fromTo(cursor, { x: C_IN.x, y: C_IN.y }, { x: C_ROWS.x, y: C_ROWS.y, duration: 0.9, ease: "power3.inOut" }, 0.08);
+      var newPlan = $("newplan");
+      tl.fromTo(newPlan, { boxShadow: BTN_BASE }, { boxShadow: BTN_HOT, duration: 0.18, ease: "power2.out" }, 0.22);
+      tl.to(newPlan, { boxShadow: BTN_BASE, duration: 0.6, ease: "power2.inOut" }, 0.45);
+      var prows = arr(document.getElementsByClassName(P + "prow"));
+      tl.fromTo(prows, { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.5, ease: "expo.out", stagger: 0.065 }, 0.62);
+      tl.fromTo($("pfoot"), { opacity: 0 }, { opacity: 1, duration: 0.3, ease: "power2.out" }, 0.98);
+      var featured = $("featured");
+      tl.fromTo(featured, { scale: 0.85, boxShadow: G0 }, { scale: 1, boxShadow: G_FLASH, duration: 0.3, ease: "power4.out" }, 0.86);
+      tl.to(featured, { boxShadow: G0, duration: 0.5, ease: "power2.inOut" }, 1.16);
+
+      // ===== B (1.45–2.45) "Add your entitlements." — click Entitlements, page swaps, rows cascade =====
+      tl.to(cursor, { x: C_NAV.x, y: C_NAV.y, duration: 0.48, ease: "power3.inOut" }, 1.0);
+      var navPlans = $("nav-plans"), navEnt = $("nav-ent");
+      click(1.5, C_NAV, navEnt);
+      tl.fromTo(navPlans, { backgroundColor: "rgba(52,213,153,0.13)", color: "rgb(95,227,177)" }, { backgroundColor: "rgba(52,213,153,0)", color: "rgba(236,236,238,0.93)", duration: 0.2, ease: "power2.out" }, 1.56);
+      tl.fromTo([navPlans.querySelector("svg"), navPlans.querySelector(".ak-count")], { color: "rgb(95,227,177)" }, { color: "rgb(156,158,165)", duration: 0.2, ease: "power2.out" }, 1.56);
+      tl.fromTo(navEnt, { backgroundColor: "rgba(52,213,153,0)", color: "rgba(236,236,238,0.93)" }, { backgroundColor: "rgba(52,213,153,0.13)", color: "rgb(95,227,177)", duration: 0.2, ease: "power2.out" }, 1.56);
+      tl.fromTo([navEnt.querySelector("svg"), navEnt.querySelector(".ak-count")], { color: "rgb(156,158,165)" }, { color: "rgb(95,227,177)", duration: 0.2, ease: "power2.out" }, 1.56);
+      tl.fromTo($("page-plans"), { opacity: 1 }, { opacity: 0, duration: 0.16, ease: "power2.out" }, 1.58);
+      tl.fromTo($("page-ent"), { opacity: 0 }, { opacity: 1, duration: 0.18, ease: "power2.out" }, 1.6);
+      tl.fromTo([$("ehead"), $("etool")], { opacity: 0, y: 6 }, { opacity: 1, y: 0, duration: 0.4, ease: "expo.out", stagger: 0.04 }, 1.6);
+      tl.fromTo($("ethead"), { opacity: 0 }, { opacity: 1, duration: 0.25, ease: "power2.out" }, 1.66);
+      var erows = arr(document.getElementsByClassName(P + "erow"));
+      tl.fromTo(erows, { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.45, ease: "expo.out", stagger: 0.045 }, 1.68);
+      tl.fromTo($("efoot"), { opacity: 0 }, { opacity: 1, duration: 0.3, ease: "power2.out" }, 2.12);
+      camTo(1.45, 1.22, T_ENT, 0.8, "power3.inOut");
+      tl.to(cursor, { x: C_PARK.x, y: C_PARK.y, duration: 0.7, ease: "power3.inOut" }, 1.75);
+
+      // ===== C (2.45–4.4) "Some are yes or no, like exports." — punch into Feature flags, toggle flips ON =====
+      camTo(2.42, 1.75, T_FLAGS, 0.56, "power3.inOut");
+      var flagTags = [4, 5, 6, 7, 8].map(function (i) { return $("etag-" + i); });
+      tl.fromTo(flagTags, { boxShadow: G0 }, { boxShadow: G_FLASH, duration: 0.14, ease: "power2.out", stagger: 0.05 }, 2.86);
+      tl.to(flagTags, { boxShadow: G0, duration: 0.4, ease: "power2.inOut", stagger: 0.05 }, 3.0);
+      var sw = $("switch"), knob = $("knob");
+      tl.fromTo(sw, { opacity: 0, scale: 0.85, backgroundColor: "rgb(58,58,65)", boxShadow: G0 }, { opacity: 1, scale: 1, boxShadow: G_SOFT, duration: 0.35, ease: "power4.out" }, 3.18);
+      tl.to(sw, { boxShadow: G0, duration: 0.3, ease: "power2.inOut" }, 3.4);
+      var rowPdf = $("erow-4"), rowAi = $("erow-1"), rowApi = $("erow-5");
+      tl.fromTo(tds(rowPdf), { backgroundColor: "rgba(52,213,153,0)" }, { backgroundColor: "rgba(52,213,153,0.1)", duration: 0.35, ease: "power2.out" }, 3.5);
+      tl.to(cursor, { x: C_SWITCH.x, y: C_SWITCH.y, duration: 0.55, ease: "power3.inOut" }, 3.08);
+      click(3.66, C_SWITCH, sw);
+      tl.fromTo(knob, { x: 0, backgroundColor: "rgb(255,255,255)" }, { x: 12, backgroundColor: "rgb(3,20,12)", duration: 0.2, ease: "expo.out" }, 3.72);
+      tl.to(sw, { backgroundColor: "rgb(52,213,153)", boxShadow: G_FLASH, duration: 0.16, ease: "power2.out" }, 3.72);
+      tl.to(sw, { boxShadow: G_SOFT, duration: 0.45, ease: "power2.inOut" }, 3.9);
+      tl.to($("etag-4"), { boxShadow: G_SOFT, duration: 0.25, ease: "power2.out" }, 3.74);
+      tl.to(cursor, { x: C_SWITCH.x + 44, y: C_SWITCH.y + 34, duration: 0.45, ease: "power3.out" }, 3.92);  // step off so ON reads
+
+      // ===== D (4.4–6.95) "Some are a number, like AI credits or API calls." =====
+      camTo(4.42, 1.7, T_USAGE, 0.6, "power3.inOut");
+      tl.to(tds(rowPdf), { backgroundColor: "rgba(52,213,153,0.035)", duration: 0.4, ease: "power2.out" }, 4.45);
+      tl.to($("etag-4"), { boxShadow: G0, duration: 0.4, ease: "power2.out" }, 4.45);
+      var usageTags = [0, 1, 2, 3].map(function (i) { return $("etag-" + i); });
+      tl.fromTo(usageTags, { boxShadow: B0 }, { boxShadow: B_FLASH, duration: 0.14, ease: "power2.out", stagger: 0.05 }, 4.9);
+      tl.to(usageTags, { boxShadow: B0, duration: 0.4, ease: "power2.inOut", stagger: 0.05 }, 5.04);
+      tl.to(cursor, { x: C_CHIP.x, y: C_CHIP.y, duration: 0.6, ease: "power3.inOut" }, 5.12);
+      tl.fromTo(tds(rowAi), { backgroundColor: "rgba(52,213,153,0)" }, { backgroundColor: "rgba(52,213,153,0.1)", duration: 0.3, ease: "power2.out" }, 5.7);
+      var chip = $("chip");
+      tl.fromTo(chip, { opacity: 0, scale: 0.85, boxShadow: CHIP_BASE }, { opacity: 1, scale: 1, boxShadow: CHIP_HOT, duration: 0.3, ease: "power4.out" }, 5.76);
+      tl.to(chip, { boxShadow: CHIP_SET, duration: 0.45, ease: "power2.inOut" }, 6.08);
+      // "API calls": API access row + its Feature flag tag glow
+      tl.to(cursor, { x: C_API.x, y: C_API.y, duration: 0.42, ease: "power3.inOut" }, 6.18);
+      tl.fromTo(tds(rowApi), { backgroundColor: "rgba(52,213,153,0)" }, { backgroundColor: "rgba(52,213,153,0.14)", duration: 0.2, ease: "power2.out" }, 6.52);
+      tl.to(tds(rowApi), { backgroundColor: "rgba(52,213,153,0.08)", duration: 0.4, ease: "power2.inOut" }, 6.75);
+      tl.to($("etag-5"), { boxShadow: G_FLASH, duration: 0.16, ease: "power2.out" }, 6.54);
+      tl.to($("etag-5"), { boxShadow: G_SOFT, duration: 0.4, ease: "power2.inOut" }, 6.72);
+
+      // handoff_out: rest framing (scale 1.1, centred 960/470) restored over the last 0.5s
+      camTo(6.95, 1.1, REST, 0.5, "power3.inOut");
+
+      // ---- AI credits limit counts 0 -> 2,500 (one linear clock; a modifier, not onUpdate,
+      //      so the readout is right on every seek whether or not events are suppressed) ----
+      var chipNum = $("chip-num"), lastTxt = null;
+      var C0 = 5.8, C1 = 6.22;
+      var render = function (t) {
+        var p = Math.min(1, Math.max(0, (t - C0) / (C1 - C0)));
+        var e = 1 - Math.pow(1 - p, 3);
+        var v = Math.round((2500 * e) / 50) * 50;
+        var txt = v.toLocaleString("en-US");
+        if (txt !== lastTxt) { chipNum.textContent = txt; lastTxt = txt; }
+      };
+      var clock = { t: 0 };
+      tl.fromTo(clock, { t: 0 }, { t: DUR, duration: DUR, ease: "none", modifiers: { t: function (v) { render(parseFloat(v) || 0); return v; } } }, 0);
+      render(0);
+
+      window.__timelines["09-plans-entitlements"] = tl;
+    })();
+  </script>
+</template>

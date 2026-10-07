@@ -1,5 +1,6 @@
-# Render Blueprint: the Offer API (Docker, Bun), the dashboard (Node, Next.js) and
-# their Postgres database. In Render: New → Blueprint → this repo (render.yaml).
+# Render Blueprint: the Offer API (Docker, Bun), the dashboard (Node, Next.js), the
+# Workflows service for subscription pauses and their Postgres database.
+# In Render: New → Blueprint → this repo (render.yaml).
 #
 # Render asks for the `sync: false` values on the first deploy:
 #   offersdk-api  ADMIN_API_KEY   shared secret between the two services (openssl rand -hex 32,
@@ -7,7 +8,12 @@
 #   offersdk-api  APP_URL         the dashboard's public URL, e.g. https://offer-app.onrender.com
 #   offer-app     OFFER_API_URL   the API's public URL, e.g. https://offersdk-api.onrender.com
 #   offer-app     ANTHROPIC_API_KEY  optional, enables the Agent page
-# Everything else is generated or wired between the services below.
+#   offersdk-api  ANTHROPIC_API_KEY  optional, enables dynamic save offers in cancel flows
+#   offersdk-api  RENDER_API_KEY     optional, runs subscription pauses on the workflow below
+#   offersdk-workflows  OFFER_API_URL  the API's public URL (same as offer-app's)
+# Everything else is generated or wired between the services below. PayPal webhooks are
+# registered at the API's onrender.com address (RENDER_EXTERNAL_URL, set by Render); add
+# PUBLIC_API_URL to offersdk-api to register a custom domain instead.
 
 services:
   - type: web
@@ -34,6 +40,15 @@ services:
       # The dashboard's public URL: sessions are issued for it and only its origin is trusted.
       - key: APP_URL
         sync: false
+      # Cancel flows: Claude picks dynamic save offers (falls back to the static offer without it).
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      # Pauses run as Render Workflow tasks (offersdk-workflows) when both are set;
+      # otherwise the API pauses and resumes them in-process.
+      - key: RENDER_API_KEY
+        sync: false
+      - key: RENDER_WORKFLOW_SLUG
+        value: offersdk-workflows
 
   - type: web
     name: offer-app
@@ -68,11 +83,37 @@ services:
         sync: false
       - key: CORS_ORIGINS
         value: "*"
-      # "Explore the demo workspace" on the sign-in page. Seed it after the first deploy:
-      #   APP_URL=https://<this service's URL> pnpm seed:demo
+      # "Explore the demo workspace" on the sign-in page. The first click builds the shared
+      # demo workspace (sample apps, accounts, usage history, an offer and a cancel flow).
+      # Undo visitors' changes with: APP_URL=https://<this service's URL> pnpm seed:demo --reset
       - key: DEMO_ENABLED
         value: "true"
       # Lets corepack fetch the pnpm version pinned in package.json without prompting.
+      - key: COREPACK_ENABLE_DOWNLOAD_PROMPT
+        value: "0"
+
+  # Subscription pauses from cancel flows (workflows/src/index.ts). The API
+  # starts `pause-subscription` when a customer accepts a pause and
+  # `resume-due-pauses` when pauses come due; tasks call back the API's
+  # admin-only /pauses routes.
+  - type: workflow
+    name: offersdk-workflows
+    runtime: node
+    region: oregon
+    buildCommand: corepack pnpm install --frozen-lockfile --filter offersdk-workflows...
+    startCommand: cd workflows && node src/index.ts
+    buildFilter:
+      paths:
+        - workflows/**
+        - pnpm-lock.yaml
+    envVars:
+      - key: OFFER_API_URL
+        sync: false
+      - key: ADMIN_API_KEY
+        fromService:
+          type: web
+          name: offersdk-api
+          envVarKey: ADMIN_API_KEY
       - key: COREPACK_ENABLE_DOWNLOAD_PROMPT
         value: "0"
 

@@ -137,7 +137,7 @@ export function PlansView() {
                             </RecordIcon>
                             <span className="truncate font-medium">{plan.name}</span>
                             {plan.isFree ? <Badge color="green">Free</Badge> : null}
-                            {plan.pricingCard?.featured ? <Badge color="purple">Featured</Badge> : null}
+                            {plan.pricingCard?.featured ? <Badge color="brand">Featured</Badge> : null}
                           </div>
                         </TD>
                         <TD>

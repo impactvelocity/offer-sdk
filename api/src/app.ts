@@ -11,6 +11,8 @@ import accountAddons from "./routes/account-addons.ts";
 import addons from "./routes/addons.ts";
 import agentThreads from "./routes/agent-threads.ts";
 import analytics from "./routes/analytics.ts";
+import cancelFlows from "./routes/cancel-flows.ts";
+import cancelSessions from "./routes/cancel-sessions.ts";
 import apps from "./routes/apps.ts";
 import checkouts from "./routes/checkouts.ts";
 import entitlements from "./routes/entitlements.ts";
@@ -22,6 +24,7 @@ import offers from "./routes/offers.ts";
 import orgs from "./routes/orgs.ts";
 import paypal from "./routes/paypal.ts";
 import paypalWebhooks from "./routes/paypal-webhooks.ts";
+import pauses from "./routes/pauses.ts";
 import plans from "./routes/plans.ts";
 import subscriptions from "./routes/subscriptions.ts";
 import usage from "./routes/usage.ts";
@@ -56,6 +59,7 @@ app.use("/apps/:appId/*", appAuth);
 
 app.use("/orgs", adminAuth);
 app.use("/orgs/*", adminAuth);
+app.use("/pauses/*", adminAuth);
 // Backdated history import is admin-only (app keys can't rewrite the past).
 app.use("/apps/:appId/import", adminAuth);
 
@@ -82,6 +86,9 @@ app.route("/apps/:appId/webhooks", webhooks);
 app.route("/apps/:appId/events", events);
 app.route("/apps/:appId/import", historyImport);
 app.route("/apps/:appId/agent/threads", agentThreads);
+app.route("/apps/:appId/cancel-flows", cancelFlows);
+app.route("/apps/:appId/cancel-sessions", cancelSessions);
+app.route("/pauses", pauses);
 
 app.notFound((c) => c.json({ error: "Not found" }, 404));
 

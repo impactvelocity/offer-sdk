@@ -222,7 +222,7 @@ function StatusBadge({ state, approved, canRespond }: { state: ToolState; approv
     case "input-available":
       return <Spinner className="mt-1 size-4 text-fg-icon" />;
     case "approval-requested":
-      return canRespond ? <Badge color="purple" dot>Needs approval</Badge> : <Badge>Not applied</Badge>;
+      return canRespond ? <Badge color="brand" dot>Needs approval</Badge> : <Badge>Not applied</Badge>;
     case "approval-responded":
       return approved ? (
         <Badge color="blue" icon={<Spinner className="size-3" />}>

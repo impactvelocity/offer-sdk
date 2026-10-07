@@ -1,0 +1,196 @@
+<template>
+  <style>
+    @font-face {
+      font-family: "Cal Sans";
+      src: url("assets/fonts/CalSansVF.woff2") format("woff2");
+      font-weight: 400 700;
+      font-display: block;
+    }
+
+    #root {
+      position: absolute;
+      inset: 0;
+      width: 1920px;
+      height: 1080px;
+      overflow: hidden;
+      color: #ececee;
+      font-family: "Cal Sans", sans-serif;
+    }
+
+    /* ---- Full-bleed ground: the site's neon hero line-art ---- */
+    .tagline06-bg {
+      position: absolute;
+      inset: 0;
+      width: 1920px;
+      height: 1080px;
+      overflow: hidden;
+      background: #0f0f11;
+    }
+    .tagline06-bg-art {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 1920px;
+      height: 1080px;
+      object-fit: cover;
+      opacity: 0.62;
+    }
+    /* Canvas fade behind the left-aligned statement (keeps the right-side neon art alive) */
+    .tagline06-bg-radial {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(
+        52% 50% at 31% 42%,
+        #0f0f11 0%,
+        rgba(15, 15, 17, 0.9) 50%,
+        rgba(15, 15, 17, 0) 100%
+      );
+    }
+    .tagline06-bg-left {
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 900px;
+      background: linear-gradient(90deg, rgba(15, 15, 17, 0.7), rgba(15, 15, 17, 0));
+    }
+    .tagline06-bg-top {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 0;
+      height: 140px;
+      background: linear-gradient(180deg, #0f0f11, rgba(15, 15, 17, 0));
+    }
+    .tagline06-bg-bottom {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 40%;
+      background: linear-gradient(180deg, rgba(15, 15, 17, 0), #0f0f11 88%);
+    }
+    /* A very soft green bloom BEHIND the "a pull request" line (never on the letters) */
+    .tagline06-glow {
+      position: absolute;
+      left: 110px;
+      top: 440px;
+      width: 1240px;
+      height: 300px;
+      background: radial-gradient(closest-side, rgba(52, 213, 153, 0.13), rgba(52, 213, 153, 0));
+    }
+
+    /* ---- Content: left-aligned statement in the top 900px (site hero / SectionHeading) ---- */
+    .tagline06-stage {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 1920px;
+      height: 900px;
+    }
+    .tagline06-stack {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: center;
+      text-align: left;
+      padding: 0 0 40px 200px;
+    }
+
+    /* display-xl: Cal Sans 500, GEOM 50 */
+    .tagline06-headline {
+      margin: 0;
+      font-size: 150px;
+      font-weight: 500;
+      line-height: 1.04;
+      letter-spacing: -0.03em;
+      word-spacing: 0.06em;
+      font-variation-settings: "GEOM" 50;
+      color: #ececee;
+      white-space: nowrap;
+      transform-origin: 0% 50%;
+    }
+    .tagline06-line {
+      display: block;
+    }
+    .tagline06-w {
+      display: inline-block;
+    }
+    /* Two-tone: the continuation starts dimmed and brightens to full as it is spoken */
+    .tagline06-acc {
+      color: rgba(236, 236, 238, 0.45);
+    }
+  </style>
+
+  <div id="root" data-composition-id="06-tagline" data-width="1920" data-height="1080" data-duration="2.59">
+    <!-- Ground: neon hero line-art + radial canvas fade + the one glow -->
+    <div class="clip tagline06-bg" id="tagline06-bg" data-start="0" data-duration="2.59" data-track-index="0">
+      <img class="tagline06-bg-art" id="tagline06-bg-art" src="assets/hero-bg-neon.webp" alt="" />
+      <div class="tagline06-bg-radial"></div>
+      <div class="tagline06-bg-left"></div>
+      <div class="tagline06-bg-top"></div>
+      <div class="tagline06-bg-bottom"></div>
+      <div class="tagline06-glow" id="tagline06-glow"></div>
+    </div>
+
+    <!-- Hero statement: left-aligned, two-tone -->
+    <div class="clip tagline06-stage" id="tagline06-stage" data-start="0" data-duration="2.59" data-track-index="1">
+      <div class="tagline06-stack">
+        <h1 class="tagline06-headline" id="tagline06-headline">
+          <span class="tagline06-line"><span class="tagline06-w" id="tagline06-w1">Pricing</span> <span class="tagline06-w" id="tagline06-w2">changes</span></span>
+          <span class="tagline06-line"><span class="tagline06-w" id="tagline06-w3">shouldn&rsquo;t</span> <span class="tagline06-w" id="tagline06-w4">need</span></span>
+          <span class="tagline06-line" id="tagline06-accent-line"><span class="tagline06-w tagline06-acc" id="tagline06-acc-a">a</span> <span class="tagline06-w tagline06-acc" id="tagline06-acc-pull">pull</span> <span class="tagline06-w tagline06-acc" id="tagline06-acc-request">request</span></span>
+        </h1>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+  <script>
+    (function () {
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      // Camera underneath: backdrop settles in, the statement eases forward.
+      tl.fromTo("#tagline06-bg-art", { scale: 1.06 }, { scale: 1, duration: 2.09, ease: "power2.out" }, 0);
+      tl.fromTo("#tagline06-headline", { scale: 0.965 }, { scale: 1, duration: 1.7, ease: "power3.out" }, 0);
+
+      // Scene 1 (0.0–1.2s): fast per-word rise, a beat ahead of the voice
+      // (cues: Pricing .04 · changes .33 · shouldn't .67 · need 1.13 · a 1.33 · pull 1.38 · request 1.58).
+      const words = [
+        ["#tagline06-w1", 0.0],
+        ["#tagline06-w2", 0.17],
+        ["#tagline06-w3", 0.36],
+        ["#tagline06-w4", 0.58],
+        ["#tagline06-acc-a", 0.76],
+        ["#tagline06-acc-pull", 0.82],
+        ["#tagline06-acc-request", 0.9],
+      ];
+      words.forEach(function (w) {
+        tl.fromTo(
+          w[0],
+          { opacity: 0, y: 44, filter: "blur(10px)" },
+          { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.5, ease: "expo.out" },
+          w[1]
+        );
+      });
+
+      // Scene 2 (1.30–1.75s): two-tone reveal. "a pull request" sits dimmed (45% ink) and each
+      // word brightens to full #ececee exactly as it is spoken (a 1.33 · pull 1.38 · request 1.58).
+      // Plain color tween on solid ink: no gradient fill on the letters.
+      tl.fromTo("#tagline06-acc-a", { color: "rgba(236, 236, 238, 0.45)" }, { color: "rgba(236, 236, 238, 1)", duration: 0.16, ease: "power2.out" }, 1.3);
+      tl.fromTo("#tagline06-acc-pull", { color: "rgba(236, 236, 238, 0.45)" }, { color: "rgba(236, 236, 238, 1)", duration: 0.18, ease: "power2.out" }, 1.35);
+      tl.fromTo("#tagline06-acc-request", { color: "rgba(236, 236, 238, 0.45)" }, { color: "rgba(236, 236, 238, 1)", duration: 0.2, ease: "power2.out" }, 1.55);
+
+      // A very soft green bloom swells BEHIND the line as it lights (never on the text).
+      tl.fromTo("#tagline06-glow", { opacity: 0, scale: 0.85 }, { opacity: 1, scale: 1, duration: 0.5, ease: "power2.out" }, 1.32);
+
+      // Scene 3 (1.72–2.09s): hold. Pin the timeline length to the frame duration.
+      tl.set({}, {}, 2.09);
+
+      window.__timelines["06-tagline"] = tl;
+    })();
+  </script>
+</template>

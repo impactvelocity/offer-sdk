@@ -35,9 +35,10 @@ const PUBLIC_PAGES = ["/sign-in", "/sign-up", "/demo"];
 export function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
 
-  // The dashboard's own APIs (auth, admin BFF, agent chat) are same-origin; everything else under /api is public.
+  // The dashboard's own APIs (auth, admin BFF, agent chat, demo setup) are same-origin; everything else under /api is public.
   if (pathname.startsWith("/api/")) {
-    const internal = ["/api/auth/", "/api/admin/"].some((p) => pathname.startsWith(p)) || pathname === "/api/agent";
+    const internal =
+      ["/api/auth/", "/api/admin/"].some((p) => pathname.startsWith(p)) || pathname === "/api/agent" || pathname === "/api/demo-workspace";
     return internal ? NextResponse.next() : cors(request);
   }
 
@@ -52,5 +53,5 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/api/:path*", "/((?!_next/static|_next/image|favicon.ico|.*\\.[\\w]+$).*)"],
+  matcher: ["/api/:path*", "/((?!_next/static|_next/image|favicon.ico|apple-icon|.*\\.[\\w]+$).*)"],
 };

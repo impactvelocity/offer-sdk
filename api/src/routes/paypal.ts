@@ -16,11 +16,13 @@ const connectionJson = (row: { env: string; client_id: string; webhook_id: strin
   updated_at: new Date(row.updated_at).toISOString(),
 });
 
-// Where PayPal sends this app's webhooks. PayPal only accepts public HTTPS
-// URLs, so local development skips registration (checkouts still complete when
-// the SDK calls /checkouts/:id/complete).
-function webhookUrl(appId: string): string | null {
-  const base = process.env.PUBLIC_API_URL;
+// Where PayPal sends this app's webhooks: under PUBLIC_API_URL, else under the
+// onrender.com address Render gives every web service (RENDER_EXTERNAL_URL), so
+// a Blueprint deploy registers webhooks with nothing to set. PayPal only accepts
+// public HTTPS URLs, so local development skips registration (checkouts still
+// complete when the SDK calls /checkouts/:id/complete).
+export function webhookUrl(appId: string): string | null {
+  const base = process.env.PUBLIC_API_URL || process.env.RENDER_EXTERNAL_URL;
   if (!base) return null;
   const url = new URL(`/paypal/webhooks/${appId}`, base);
   return url.protocol === "https:" && !isPrivateHost(url.hostname) ? url.toString() : null;

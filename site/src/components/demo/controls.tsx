@@ -13,7 +13,7 @@ import { cn } from "@/lib/utils";
 export function Panel({ title, children }: { title: string; children: ReactNode }) {
   return (
     <section className="rounded-xl border border-border bg-panel p-3">
-      <h2 className="px-1 pb-2 text-2xs font-medium tracking-wide text-fg-placeholder uppercase">{title}</h2>
+      <h2 className="px-1 pb-2 text-xs font-medium text-fg-tertiary">{title}</h2>
       <div className="space-y-0.5">{children}</div>
     </section>
   );
