@@ -113,19 +113,19 @@ export function McpView() {
     <>
       <PageHeader
         icon={<Plug />}
-        title="MCP server"
+        title="MCP Server"
         badge={ctx.mode === "mock" ? <Badge color="brand">Preview</Badge> : undefined}
         actions={
           <Link href={`/apps/${ctx.appId}/developers/api`} className={buttonVariants()}>
             <Braces />
-            API reference
+            API Reference
           </Link>
         }
       />
       <PageBody width="wide">
         {!ready ? (
           error ? (
-            <Callout tone="danger" title="Couldn't load the MCP server">
+            <Callout tone="danger" title="Couldn't load the MCP Server">
               {error.message}
             </Callout>
           ) : (
@@ -217,7 +217,7 @@ function ServerCard({
         </span>
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-            <h2 className="font-display text-lg font-semibold text-fg">Offer MCP server</h2>
+            <h2 className="font-display text-lg font-semibold text-fg">Offer MCP Server</h2>
             {enabled ? <StatusDot color="green">Live</StatusDot> : <StatusDot color="gray">Off</StatusDot>}
           </div>
           <p className="mt-1 max-w-2xl text-sm text-fg-secondary">
@@ -227,7 +227,7 @@ function ServerCard({
         </div>
         <label className="flex shrink-0 cursor-pointer items-center gap-2.5 rounded-lg border border-border bg-bg px-3 py-2 shadow-xs">
           <span className="text-sm font-medium text-fg">Enabled</span>
-          <Switch checked={enabled} onCheckedChange={onEnabledChange} aria-label="Enable the MCP server" />
+          <Switch checked={enabled} onCheckedChange={onEnabledChange} aria-label="Enable the MCP Server" />
         </label>
       </div>
       <div className="flex flex-col gap-1.5 border-t border-border px-5 py-4">

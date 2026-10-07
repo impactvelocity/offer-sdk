@@ -20,7 +20,7 @@ export function AppGate({ appId, children }: { appId: string; children: ReactNod
           action={
             <Link href="/apps" className={buttonVariants({ variant: "primary" })}>
               <LayoutGrid />
-              All apps
+              All Apps
             </Link>
           }
         />

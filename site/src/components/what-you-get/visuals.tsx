@@ -78,7 +78,7 @@ export function AdminVisual() {
   );
 }
 
-const clients = ["Claude", "Claude Code", "Cursor", "VS Code", "ChatGPT"];
+const clients = ["Any MCP client", "Cursor", "VS Code", "ChatGPT"];
 
 export function McpVisual() {
   return (
@@ -98,7 +98,7 @@ export function McpVisual() {
       </div>
       <div className="overflow-hidden rounded-xl border border-border bg-bg">
         <div className="flex h-9 items-center gap-2 border-b border-border bg-panel px-4 text-xs text-fg-tertiary">
-          Claude
+          AI assistant
           <span className="text-fg-muted">·</span>
           <span className="font-mono">Offer connector</span>
         </div>

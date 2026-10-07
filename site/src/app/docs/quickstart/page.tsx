@@ -61,8 +61,9 @@ pnpm install`}
         </Step>
         <Step title="Start the dashboard">
           <p>
-            In a second terminal. <code>pnpm dev</code> starts every app in the workspace; <code>pnpm dev:app</code>{" "}
-            starts only the dashboard.
+            In a second terminal. Each service has its own script, listed in the table below. Use these rather than
+            the root <code>pnpm dev</code>, which doesn&apos;t start the API and also starts the Workflows service,
+            which needs the Render CLI and Node 24.
           </p>
           <Code lang="bash" code="pnpm dev:app" />
           <p>
@@ -75,8 +76,9 @@ pnpm install`}
           <p>
             Press <strong>Explore the demo workspace</strong> on the setup or sign-in page. The first time, the dashboard builds
             two sample apps with six months of usage, which takes a few seconds. After that you can also sign in with{" "}
-            <code>demo@offersdk.dev</code> and <code>demo-password</code>. The demo login is read-only, so sign in as
-            your admin to make changes. Run <code>pnpm seed:demo --reset</code> to start the demo over.
+            <code>demo@offersdk.dev</code> and <code>demo-password</code>. The demo login is read-only and the Agent is
+            off for it, so sign in as your admin to make changes or use the Agent. Run{" "}
+            <code>pnpm seed:demo --reset</code> to start the demo over.
           </p>
         </Step>
       </Steps>
@@ -86,8 +88,6 @@ pnpm install`}
         rows={[
           ["API", "http://localhost:6767", <code key="c">pnpm dev:api</code>],
           ["Dashboard", "http://localhost:6768", <code key="c">pnpm dev:app</code>],
-          ["Marketing site", "http://localhost:6769", <code key="c">pnpm dev:site</code>],
-          ["Blog test bed", "http://localhost:6770", <code key="c">pnpm dev:demo</code>],
         ]}
       />
 
@@ -129,7 +129,7 @@ curl -X POST http://localhost:6767/apps/$APP_ID/namespaces/user_42/usage/posts/a
       />
       <Callout tone="warning" title="Keep the secret key on your server.">
         It can change any record in the app. The browser gets the publishable key (<code>pub_…</code>), which can only
-        read plans and pricing, track usage and run checkouts. <Link href="/docs/api">Authentication</Link> lists what
+        read plans and pricing, add usage and run checkouts. <Link href="/docs/api">Authentication</Link> lists what
         each key can do.
       </Callout>
 

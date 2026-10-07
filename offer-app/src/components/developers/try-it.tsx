@@ -84,7 +84,7 @@ export function TryIt({ endpoint, ctx }: { endpoint: Endpoint; ctx: DevContext }
       const ok = await confirm({
         title: `Send ${endpoint.method} ${endpoint.path.replace(/^\/apps\/:appId/, "")}?`,
         description: endpoint.confirm,
-        confirmLabel: "Send request",
+        confirmLabel: "Send Request",
       });
       if (!ok) return;
     }

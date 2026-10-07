@@ -131,12 +131,12 @@ export default function CancelFlowsAdminPage() {
       <H3>Static and dynamic offers</H3>
       <p>
         By default the offer is static: the one you picked for the answer. Turn on <strong>Dynamic offers</strong> to
-        let Claude choose instead. Claude reads why this customer is leaving, their plan, tenure and usage, picks the
+        let the agent choose instead. It reads why this customer is leaving, their plan, tenure and usage, picks the
         offer most likely to keep them, and writes its copy. It can only choose inside the guardrails you set:
       </p>
       <TermList
         items={[
-          { term: "Claude may offer", children: "Which of the four kinds it can use." },
+          { term: "Agent may offer", children: "Which of the four kinds it can use." },
           { term: "Max % off", children: "The largest discount, from 1 to 90." },
           { term: "Max payments", children: "How many payments a discount can last, from 1 to 24." },
           { term: "Max pause (mo)", children: "The longest pause, from 1 to 12 months." },
@@ -148,13 +148,13 @@ export default function CancelFlowsAdminPage() {
           },
           {
             term: "Instructions",
-            children: "Optional. Your voice, and anything Claude should know about your customers.",
+            children: "Optional. Your voice, and anything the agent should know about your customers.",
           },
         ]}
       />
       <p>
-        The API enforces the guardrails itself. It re-checks the kind, the caps, the plan and the incentive Claude
-        returns, and clamps or drops anything out of bounds. If Claude can&apos;t decide, the call fails or the API has
+        The API enforces the guardrails itself. It re-checks the kind, the caps, the plan and the incentive the agent
+        returns, and clamps or drops anything out of bounds. If the agent can&apos;t decide, the call fails or the API has
         no key, the customer gets the static offer for their answer.
       </p>
       <Callout tone="warning" title="Dynamic offers need ANTHROPIC_API_KEY on the API.">
@@ -166,8 +166,9 @@ export default function CancelFlowsAdminPage() {
 
       <H3>Pauses</H3>
       <p>
-        A pause stops billing and resumes it on schedule. By default the API runs the resume itself. Set{" "}
-        <code>RENDER_API_KEY</code> on the API to run pauses as Render Workflow tasks instead. The flow page&apos;s{" "}
+        A pause stops billing and resumes it on schedule. By default the API runs the resume itself. Set both{" "}
+        <code>RENDER_API_KEY</code> and <code>RENDER_WORKFLOW_SLUG</code> on the API to run pauses as Render Workflow
+        tasks instead. The flow page&apos;s{" "}
         <strong>Pauses run on</strong> field shows which one is active. See <Link href="/docs/sponsors/render">Render</Link>.
       </p>
 
@@ -192,14 +193,14 @@ export default function CancelFlowsAdminPage() {
             children: "Optional. Prices the offer for a real account. Without it, the API uses a sample customer.",
           },
           {
-            term: "Ask Claude",
-            children: "Shown when dynamic offers are on. Calls Claude for each preview, so leave it off while you edit text.",
+            term: "Ask the agent",
+            children: "Shown when dynamic offers are on. Calls the agent for each preview, so leave it off while you edit text.",
           },
         ]}
       />
       <p>
-        Under the preview, a line says whether a fixed offer or Claude&apos;s pick is showing, quotes Claude&apos;s
-        reasoning, or explains why Claude was skipped. The offer comes from{" "}
+        Under the preview, a line says whether a fixed offer or the agent&apos;s pick is showing, quotes the
+        agent&apos;s reasoning, or explains why it was skipped. The offer comes from{" "}
         <code>POST /apps/:appId/cancel-flows/:id/preview-offer</code>, so prices and copy match what a customer would
         get.
       </p>
@@ -223,7 +224,7 @@ export default function CancelFlowsAdminPage() {
           },
           {
             term: "Save offers",
-            children: "Each offer kind with times shown, accepted and the take rate. Offers Claude picked carry a Claude badge.",
+            children: "Each offer kind with times shown, accepted and the take rate. Offers the agent picked carry an Agent badge.",
           },
           {
             term: "Recent attempts",
@@ -242,7 +243,7 @@ export default function CancelFlowsAdminPage() {
         <strong>Add it to your app</strong> snippet. The snippet mints an account token on your server with the secret
         key, then renders <code>&lt;CancelFlow.Trigger&gt;</code> and <code>&lt;CancelFlow.Dialog&gt;</code> inside a{" "}
         <code>&lt;CancelFlowProvider&gt;</code>. The full setup is in <Link href="/docs/sdk/cancel-flows">Cancel flows</Link>{" "}
-        for the SDK, and how Claude is used is in <Link href="/docs/ai">AI features</Link>.
+        for the SDK, and how AI is used is in <Link href="/docs/ai">AI features</Link>.
       </p>
     </>
   );

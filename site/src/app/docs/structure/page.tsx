@@ -13,7 +13,7 @@ export default function StructurePage() {
     <>
       <DocsHeader
         title="Project structure"
-        lead="One repository holds the API, the dashboard, the React SDK, the Workflows tasks and two sites that use them. This page maps what lives where."
+        lead="One repository holds the API, the dashboard, the React SDK, and the Workflows tasks. This page maps what lives where."
       />
 
       <H2>The repository</H2>
@@ -25,7 +25,7 @@ export default function StructurePage() {
         items={[
           { path: "api/", note: "Offer API: Hono on Bun, Postgres. Not in the pnpm workspace." },
           { path: "src/routes/", depth: 1, note: "One file per resource" },
-          { path: "src/lib/", depth: 1, note: "Auth, plan resolution, PayPal, webhooks, cancel flows, Claude" },
+          { path: "src/lib/", depth: 1, note: "Auth, plan resolution, PayPal, webhooks, cancel flows, AI offers" },
           { path: "src/mcp/", depth: 1, note: "Each app's MCP server: protocol, tools, resources and prompts" },
           { path: "migrations/", depth: 1, note: "SQL migrations, run on boot" },
           { path: "test/", depth: 1, note: "End-to-end tests against a real database" },
@@ -34,8 +34,6 @@ export default function StructurePage() {
           { path: "src/sdk/", depth: 1, note: "React SDK: core, checkout/ and cancel/" },
           { path: "src/server/", depth: 1, note: "API client, auth, the agent's tools and the mock API" },
           { path: "workflows/", note: "Render Workflow tasks for subscription pauses" },
-          { path: "site/", note: "This site: landing page and docs" },
-          { path: "demo-app-testing/", note: "Test bed that exercises every API route and SDK component" },
           { path: "render.yaml", note: "Render Blueprint for the whole stack" },
           { path: "docker-compose.yml", note: "Local Postgres and API" },
         ]}
@@ -91,11 +89,13 @@ export default function StructurePage() {
       <p>
         The dashboard also ships an in-memory copy of the API in <code>offer-app/src/server/offer-api/mock</code>, with
         the same routes, status codes and key rules. Set <code>OFFER_API_URL=mock</code> to use it. It has no offers,
-        checkouts, PayPal or cancel flows, so those sections are hidden, and its data resets when the server restarts.
+        checkouts, PayPal or cancel flows, so those sections are hidden. It has no MCP server either, so the MCP page
+        shows a preview with sample data. Its data resets when the server restarts.
       </p>
-      <Callout title="The SDK isn't on npm yet.">
-        It lives in <code>offer-app/src/sdk</code>. The blog imports it through tsconfig paths (<code>@offer/sdk</code>{" "}
-        and <code>@offer/sdk/checkout</code>), which is the way to use it in another app today. See{" "}
+      <Callout title="The SDK isn't on npm.">
+        It lives in <code>offer-app/src/sdk</code> and has three entry points: <code>@offer/sdk</code>,{" "}
+        <code>@offer/sdk/checkout</code> and <code>@offer/sdk/cancel</code>. Another app imports them through tsconfig
+        paths. See{" "}
         <Link href="/docs/sdk">Access and entitlements</Link>.
       </Callout>
 
@@ -106,12 +106,8 @@ export default function StructurePage() {
           truncates every table, so point <code>DATABASE_URL</code> at a separate test database. PayPal is faked.
         </li>
         <li>
-          <strong>Dashboard.</strong> <code>pnpm --filter offer-app test</code> runs Vitest, including checks that the
-          mock API matches the real routes.
-        </li>
-        <li>
-          <strong>Blog.</strong> Open <code>/console</code> in the blog, or <code>curl localhost:6770/api/rake</code>,
-          to run about 100 checks over the live API and SDK.
+          <strong>Dashboard.</strong> <code>pnpm --filter offer-app test</code> runs Vitest, including tests of the mock
+          API&apos;s own routes, status codes and key rules.
         </li>
       </ul>
     </>

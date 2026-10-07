@@ -46,7 +46,7 @@ export function ProfileSettings() {
     confirm({
       title: "Sign out of other devices?",
       description: "Every other browser and device signed in to your account is signed out. This one stays signed in.",
-      confirmLabel: "Sign out others",
+      confirmLabel: "Sign Out Others",
       onConfirm: () => revokeOthers.mutateAsync(),
     });
 
@@ -59,7 +59,7 @@ export function ProfileSettings() {
           description="Your personal details and sign-in settings, shared across every workspace you're in."
         />
         <DemoLock>
-          <Section title="Personal details">
+          <Section title="Personal Details">
             <div className="flex flex-col gap-5">
               <form onSubmit={submitName} className="flex items-end gap-3">
                 <Avatar name={name || user.name || user.email} seed={user.id} shape="circle" size="xl" />
@@ -96,7 +96,7 @@ export function ProfileSettings() {
               </div>
               <Button onClick={onRevoke} loading={revokeOthers.isPending}>
                 <LogOut />
-                Sign out others
+                Sign Out Others
               </Button>
             </Card>
           </Section>
@@ -168,7 +168,7 @@ function PasswordForm() {
       </div>
       <div>
         <Button type="submit" variant="primary" size="md" loading={pending} disabled={!current || !next || !again}>
-          Change password
+          Change Password
         </Button>
       </div>
     </form>

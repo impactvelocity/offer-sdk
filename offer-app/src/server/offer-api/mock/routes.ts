@@ -68,6 +68,8 @@ interface Ctx {
   optionalBody: () => Json;
   method: string;
   path: string;
+  /** The caller used the app's public key. */
+  publicKey: boolean;
 }
 
 type Handler = (ctx: Ctx) => Response | Promise<Response>;
@@ -707,10 +709,11 @@ route("POST", `${usageBase}/:entitlementId/add`, ({ params }) => trackUsage(para
 
 route("POST", `${usageBase}/:entitlementId/remove`, ({ params }) => trackUsage(params, "remove", -1));
 
-route("POST", `${usageBase}/:entitlementId/amount`, ({ params, body }) => {
+route("POST", `${usageBase}/:entitlementId/amount`, ({ params, body, publicKey }) => {
   usageContext(params);
   const { amount } = body() ?? {};
   if (typeof amount !== "number" || !Number.isInteger(amount)) return json({ error: "amount must be an integer" }, 400);
+  if (amount < 0 && publicKey) return json({ error: "The public key can only add usage. Subtract with the secret key." }, 403);
   return trackUsage(params, "amount", amount);
 });
 
@@ -1114,25 +1117,24 @@ route("DELETE", "/apps/:appId/agent/threads/:threadId", ({ params }) =>
 
 function publicKeyAllowed(method: string, path: string) {
   const isGet = method === "GET";
-  return (
-    (isGet && (path.endsWith("/plan") || path.endsWith("/full-plan"))) ||
-    path.includes("/usage") ||
-    (isGet && path.includes("/pricing"))
-  );
+  const isUsage = isGet
+    ? /^\/apps\/[^/]+\/namespaces\/[^/]+\/usage(\/[^/]+)?$/.test(path)
+    : method === "POST" && /^\/apps\/[^/]+\/namespaces\/[^/]+\/usage\/[^/]+\/(add|amount)$/.test(path);
+  return (isGet && /^\/apps\/[^/]+\/namespaces\/[^/]+\/plan$/.test(path)) || isUsage || (isGet && /^\/apps\/[^/]+\/plans\/(pricing|[^/]+\/pricing)$/.test(path));
 }
 
-function authorize(method: string, path: string, key: string | null): boolean {
+/** "public" when the caller used the app's public key on a route it allows. */
+function authorize(method: string, path: string, key: string | null): boolean | "public" {
   if (key === MOCK_ADMIN_KEY) return true;
   if (/^\/apps\/[^/]+\/agent\//.test(path)) return false;
   if (/^\/apps\/[^/]+\/import\/?$/.test(path)) return false; // admin only
-  if (method === "POST" && path.replace(/\/$/, "") === "/apps") return true;
   if (path.startsWith("/orgs")) return false;
   const appId = path.match(/^\/apps\/([^/]+)/)?.[1];
   if (!appId || !key) return false;
   const app = db.apps.get(appId);
   if (!app) return false;
   if (app.api_key === key) return true;
-  return app.public_key === key && publicKeyAllowed(method, path);
+  return app.public_key === key && publicKeyAllowed(method, path) && "public";
 }
 
 export interface MockRequest {
@@ -1149,7 +1151,8 @@ export async function handleMockRequest({ method, path, query, body, apiKey }: M
   if (path === "/health") return json({ ok: true, mock: true });
 
   const isAppRoute = /^\/apps\/[^/]+/.test(path) || path.startsWith("/orgs");
-  if (isAppRoute && !authorize(method, path, apiKey)) return json({ error: "Unauthorized" }, 401);
+  const auth = isAppRoute ? authorize(method, path, apiKey) : true;
+  if (!auth) return json({ error: "Unauthorized" }, 401);
 
   for (const r of routes) {
     if (r.method !== method) continue;
@@ -1161,6 +1164,7 @@ export async function handleMockRequest({ method, path, query, body, apiKey }: M
       query: query ?? new URLSearchParams(),
       method,
       path,
+      publicKey: auth === "public",
       body: () => {
         if (body === undefined || body === null) throw new ApiError(400, "Invalid JSON body");
         if (typeof body !== "object" || Array.isArray(body)) throw new ApiError(400, "Body must be a JSON object");

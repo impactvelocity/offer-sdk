@@ -44,13 +44,14 @@ export function ProblemsSection() {
         </Verdict>
         <Verdict tone="success" quote="“Sold.”" caption="Plans and deals stored in Offer SDK">
           <CodeBlock title="billing.ts" code={after} className="flex-1 shadow-none" />
-          <div className="grid grid-cols-3 gap-2 text-center text-xs">
-            {["Custom plan for Acme", "BF24 promo, ends Sunday", "Bundle for @sarahbuilds"].map((d) => (
-              <span key={d} className="rounded-lg border border-border bg-bg px-2 py-2 text-fg-secondary">
+          <p className="flex flex-wrap gap-x-2 px-1 text-sm text-fg-muted">
+            {["Custom plan for Acme", "BF24 promo, ends Sunday", "Bundle for @sarahbuilds"].map((d, i) => (
+              <span key={d} className="whitespace-nowrap">
+                {i > 0 && <span className="mr-2" aria-hidden>·</span>}
                 {d}
               </span>
             ))}
-          </div>
+          </p>
         </Verdict>
       </div>
 

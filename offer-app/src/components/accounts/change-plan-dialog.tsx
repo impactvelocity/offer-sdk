@@ -204,7 +204,7 @@ function ChangePlanForm({
           Cancel
         </Button>
         <Button type="submit" variant="primary" loading={save.isPending} disabled={!changed || !planExists} kbd="↵">
-          Save changes
+          Save Changes
         </Button>
       </DialogFooter>
     </form>

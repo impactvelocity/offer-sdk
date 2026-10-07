@@ -80,7 +80,7 @@ const event = wh.verify(rawBody, {
 export function VerifySignatures() {
   return (
     <Section
-      title="Verify signatures"
+      title="Verify Signatures"
       description={
         <>
           Every request is signed with the endpoint&apos;s secret following{" "}
@@ -111,7 +111,7 @@ const HEADERS: [string, string][] = [
 
 export function DeliveryRules() {
   return (
-    <Section title="How delivery works">
+    <Section title="How Delivery Works">
       <div className="flex flex-col gap-5 text-sm text-fg-secondary">
         <div className="overflow-hidden rounded-lg border border-border">
           {HEADERS.map(([name, text]) => (
@@ -143,7 +143,7 @@ export function EventReference({ appId }: { appId: string }) {
   const [open, setOpen] = useState<string | null>(null);
   return (
     <Section
-      title="Event types"
+      title="Event Types"
       description={<Md>Every payload has the same envelope. `data.object` is the resource after the change.</Md>}
     >
       <div className="flex flex-col gap-6">

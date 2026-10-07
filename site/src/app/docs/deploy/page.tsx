@@ -78,8 +78,9 @@ export default function DeployPage() {
         </Step>
         <Step title="Apply and wait for the first deploy">
           <p>
-            The database comes up first, then the API runs its migrations and passes its health check. The dashboard
-            builds with pnpm and starts once the API is healthy.
+            The services build in parallel. The API waits for the database, runs its migrations and passes its health
+            check. The dashboard builds with pnpm and can go live before the API does, in which case its pages show
+            errors until the API is up.
           </p>
         </Step>
         <Step title="Create the admin account">
@@ -102,7 +103,10 @@ export default function DeployPage() {
           </p>
           <Code lang="bash" code="APP_URL=https://offer-app.onrender.com ADMIN_API_KEY=… pnpm seed:demo --reset" />
           <p>
-            Set <code>DEMO_ENABLED=false</code> on <strong>offer-app</strong> if you don&apos;t want a public demo.
+            If you don&apos;t want a public demo, change <code>DEMO_ENABLED</code> to <code>&quot;false&quot;</code>{" "}
+            under <strong>offer-app</strong> in your fork&apos;s <code>render.yaml</code>. The Blueprint sets the value
+            itself, so a change made only in the Render dashboard goes back to <code>true</code> on the next Blueprint
+            sync.
           </p>
         </Step>
       </Steps>
@@ -229,7 +233,16 @@ export default function DeployPage() {
               <>
                 The install already has its admin, so <code>/setup</code> is closed. Sign in with that account. If
                 nobody has it, deleting that row from <code>auth_user</code> in Postgres reopens <code>/setup</code>,
-                but the new admin starts without the old workspaces.
+                but the new admin starts without the old workspaces. The database accepts no outside connections, so
+                open <strong>offersdk-api</strong> → Shell in the Render dashboard and run this with the admin&apos;s
+                email. The API image has Bun but not <code>psql</code>, and <code>Bun.sql</code> reads{" "}
+                <code>DATABASE_URL</code>:
+                <div className="mt-3">
+                  <Code
+                    lang="bash"
+                    code={`bun -e 'await Bun.sql.unsafe("delete from auth_user where email = $1", ["admin@example.com"])'`}
+                  />
+                </div>
               </>
             ),
           },

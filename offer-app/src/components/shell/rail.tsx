@@ -12,14 +12,13 @@ import {
   Plus,
   Settings,
   User,
-  Users,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import type { ReactElement, ReactNode } from "react";
 import { LogoMark } from "@/components/brand/logo";
 import { Avatar } from "@/components/ui/avatar";
-import { Menu, MenuContent, MenuItem, MenuLabel, MenuSeparator, MenuTrigger } from "@/components/ui/menu";
+import { Menu, MenuContent, MenuItem, MenuSeparator, MenuTrigger } from "@/components/ui/menu";
 import { popupItem, popupSurface } from "@/components/ui/popup";
 import { Tooltip } from "@/components/ui/tooltip";
 import { useApps } from "@/lib/api/hooks";
@@ -75,7 +74,7 @@ function RailMenu({
 export function AppRail({ appId }: { appId?: string }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { user, workspace, workspaces, demo, switchWorkspace, signOut } = useWorkspaceContext();
+  const { user, workspace, signOut } = useWorkspaceContext();
   const { data: apps } = useApps();
   const theme = useTheme();
 
@@ -104,36 +103,6 @@ export function AppRail({ appId }: { appId?: string }) {
           <Settings />
           Workspace settings
         </MenuItem>
-        <BaseMenu.SubmenuRoot>
-          <BaseMenu.SubmenuTrigger className={popupItem}>
-            <Users />
-            Switch workspace
-            <ChevronRight className="ml-auto" />
-          </BaseMenu.SubmenuTrigger>
-          <BaseMenu.Portal>
-            <BaseMenu.Positioner className="z-50" sideOffset={4} alignOffset={-4}>
-              <BaseMenu.Popup className={cn(popupSurface, "w-56")}>
-                <MenuLabel>Workspaces</MenuLabel>
-                {workspaces.map((w) => (
-                  <MenuItem key={w.id} onClick={() => w.id !== workspace.id && switchWorkspace(w.id)}>
-                    <Avatar name={w.name} seed={w.id} size="sm" variant="solid" />
-                    <span className="truncate">{w.name}</span>
-                    {w.id === workspace.id ? <Check className="ml-auto !text-accent-fg" /> : null}
-                  </MenuItem>
-                ))}
-                {demo ? null : (
-                  <>
-                    <MenuSeparator />
-                    <MenuItem onClick={() => router.push("/onboarding?new=1")}>
-                      <Plus />
-                      Create workspace
-                    </MenuItem>
-                  </>
-                )}
-              </BaseMenu.Popup>
-            </BaseMenu.Positioner>
-          </BaseMenu.Portal>
-        </BaseMenu.SubmenuRoot>
       </RailMenu>
 
       <div className="my-1.5 h-px w-7 bg-border-strong/70" />

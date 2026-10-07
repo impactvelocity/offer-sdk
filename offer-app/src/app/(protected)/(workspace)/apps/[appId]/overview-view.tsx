@@ -54,7 +54,7 @@ export function OverviewView() {
         actions={
           <Link href={`/apps/${appId}/developers`} className={buttonVariants()}>
             <BookOpen />
-            Integration guide
+            Integration Guide
           </Link>
         }
       />
@@ -65,9 +65,6 @@ export function OverviewView() {
           ) : (
             <Skeleton className="my-1 h-6 w-40" />
           )}
-          <p className="mt-0.5 text-sm text-fg-tertiary">
-            Change what every account can access — plans, limits, feature flags and offers — without redeploying your app.
-          </p>
         </div>
         <SetupChecklist appId={appId} />
         {isNew ? null : <KpiStrip appId={appId} />}
@@ -145,35 +142,35 @@ function SetupChecklist({ appId }: { appId: string }) {
       description: "The features and limits you gate: usage you count, or flags you switch on.",
       done: entitlements.data.length > 0,
       href: `${base}/entitlements?new=1`,
-      cta: "Add entitlement",
+      cta: "Add Entitlement",
     },
     {
       title: "Create a plan with entitlements",
       description: "Bundle entitlements and their limits into the plans you offer.",
       done: plans.data.some((p) => p.entitlements.length > 0),
       href: `${base}/plans?new=1`,
-      cta: "Create plan",
+      cta: "Create Plan",
     },
     {
       title: "Add your first account",
       description: "Each of your customers is an account with exactly one plan.",
       done: count.data.count > 0,
       href: `${base}/accounts?new=1`,
-      cta: "Add account",
+      cta: "Add Account",
     },
     {
       title: "Connect your app",
       description: "Check access and track usage from your code with your API key.",
       done: Boolean(tracked),
       href: `${base}/developers`,
-      cta: "View guide",
+      cta: "View Guide",
     },
     {
       title: "Publish a pricing card",
       description: "Render your pricing page straight from your plans.",
       done: plans.data.some((p) => p.pricingCard),
       href: `${base}/plans`,
-      cta: "Open plans",
+      cta: "Open Plans",
       optional: true,
     },
   ];
@@ -185,7 +182,7 @@ function SetupChecklist({ appId }: { appId: string }) {
     <Card className="mb-6">
       <div className="flex items-center gap-4 border-b border-border bg-bg-subtle px-5 py-4">
         <div className="min-w-0 flex-1">
-          <h3 className="text-sm font-semibold text-fg">Get set up</h3>
+          <h3 className="text-sm font-semibold text-fg">Get Set Up</h3>
           <p className="mt-0.5 text-sm text-fg-tertiary">A few steps and you can change access for any account from here.</p>
         </div>
         <div className="flex shrink-0 items-center gap-2.5">
@@ -345,8 +342,8 @@ function UsageCard({ appId, className }: { appId: string; className?: string }) 
 
   return (
     <Widget
-      title="Usage · last 30 days"
-      description={timeseries.data === null ? "Usage by entitlement" : "Usage events per day"}
+      title="Usage · Last 30 Days"
+      description={timeseries.data === null ? "Usage by Entitlement" : undefined}
       action={<WidgetLink href={`/apps/${appId}/analytics`}>Analytics</WidgetLink>}
       className={className}
     >
@@ -362,7 +359,7 @@ function UsageCard({ appId, className }: { appId: string; className?: string }) 
           description="Usage shows up here once your app reports it through the usage endpoints."
           action={
             <Link href={`/apps/${appId}/developers`} className={buttonVariants()}>
-              Track usage
+              Track Usage
             </Link>
           }
           className="flex-1"
@@ -403,7 +400,7 @@ function AccountsByPlanCard({ appId, className }: { appId: string; className?: s
 
   return (
     <Widget
-      title="Accounts by plan"
+      title="Accounts by Plan"
       action={<WidgetLink href={`/apps/${appId}/plans`}>Plans</WidgetLink>}
       className={className}
     >
@@ -417,7 +414,7 @@ function AccountsByPlanCard({ appId, className }: { appId: string; className?: s
           description="Plans bundle entitlements and limits. Every account is on one."
           action={
             <Link href={`/apps/${appId}/plans?new=1`} className={buttonVariants()}>
-              Create plan
+              Create Plan
             </Link>
           }
           className="flex-1"
@@ -430,7 +427,7 @@ function AccountsByPlanCard({ appId, className }: { appId: string; className?: s
           description="Accounts are created by your app, or by hand from the Accounts page."
           action={
             <Link href={`/apps/${appId}/accounts?new=1`} className={buttonVariants()}>
-              Add account
+              Add Account
             </Link>
           }
           className="flex-1"
@@ -466,7 +463,7 @@ function RecentActivityCard({ appId, className }: { appId: string; className?: s
   const entitlements = useEntitlementNames(appId);
 
   return (
-    <Widget title="Recent activity" className={className}>
+    <Widget title="Recent Activity" className={className}>
       {events.isLoading ? (
         <ListSkeleton rows={5} />
       ) : events.error ? (
@@ -498,7 +495,7 @@ function TopAccountsCard({ appId, className }: { appId: string; className?: stri
 
   return (
     <Widget
-      title="Top accounts · 30d"
+      title="Top Accounts · 30d"
       action={<WidgetLink href={`/apps/${appId}/analytics`}>All</WidgetLink>}
       className={className}
     >

@@ -312,7 +312,7 @@
   {
     "name": "get_account_access_private",
     "title": "Get resolved access including private meta",
-    "description": "Get resolved access including private meta. Same as `/plan`, plus private meta keys and `privateMetaKeys`. Intended for your server. Known issue: the hosted API accepts the public key here, so anyone with it can read private meta. Don't store real secrets in plan meta until this is fixed.",
+    "description": "Get resolved access including private meta. Same as `/plan`, plus private meta keys and `privateMetaKeys`. For your server: the public key gets `401`.",
     "kind": "read",
     "method": "GET",
     "path": "/apps/:appId/namespaces/:namespaceId/full-plan",
@@ -434,7 +434,7 @@
   {
     "name": "decrement_usage",
     "title": "Subtract 1 from a usage count",
-    "description": "Subtract 1 from a usage count. Counts can go below zero.",
+    "description": "Subtract 1 from a usage count. Counts can go below zero. The public key can't lower a count.",
     "kind": "write",
     "method": "POST",
     "path": "/apps/:appId/namespaces/:namespaceId/usage/:entitlementId/remove",
@@ -467,7 +467,7 @@
   {
     "name": "add_usage_amount",
     "title": "Add an amount to a usage count",
-    "description": "Add an amount to a usage count. Adds `amount` to the count (it doesn't set it). Negative amounts subtract: post the negative of the current count to reset a quota.",
+    "description": "Add an amount to a usage count. Adds `amount` to the count (it doesn't set it). Negative amounts subtract: post the negative of the current count to reset a quota. The public key can only send a positive amount (or zero).",
     "kind": "write",
     "method": "POST",
     "path": "/apps/:appId/namespaces/:namespaceId/usage/:entitlementId/amount",

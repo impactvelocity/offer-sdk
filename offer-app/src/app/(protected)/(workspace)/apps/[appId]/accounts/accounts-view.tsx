@@ -154,7 +154,7 @@ export function AccountsView() {
       description:
         "Your app's access checks for this account will fail until it's created again. Its usage history is kept.",
       typeToConfirm: a.id,
-      confirmLabel: "Delete account",
+      confirmLabel: "Delete Account",
       onConfirm: () => remove.mutateAsync(a.id),
     });
 
@@ -168,7 +168,7 @@ export function AccountsView() {
   const newButton = (
     <Button variant="primary" disabled={noPlans} onClick={() => setCreateOpen(true)}>
       <Plus />
-      New account
+      New Account
     </Button>
   );
 
@@ -232,7 +232,7 @@ export function AccountsView() {
               action={
                 <Link href={`/apps/${appId}/plans?new=1`} className={buttonVariants({ size: "xs" })}>
                   <Layers />
-                  Create a plan
+                  Create a Plan
                 </Link>
               }
             >
@@ -251,7 +251,7 @@ export function AccountsView() {
             icon={<CircleAlert />}
             title="Couldn't load accounts"
             description={error.message}
-            action={<Button onClick={() => refetch()}>Try again</Button>}
+            action={<Button onClick={() => refetch()}>Try Again</Button>}
           />
         ) : total === 0 && (!hasFilters || accountCount.data?.count === 0) ? (
           <EmptyState
@@ -263,12 +263,12 @@ export function AccountsView() {
                 {noPlans ? null : (
                   <Button variant="primary" onClick={() => setCreateOpen(true)}>
                     <Plus />
-                    Create account
+                    Create Account
                   </Button>
                 )}
                 <Link href={`/apps/${appId}/developers`} className={buttonVariants()}>
                   <Code />
-                  Create from your app
+                  Create from Your App
                 </Link>
               </>
             }
@@ -278,7 +278,7 @@ export function AccountsView() {
             icon={<Search />}
             title="No accounts match"
             description={q ? `Nothing matches “${q}” with these filters.` : "No accounts match these filters."}
-            action={<Button onClick={clearFilters}>Clear filters</Button>}
+            action={<Button onClick={clearFilters}>Clear Filters</Button>}
           />
         ) : (
           <div className={cn("transition-opacity duration-150", isFetching && isPlaceholderData && "opacity-60")}>

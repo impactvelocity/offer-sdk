@@ -109,8 +109,8 @@ function usageSection(input: PromptInput, opts: PromptOptions) {
   return `## Track usage (public or secret key; usage entitlements only)
 
 POST /apps/${input.appId}/namespaces/:accountId/usage/:entitlementId/add     → +1
-POST /apps/${input.appId}/namespaces/:accountId/usage/:entitlementId/remove  → -1
-POST /apps/${input.appId}/namespaces/:accountId/usage/:entitlementId/amount  body { "amount": integer } → adds amount (negative subtracts; it does not set the value)
+POST /apps/${input.appId}/namespaces/:accountId/usage/:entitlementId/remove  → -1 (secret key only)
+POST /apps/${input.appId}/namespaces/:accountId/usage/:entitlementId/amount  body { "amount": integer } → adds amount (negative subtracts, secret key only; it does not set the value)
 → 200 { "entitlement": string, "count": number }
 
 - Writes do NOT enforce limits. Check \`can\` from /plan before the action, then track it after it succeeds.

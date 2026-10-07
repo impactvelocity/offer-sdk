@@ -44,7 +44,7 @@ export function AccessTab({
 }) {
   if (planMissing) {
     return (
-      <Callout tone="warning" action={<Button onClick={onChangePlan}>Change plan</Button>}>
+      <Callout tone="warning" action={<Button onClick={onChangePlan}>Change Plan</Button>}>
         This account is on <code className="font-medium">{planId}</code>, which no longer exists, so your app&apos;s access
         checks for it fail with “Plan not found”. Move it to another plan to restore access.
       </Callout>
@@ -104,10 +104,7 @@ export function AccessTab({
   return (
     <>
       <Card className="overflow-hidden">
-        <CardHeader
-          title="Usage"
-          description="Counted entitlements: how much of each limit this account has used."
-        />
+        <CardHeader title="Usage" />
         {usage.length ? (
           <TableContainer>
             <Table className="[&_tbody_tr:last-child>td]:border-b-0">
@@ -165,10 +162,7 @@ export function AccessTab({
       </Card>
 
       <Card>
-        <CardHeader
-          title="Features"
-          description="Every feature flag in this app, and whether this account has it."
-        />
+        <CardHeader title="Features" />
         {features.length ? (
           <ul className="divide-y divide-border">
             {features.map((f) => {
@@ -213,7 +207,7 @@ export function AccessTab({
       </Card>
 
       <Card>
-        <CardHeader title="Add-ons" description="Extras granted by the plan or the incentive." />
+        <CardHeader title="Add-ons" />
         {resolved.addons.length ? (
           <ul className="divide-y divide-border">
             {resolved.addons.map((id) => (

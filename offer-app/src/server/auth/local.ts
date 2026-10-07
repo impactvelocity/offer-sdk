@@ -83,6 +83,8 @@ function createLocalAuth() {
     },
     plugins: [
       organization({
+        // One workspace per install: the dashboard has no switcher.
+        organizationLimit: 1,
         // No email provider yet: invitations are recorded and accepted on sign-up (see above).
         sendInvitationEmail: async ({ email, organization: org }) => {
           console.info(`[auth] Invitation to ${org.name} recorded for ${email} (no email sent in mock mode)`);

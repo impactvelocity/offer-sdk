@@ -6,13 +6,12 @@ import { OnboardingForm } from "./onboarding-form";
 
 export const metadata: Metadata = { title: "Create a workspace" };
 
-export default async function OnboardingPage({ searchParams }: PageProps<"/onboarding">) {
+export default async function OnboardingPage() {
   const session = await getSession();
   if (!session) redirect("/sign-in");
-  const isNew = (await searchParams).new === "1";
   const orgs = await listWorkspaces();
-  if (orgs.length && !isNew) {
-    // Has workspaces but none active (e.g. session predates them): activate the first.
+  if (orgs.length) {
+    // There's one workspace per install. Has it but none active (e.g. session predates it): activate it.
     await setActiveWorkspace(orgs[0].id);
     redirect("/apps");
   }
@@ -23,7 +22,7 @@ export default async function OnboardingPage({ searchParams }: PageProps<"/onboa
         <Logo />
       </header>
       <main className="flex flex-1 items-start justify-center px-4 pb-16 pt-[6vh]">
-        <OnboardingForm userName={session.user.name} canCancel={orgs.length > 0} />
+        <OnboardingForm userName={session.user.name} />
       </main>
     </div>
   );

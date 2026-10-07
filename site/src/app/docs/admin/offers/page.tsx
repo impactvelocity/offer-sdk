@@ -73,10 +73,15 @@ export default function OffersDocsPage() {
       <H3>Checkout page</H3>
       <p>
         The <strong>Checkout page</strong> field in the same section is the URL of your page that renders the checkout
-        SDK, such as <code>https://yourapp.com/checkout</code>. Offer links, plan links and over-limit upgrade links
-        send buyers there with <code>?offer=…</code>. Until you set it, links point at the dashboard&apos;s demo
-        checkout at <code>/demo/checkout</code>. Building that page is covered in{" "}
-        <Link href="/docs/sdk/checkout">Checkout</Link>.
+        SDK, such as <code>https://yourapp.com/checkout</code>. Offer links and plan links send buyers there with{" "}
+        <code>?offer=…</code>, and over-limit upgrade links add <code>plan</code>, <code>interval</code> and{" "}
+        <code>account</code>. Building that page is covered in <Link href="/docs/sdk/checkout">Checkout</Link>.
+      </p>
+      <p>
+        Until you set it, offer and plan links open the dashboard&apos;s demo checkout at <code>/demo/checkout</code>,
+        a sample storefront with its own branding. Set your own page before you share links with buyers. Over-limit
+        upgrade links don&apos;t use the demo checkout: without a checkout page, the API makes a PayPal approval link
+        for the upgrade, and with no PayPal connected there&apos;s no link.
       </p>
 
       <H2>The offers list</H2>

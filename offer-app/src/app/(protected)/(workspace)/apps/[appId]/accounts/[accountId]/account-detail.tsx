@@ -129,10 +129,10 @@ export function AccountDetail({ accountId }: { accountId: string }) {
           action={
             notFound ? (
               <Link href={`/apps/${appId}/accounts`} className={buttonVariants({ variant: "primary" })}>
-                All accounts
+                All Accounts
               </Link>
             ) : (
-              <Button onClick={() => refetch()}>Try again</Button>
+              <Button onClick={() => refetch()}>Try Again</Button>
             )
           }
         />
@@ -167,7 +167,7 @@ export function AccountDetail({ accountId }: { accountId: string }) {
     confirm({
       title: `Remove ${incentiveName}?`,
       description: `${name} goes back to ${plan?.name ?? "its plan"}'s limits on your app's next access check.`,
-      confirmLabel: "Remove incentive",
+      confirmLabel: "Remove Incentive",
       onConfirm: () => removeIncentive.mutateAsync(),
     });
 
@@ -177,7 +177,7 @@ export function AccountDetail({ accountId }: { accountId: string }) {
       description:
         "Your app's access checks for this account will fail until it's created again. Its usage counters and history are kept.",
       typeToConfirm: account.id,
-      confirmLabel: "Delete account",
+      confirmLabel: "Delete Account",
       onConfirm: () => remove.mutateAsync(),
     });
 
@@ -195,7 +195,7 @@ export function AccountDetail({ accountId }: { accountId: string }) {
           <>
             <Button onClick={() => setDialog("plan")}>
               <Layers />
-              Change plan
+              Change Plan
             </Button>
             <Menu>
               <MenuTrigger aria-label="More actions" className={buttonVariants({ icon: true })}>

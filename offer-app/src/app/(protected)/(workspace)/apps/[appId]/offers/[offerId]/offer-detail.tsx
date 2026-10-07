@@ -78,7 +78,7 @@ export function OfferDetail({ offerId }: { offerId: string }) {
           description={`There's no offer with the ID “${offerId}” in this app.`}
           action={
             <Link href={`/apps/${appId}/offers`} className={buttonVariants({ variant: "primary" })}>
-              All offers
+              All Offers
             </Link>
           }
         />
@@ -125,7 +125,7 @@ export function OfferDetail({ offerId }: { offerId: string }) {
             ) : (
               <Button variant="primary" loading={actions.publish.isPending} onClick={() => actions.publish.mutate(offer)}>
                 <Rocket />
-                {offer.status === "archived" ? "Publish again" : "Publish"}
+                {offer.status === "archived" ? "Publish Again" : "Publish"}
               </Button>
             )}
             <Menu>
@@ -404,7 +404,7 @@ function CheckoutTab({ appId, offer }: { appId: string; offer: Offer }) {
         <Skeleton className="h-80" />
       )}
       <div className="flex flex-col gap-3 text-sm text-fg-secondary">
-        <h3 className="text-sm font-semibold text-fg">How buyers see it</h3>
+        <h3 className="text-sm font-semibold text-fg">How Buyers See It</h3>
         <p>
           This is the checkout page built from the SDK&apos;s <code>&lt;OfferProvider&gt;</code> components with this offer&apos;s
           prices. Your page renders the same data with your own design.

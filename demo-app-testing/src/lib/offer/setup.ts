@@ -24,8 +24,9 @@ async function step(out: GeneratorLine[], what: string, fn: () => Promise<unknow
 }
 
 async function createApp(out: GeneratorLine[], name: string): Promise<OfferConfig> {
-  // POST /apps needs no key: the app doesn't exist yet.
-  const app = await clientFor().request<{ id: string; api_key: string; public_key: string }>("/apps", {
+  // POST /apps needs the admin key.
+  if (!OFFER_ADMIN_KEY) throw new Error("OFFER_ADMIN_KEY isn't set");
+  const app = await clientFor(OFFER_ADMIN_KEY).request<{ id: string; api_key: string; public_key: string }>("/apps", {
     method: "POST",
     body: JSON.stringify({ name }),
   });

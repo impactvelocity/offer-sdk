@@ -6,7 +6,7 @@ import { WelcomeView } from "./welcome-view";
 export const metadata: Metadata = { title: "Welcome · Scrapely" };
 
 // After checkout: the tenant app reads the account's access the same way it
-// always has (GET /full-plan with the publishable key).
+// always has (GET /plan with the publishable key).
 export default async function DemoWelcomePage({ searchParams }: PageProps<"/demo/welcome">) {
   const params = await searchParams;
   const one = (key: string) => {

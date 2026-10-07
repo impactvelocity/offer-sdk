@@ -57,7 +57,7 @@ export function IntegrationView({ sdkFiles }: { sdkFiles: SdkFile[] | null }) {
         actions={
           <Link href={`/apps/${ctx.appId}/developers/api`} className={buttonVariants()}>
             <Braces />
-            API reference
+            API Reference
           </Link>
         }
       />
@@ -65,7 +65,7 @@ export function IntegrationView({ sdkFiles }: { sdkFiles: SdkFile[] | null }) {
         <div className="mx-auto flex w-full max-w-[1040px] gap-10 px-6 py-8">
           <div className="min-w-0 max-w-[760px] flex-1">
             <header className="mb-6">
-              <h1 className="font-display text-xl font-semibold text-fg">Integrate {ctx.app?.name ?? "your app"}</h1>
+              <h1 className="font-display text-xl font-semibold text-fg">Integrate Offer SDK into {ctx.app?.name ?? "your app"}</h1>
               <p className="mt-1 text-sm text-fg-secondary">
                 Wire your product up once. After that, plans, limits and offers change from this dashboard — your code stays
                 the same.
@@ -161,7 +161,7 @@ function Guide({ ctx, s, sdkFiles }: { ctx: DevContext; s: snippets.SnippetConte
             <InlineCode>Authorization: Bearer &lt;key&gt;</InlineCode>.
           </p>
           <Link href={`/apps/${appId}/developers/keys`} className={buttonVariants({ variant: "link" })}>
-            Manage keys
+            Manage Keys
             <ArrowRight className="size-3.5" />
           </Link>
         </div>
@@ -275,10 +275,12 @@ function Guide({ ctx, s, sdkFiles }: { ctx: DevContext; s: snippets.SnippetConte
             Only <InlineCode>usage</InlineCode> entitlements can be tracked; boolean ones return <InlineCode>400</InlineCode>.
           </li>
           <li>
-            The public key can write usage, so browsers can track directly. Track anything you bill on from your server.
+            The public key can add usage, so browsers can track directly, but only the secret key can lower a count.
+            Track anything you bill on from your server.
           </li>
           <li>
-            To reset a monthly quota, post the negative of the current count to <InlineCode>/amount</InlineCode>.
+            To reset a monthly quota, post the negative of the current count to <InlineCode>/amount</InlineCode> with the
+            secret key.
           </li>
         </Notes>
         <RefLink appId={appId} method="POST" path="/apps/:appId/namespaces/:namespaceId/usage/:entitlementId/amount" />

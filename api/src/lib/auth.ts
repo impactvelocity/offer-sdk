@@ -21,13 +21,17 @@ const PUBLIC_CHECKOUT_ROUTES: [string, RegExp][] = [
   ["POST", /^\/apps\/[^/]+\/checkouts\/[^/]+\/complete$/],
 ];
 
-// Public keys may only read plan state / pricing, track usage and run checkouts.
+// Public keys may only read plan state (without private meta) / pricing, read and
+// add usage, and run checkouts. /full-plan and lowering a counter (/remove, or a
+// negative /amount, refused in routes/usage.ts) need the secret key.
 function publicKeyAllowed(c: Context) {
   const path = c.req.path;
   const isGet = c.req.method === "GET";
-  const isNamespacePlan = isGet && (path.endsWith("/plan") || path.endsWith("/full-plan"));
-  const isUsage = path.includes("/usage");
-  const isPricing = isGet && path.includes("/pricing");
+  const isNamespacePlan = isGet && /^\/apps\/[^/]+\/namespaces\/[^/]+\/plan$/.test(path);
+  const isUsage = isGet
+    ? /^\/apps\/[^/]+\/namespaces\/[^/]+\/usage(\/[^/]+)?$/.test(path)
+    : c.req.method === "POST" && /^\/apps\/[^/]+\/namespaces\/[^/]+\/usage\/[^/]+\/(add|amount)$/.test(path);
+  const isPricing = isGet && /^\/apps\/[^/]+\/plans\/(pricing|[^/]+\/pricing)$/.test(path);
   const isCheckout = PUBLIC_CHECKOUT_ROUTES.some(([method, re]) => c.req.method === method && re.test(path));
   return isNamespacePlan || isUsage || isPricing || isCheckout;
 }
@@ -36,6 +40,8 @@ declare module "hono" {
   interface ContextVariableMap {
     /** Set when the caller used an account token: the only account it may act for. */
     accountId: string;
+    /** Set when the caller used the app's public key. */
+    publicKey: boolean;
   }
 }
 
@@ -76,7 +82,10 @@ export async function appAuth(c: Context, next: Next) {
     }
     return next();
   }
-  if (row && publicKeyAllowed(c)) return next();
+  if (row && publicKeyAllowed(c)) {
+    c.set("publicKey", true);
+    return next();
+  }
   return unauthorized(c);
 }
 

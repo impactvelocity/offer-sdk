@@ -53,7 +53,7 @@ export function PlansView() {
           ? `${pluralize(count, "account")} ${count === 1 ? "is" : "are"} on this plan. Their access checks will fail until you move them to another plan.`
           : "This can't be undone.",
       typeToConfirm: count > 0 ? plan.id : undefined,
-      confirmLabel: "Delete plan",
+      confirmLabel: "Delete Plan",
       onConfirm: () => remove.mutateAsync(plan.id),
     });
   };
@@ -69,7 +69,7 @@ export function PlansView() {
             <HowItWorksButton topic="plans" />
             <Button variant="primary" onClick={() => setCreateOpen(true)}>
               <Plus />
-              New plan
+              New Plan
             </Button>
           </>
         }
@@ -99,7 +99,7 @@ export function PlansView() {
             action={
               <Button variant="primary" onClick={() => setCreateOpen(true)}>
                 <Plus />
-                Create plan
+                Create Plan
               </Button>
             }
           />

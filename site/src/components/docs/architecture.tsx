@@ -49,11 +49,11 @@ export function ArchitectureDiagram() {
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <Box title="Postgres" detail="offersdk-db" />
         <Box title="PayPal" detail="Orders, subscriptions, webhooks" />
-        <Box title="Claude" detail="Dynamic save offers" />
+        <Box title="AI model" detail="Dynamic save offers" />
         <Box title="Webhooks" detail="Your endpoints and Zapier" />
       </div>
       <figcaption className="mt-5 text-xs/5 text-fg-tertiary">
-        The dashboard also talks to Claude directly for its agent chat, and proxies sign-in to the API so session
+        The dashboard also calls the AI model directly for its agent chat, and proxies sign-in to the API so session
         cookies stay on its own domain.
       </figcaption>
     </figure>

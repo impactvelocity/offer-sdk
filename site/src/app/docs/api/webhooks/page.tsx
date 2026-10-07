@@ -270,8 +270,8 @@ export default function ApiWebhooksPage() {
         ]}
       />
       <p>
-        Verify against the raw body, before parsing it. The <code>standardwebhooks</code> package does the work. This
-        is the blog test bed&apos;s receiver, trimmed:
+        Verify against the raw body, before parsing it. The <code>standardwebhooks</code> package does the work. A
+        minimal receiver in a Next.js route handler:
       </p>
       <Code title="app/api/webhooks/route.ts" lang="ts" code={verifyLibrary} />
       <p>Without a library, it is a few lines of Node:</p>
@@ -335,7 +335,9 @@ export default function ApiWebhooksPage() {
       <Code title="A delivery waiting for its third attempt" lang="json" code={delivery} />
       <p>
         <code>POST …/deliveries/:deliveryId/retry</code> sends a delivery again right away and returns the result.
-        It is a single attempt: if it fails, the delivery stays failed with no further retries.
+        It is a single attempt: if it fails, the delivery stays failed with no further retries. On a disabled
+        endpoint nothing is sent, and the delivery fails at once with &ldquo;Endpoint disabled&rdquo;. Only test
+        events go out to a disabled endpoint.
       </p>
       <p>
         <code>POST /apps/:appId/webhooks/:webhookId/test</code> sends a sample event of the type you name once, even if

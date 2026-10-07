@@ -62,8 +62,9 @@ app.route("/oauth", oauth);
 app.use("/apps/:appId/mcp", cors({ origin: "*", exposeHeaders: ["Mcp-Session-Id", "WWW-Authenticate"] }));
 app.route("/apps/:appId/mcp", createMcpServer((req) => app.fetch(req)));
 
-// Per-app routes need the admin key, the app's API key, or (for a few routes)
-// its public key. POST /apps is intentionally open: there is no appId yet.
+// Creating an app needs the admin key. Per-app routes need the admin key, the
+// app's API key, or (for a few routes) its public key.
+app.post("/apps", adminAuth);
 app.use("/apps/:appId", appAuth);
 app.use("/apps/:appId/*", appAuth);
 

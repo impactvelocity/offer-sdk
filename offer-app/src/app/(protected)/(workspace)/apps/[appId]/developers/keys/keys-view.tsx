@@ -26,10 +26,10 @@ export function KeysView() {
 
   return (
     <>
-      <PageHeader icon={<Key />} title="API keys" />
+      <PageHeader icon={<Key />} title="API Keys" />
       <PageBody width="narrow">
         <PageTitle
-          title="API keys"
+          title="API Keys"
           description={
             <>
               Your product authenticates to the Offer API with these keys, sent as{" "}
@@ -110,7 +110,7 @@ function KeySection({ kind, app }: { kind: "secret" | "public"; app: App }) {
       title: `Regenerate the ${copy.title.toLowerCase()}?`,
       description: copy.confirm,
       typeToConfirm: app.name,
-      confirmLabel: "Regenerate key",
+      confirmLabel: "Regenerate Key",
       onConfirm: () => regenerate.mutateAsync(),
     });
 
@@ -165,17 +165,13 @@ const CAPABILITIES: { label: string; route: string; secret: ReactNode; public: R
   { label: "Read an account's access", route: "GET …/namespaces/:id/plan", secret: yes, public: yes },
   { label: "Read pricing cards", route: "GET …/plans/pricing", secret: yes, public: yes },
   {
-    label: "Track usage",
+    label: "Read and add usage",
     route: "…/namespaces/:id/usage/*",
     secret: yes,
-    public: <Caveat tip="Any amount, including negative ones. Track billable usage from your server." />,
+    public: <Caveat tip="For any account, by id. Track billable usage from your server." />,
   },
-  {
-    label: "Read private plan meta",
-    route: "GET …/namespaces/:id/full-plan",
-    secret: yes,
-    public: <Caveat tip="Known issue: the hosted API allows this with the public key." />,
-  },
+  { label: "Lower usage", route: "…/usage/:id/remove, negative …/amount", secret: yes, public: no },
+  { label: "Read private plan meta", route: "GET …/namespaces/:id/full-plan", secret: yes, public: no },
   { label: "Create, update and delete accounts", route: "…/namespaces", secret: yes, public: no },
   { label: "Manage plans, entitlements, add-ons, incentives", route: "…/plans, …/entitlements, …", secret: yes, public: no },
   { label: "Read analytics", route: "GET …/analytics", secret: yes, public: no },
@@ -184,7 +180,7 @@ const CAPABILITIES: { label: string; route: string; secret: ReactNode; public: R
 
 function Capabilities() {
   return (
-    <Section title="What each key can do">
+    <Section title="What Each Key Can Do">
       <div className="overflow-hidden rounded-lg border border-border [&_tbody_tr:last-child>td]:border-b-0">
         <Table>
           <THead className="static bg-bg-subtle">
@@ -212,11 +208,6 @@ function Capabilities() {
           </TBody>
         </Table>
       </div>
-      <p className="mt-3 text-xs text-fg-tertiary">
-        Known issue: the hosted API currently lets the public key read <InlineCode>/full-plan</InlineCode>, which includes
-        private plan meta, and write usage with any amount. Until that&apos;s fixed, keep real secrets out of plan meta and
-        track anything you bill on from your server.
-      </p>
     </Section>
   );
 }
@@ -231,11 +222,11 @@ function Connection({ appId }: { appId: string }) {
         <>
           <Link href={`/apps/${appId}/developers`} className={buttonVariants({ variant: "ghost" })}>
             <Code />
-            Integration guide
+            Integration Guide
           </Link>
           <Link href={`/apps/${appId}/developers/api`} className={buttonVariants({ variant: "ghost" })}>
             <Braces />
-            API reference
+            API Reference
           </Link>
         </>
       }

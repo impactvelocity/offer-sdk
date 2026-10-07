@@ -48,7 +48,7 @@ export function WebhooksView() {
             </Button>
             <Button variant="primary" onClick={() => setCreateOpen(true)}>
               <Plus />
-              Add endpoint
+              Add Endpoint
             </Button>
           </>
         }
@@ -84,7 +84,7 @@ export function WebhooksView() {
                 action={
                   <Button variant="primary" onClick={() => setCreateOpen(true)}>
                     <Plus />
-                    Add endpoint
+                    Add Endpoint
                   </Button>
                 }
               />

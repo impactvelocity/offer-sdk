@@ -9,7 +9,7 @@ import { WhyTimeline } from "@/components/why/timeline";
 import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
-  title: "Why Offer SDK",
+  title: "Pricing Spaghetti",
   description: "Every SaaS launches with three plans. Then customers show up. Where Offer SDK fits.",
 };
 

@@ -199,7 +199,8 @@ export default function SdkCancelFlowsPage() {
           </>],
           ["Revoking", "Regenerating the app's secret key invalidates every token at once."],
           ["Can call", <>
-            Every <code>/apps/:appId/cancel-sessions</code> route for its own account, and{" "}
+            The <code>/apps/:appId/cancel-sessions</code> routes for its own account&apos;s sessions: start one, read
+            one and move it through its steps. Listing sessions answers <code>401</code>. It can also call{" "}
             <code>GET</code> on its own <code>/plan</code>, <code>/full-plan</code> and <code>/subscription</code>.
           </>],
         ]}
@@ -293,7 +294,7 @@ export default function SdkCancelFlowsPage() {
       </p>
       <Code title="POST /apps/:appId/cancel-sessions/:sessionId/answer" lang="json" code={sessionView} />
       <p>
-        <code>source: &quot;dynamic&quot;</code> means Claude picked the offer for this customer, within the
+        <code>source: &quot;dynamic&quot;</code> means the agent picked the offer for this customer, within the
         guardrails set on the flow. That needs <code>ANTHROPIC_API_KEY</code> on the API and dynamic offers turned on
         for the step. Otherwise the flow shows its static offer for the answers given.
       </p>
@@ -327,7 +328,7 @@ export default function SdkCancelFlowsPage() {
           ],
           [
             "pause",
-            "Suspends billing in PayPal for 1 to 12 months and moves the account to the free plan, if the app has one. It resumes on its own at resume_at, through a Render Workflow when one is configured.",
+            "Suspends billing in PayPal for 1 to 12 months and moves the account to the free plan, if the app has one. It resumes on its own after resume_at: the API checks for due pauses every 10 minutes, or every hour when a Render Workflow runs them.",
             "None.",
           ],
           [

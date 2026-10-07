@@ -485,10 +485,8 @@ export const ENDPOINTS: Endpoint[] = [
     method: "GET",
     path: `${NS}/full-plan`,
     summary: "Get resolved access including private meta",
-    description: "Same as `/plan`, plus private meta keys and `privateMetaKeys`. Intended for your server.",
-    auth: "public-or-secret",
-    warning:
-      "Known issue: the hosted API accepts the public key here, so anyone with it can read private meta. Don't store real secrets in plan meta until this is fixed.",
+    description: "Same as `/plan`, plus private meta keys and `privateMetaKeys`. For your server: the public key gets `401`.",
+    auth: "secret",
     response: {
       description: "Resolved access with private meta.",
       example: {
@@ -535,8 +533,8 @@ export const ENDPOINTS: Endpoint[] = [
     method: "POST",
     path: `${USAGE}/remove`,
     summary: "Subtract 1 from a usage count",
-    description: "Counts can go below zero.",
-    auth: "public-or-secret",
+    description: "Counts can go below zero. The public key can't lower a count.",
+    auth: "secret",
     examples: { entitlementId: "usageEntitlement" },
     response: { description: "The new count.", example: { entitlement: "{{usageEntitlement}}", count: 419 } },
     statuses: [ok(), badRequest("Not a usage entitlement"), unauthorized, notFound("Account or entitlement")],
@@ -546,13 +544,19 @@ export const ENDPOINTS: Endpoint[] = [
     method: "POST",
     path: `${USAGE}/amount`,
     summary: "Add an amount to a usage count",
-    description: "Adds `amount` to the count (it doesn't set it). Negative amounts subtract: post the negative of the current count to reset a quota.",
+    description: "Adds `amount` to the count (it doesn't set it). Negative amounts subtract: post the negative of the current count to reset a quota. The public key can only send a positive amount (or zero).",
     auth: "public-or-secret",
     examples: { entitlementId: "usageEntitlement" },
     body: [{ name: "amount", type: "integer", required: true, description: "Amount to add. May be negative." }],
     exampleBody: { amount: 25 },
     response: { description: "The new count.", example: { entitlement: "{{usageEntitlement}}", count: 445 } },
-    statuses: [ok(), badRequest("Not a usage entitlement, or `amount` isn't an integer"), unauthorized, notFound("Account or entitlement")],
+    statuses: [
+      ok(),
+      badRequest("Not a usage entitlement, or `amount` isn't an integer"),
+      unauthorized,
+      { code: 403, description: "Negative amount sent with the public key" },
+      notFound("Account or entitlement"),
+    ],
   },
 
   // Plans

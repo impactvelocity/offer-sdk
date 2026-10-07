@@ -220,7 +220,7 @@ function ApiGuide({ topic }: { topic: Topic }) {
         <div className="px-5 py-4">
           <Link href={`/apps/${ctx.appId}/developers/api`} className={buttonVariants({ size: "sm" })}>
             <ExternalLink />
-            Full API reference
+            Full API Reference
           </Link>
         </div>
       </div>

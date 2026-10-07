@@ -45,7 +45,7 @@ export function CancelFlowView() {
     onSuccess: () => router.push(`/apps/${appId}/cancel-flow/edit`),
   });
 
-  const header = <PageHeader icon={<DoorOpen />} title="Cancel flow" />;
+  const header = <PageHeader icon={<DoorOpen />} title="Cancel Flow" />;
   if (isLoading) {
     return (
       <>
@@ -81,7 +81,7 @@ export function CancelFlowView() {
           description="Put a cancel button in your app that asks why, makes a save offer (a discount, a pause, a cheaper plan or a bonus) and only then cancels. Start from a template and edit the questions and offers here, with no code changes."
           action={
             <Button variant="primary" loading={create.isPending} onClick={() => create.mutate()}>
-              Create cancel flow
+              Create Cancel Flow
             </Button>
           }
         />
@@ -114,16 +114,16 @@ function FlowOverview({ appId, flow: listed }: { appId: string; flow: CancelFlow
     <>
       <PageHeader
         icon={<DoorOpen />}
-        title="Cancel flow"
+        title="Cancel Flow"
         actions={
           <>
             <Link href={`/apps/${appId}/cancel-flow/edit`} className={buttonVariants()}>
               <Pencil />
-              Edit flow
+              Edit Flow
             </Link>
             <Button variant={live ? "secondary" : "primary"} loading={toggle.isPending} onClick={() => toggle.mutate()}>
               <Power />
-              {live ? "Turn off" : "Turn on"}
+              {live ? "Turn Off" : "Turn On"}
             </Button>
           </>
         }
@@ -149,7 +149,7 @@ function FlowOverview({ appId, flow: listed }: { appId: string; flow: CancelFlow
               subtitle={`${pluralize(flow.steps.length, "step")} · last 30 days`}
             />
             {!live ? (
-              <Callout tone="info" className="mx-8 mb-4" action={<Button size="sm" onClick={() => toggle.mutate()}>Turn on</Button>}>
+              <Callout tone="info" className="mx-8 mb-4" action={<Button size="sm" onClick={() => toggle.mutate()}>Turn On</Button>}>
                 The flow is off: the SDK&apos;s cancel button can&apos;t open it yet. You can still preview it in the editor.
               </Callout>
             ) : null}
@@ -191,7 +191,7 @@ function FlowOverview({ appId, flow: listed }: { appId: string; flow: CancelFlow
                   rows={(stats?.offers ?? []).map((o) => [
                     <span key="k" className="flex items-center gap-2">
                       {KIND_LABELS[o.kind]}
-                      {o.source === "dynamic" ? <Badge color="brand">Claude</Badge> : null}
+                      {o.source === "dynamic" ? <Badge color="brand">Agent</Badge> : null}
                     </span>,
                     formatNumber(o.shown),
                     formatNumber(o.accepted),
@@ -201,7 +201,7 @@ function FlowOverview({ appId, flow: listed }: { appId: string; flow: CancelFlow
               </div>
 
               <section className="flex flex-col gap-2">
-                <h3 className="text-sm font-semibold text-fg">Recent attempts</h3>
+                <h3 className="text-sm font-semibold text-fg">Recent Attempts</h3>
                 <div className="overflow-hidden rounded-lg border border-border">
                   <TableContainer>
                     <Table>
@@ -351,7 +351,7 @@ function FlowOutline({ appId, steps }: { appId: string; steps: CancelFlowStep[] 
               <>
                 <div className="font-medium text-fg">Save offer</div>
                 <div className="text-xs text-fg-tertiary">
-                  {s.dynamic ? `Claude picks from ${s.guardrails.kinds.map((k) => KIND_LABELS[k].toLowerCase()).join(", ")}` : "Fixed per answer"}
+                  {s.dynamic ? `Agent picks from ${s.guardrails.kinds.map((k) => KIND_LABELS[k].toLowerCase()).join(", ")}` : "Fixed per answer"}
                   {s.default ? ` · otherwise ${specSummary(s.default, names).toLowerCase()}` : ""}
                 </div>
               </>

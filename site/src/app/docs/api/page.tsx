@@ -8,6 +8,7 @@ export const metadata: Metadata = {
 };
 
 const createApp = `curl -X POST http://localhost:6767/apps \\
+  -H "Authorization: Bearer $ADMIN_API_KEY" \\
   -H "Content-Type: application/json" \\
   -d '{ "name": "My blog" }'`;
 
@@ -118,10 +119,11 @@ export default function ApiAuthenticationPage() {
       <p>The publishable key works on these routes of its own app and nowhere else:</p>
       <ul>
         <li>
-          <code>GET …/namespaces/:accountId/plan</code> and <code>GET …/namespaces/:accountId/full-plan</code>
+          <code>GET …/namespaces/:accountId/plan</code>
         </li>
         <li>
-          Every route under <code>…/namespaces/:accountId/usage</code>, including the ones that record usage
+          <code>GET</code> on the routes under <code>…/namespaces/:accountId/usage</code>, plus <code>POST …/add</code>{" "}
+          and <code>POST …/amount</code> with an amount of zero or more
         </li>
         <li>
           <code>GET /apps/:appId/plans/pricing</code> and <code>GET /apps/:appId/plans/:planId/pricing</code>
@@ -138,8 +140,9 @@ export default function ApiAuthenticationPage() {
         </li>
       </ul>
       <p>
-        It isn&apos;t tied to one account: anyone who has it can read any account&apos;s plan by id, including the
-        private meta in <code>/full-plan</code>, and record usage for it.
+        It isn&apos;t tied to one account: anyone who has it can read any account&apos;s plan by id and add usage for
+        it. It can&apos;t read private meta (<code>/full-plan</code> returns <code>401</code>) or lower a counter (
+        <code>/remove</code> returns <code>401</code>, a negative <code>/amount</code> returns <code>403</code>).
       </p>
 
       <H3>Account tokens</H3>
@@ -169,6 +172,9 @@ export default function ApiAuthenticationPage() {
       </p>
       <ul>
         <li>
+          <code>POST /apps</code>: creating an app
+        </li>
+        <li>
           <code>/orgs</code>: the workspaces the dashboard shows, and which apps each one holds
         </li>
         <li>
@@ -195,7 +201,7 @@ export default function ApiAuthenticationPage() {
       <H3>No credential</H3>
       <p>
         <code>GET /</code>, <code>GET /health</code>, <code>GET /openapi.json</code>, <code>GET /docs</code> and{" "}
-        <code>GET /event-types</code> are open. So is <code>POST /apps</code>, since a new app has no key yet. PayPal
+        <code>GET /event-types</code> are open. PayPal
         calls <code>POST /paypal/webhooks/:appId</code> without a key, and the API verifies each call with PayPal.
         MCP clients use <code>/.well-known/*</code>, <code>/oauth/register</code>, <code>/oauth/authorize</code>,{" "}
         <code>/oauth/token</code> and <code>/oauth/revoke</code> to sign in.
@@ -204,7 +210,7 @@ export default function ApiAuthenticationPage() {
       <H2>Getting and rotating keys</H2>
       <p>
         Create an app to get its keys. The dashboard does this when you add an app, and shows the keys under{" "}
-        <strong>Developers → API keys</strong>.
+        <strong>Developers → API keys</strong>. Creating one through the API takes the admin key.
       </p>
       <Code lang="bash" code={createApp} />
       <Code title="201 Created" lang="json" code={createAppResponse} />
@@ -216,7 +222,9 @@ export default function ApiAuthenticationPage() {
 
       <H2>Errors</H2>
       <p>
-        Errors return JSON with an <code>error</code> message. A few add fields, noted below.
+        REST routes return errors as JSON with an <code>error</code> message. A few add fields, noted below. The
+        OAuth routes MCP clients use follow the OAuth format instead (<code>error</code> and{" "}
+        <code>error_description</code>), and <code>/oauth/authorize</code> shows an HTML error page.
       </p>
       <Code lang="json" code={errorBody} />
       <Table
@@ -225,8 +233,9 @@ export default function ApiAuthenticationPage() {
           ["400", "Invalid JSON, a missing or invalid field, or an unknown event type."],
           ["401", "No credential, a wrong one, or one that isn't allowed on this route."],
           ["402", "A usage call would go past a limit set to block. The body explains the limit and offers an upgrade."],
-          ["403", "A cancel session started with an account token named a different account."],
+          ["403", "A write with the secret key of a demo workspace app, a negative /amount with the publishable key, a cancel session started with an account token that named a different account, or a call to an app's MCP server while it is turned off."],
           ["404", "The app, account, plan or other record doesn't exist, or an account token asked for another account's session."],
+          ["405", "GET or DELETE on /apps/:appId/mcp. The MCP server only takes POST."],
           ["409", "The request conflicts with current state. For example: a record with that id exists, the offer can't be bought (the body adds reason), PayPal isn't connected, or a cancel session isn't at that step."],
           ["500", "An unexpected error. The body is { \"error\": \"Internal server error\" }."],
           ["502", "PayPal returned an error. The message starts with “PayPal:”."],
@@ -250,10 +259,13 @@ export default function ApiAuthenticationPage() {
 
       <H2>Lists and pagination</H2>
       <p>
-        Account search (<code>GET /apps/:appId/namespaces</code>) and <code>GET /apps/:appId/plans/:planId/namespaces</code>{" "}
-        take <code>page</code> and <code>per_page</code> (default 20, at most 100) and return{" "}
-        <code>{"{ data, total, page, per_page }"}</code>. Logs such as events, deliveries, checkouts and cancel
-        sessions take <code>limit</code> (1 to 100) and return newest first. Catalog lists return everything in the
+        Account search (<code>GET /apps/:appId/namespaces</code>),{" "}
+        <code>GET /apps/:appId/namespaces/with-incentive</code> and{" "}
+        <code>GET /apps/:appId/plans/:planId/namespaces</code> take <code>page</code> and <code>per_page</code>{" "}
+        (default 20, at most 100) and return <code>{"{ data, total, page, per_page }"}</code>. Logs such as events,
+        deliveries, checkouts and cancel sessions take <code>limit</code> and return newest first. Most cap it at
+        100; <code>GET /apps/:appId/analytics/events</code> defaults to 50 and allows up to 200, and{" "}
+        <code>GET /apps/:appId/analytics/top-namespaces</code> returns <code>400</code> outside 1 to 100. Catalog lists return everything in the
         order it was created.
       </p>
 
@@ -268,8 +280,9 @@ export default function ApiAuthenticationPage() {
       <p>
         The API serves an OpenAPI 3.1 document at <code>GET /openapi.json</code> and an interactive reference built
         from it at <code>GET /docs</code> (<code>http://localhost:6767/docs</code> locally). The spec is written by
-        hand and covers apps, plans, entitlements, add-ons, incentives, accounts, usage, analytics, webhooks and orgs.
-        It doesn&apos;t yet describe offers, checkouts, subscriptions, PayPal or cancel flows.{" "}
+        hand and covers the core routes: apps, plans, entitlements, add-ons, incentives, accounts, usage, the main
+        analytics routes, webhooks and orgs. Offers, checkouts, subscriptions, PayPal, cancel flows, account tokens,
+        account add-ons, history import, the agent&apos;s threads and MCP aren&apos;t in it.{" "}
         <Link href="/docs/api/reference">Endpoint reference</Link> lists every route.
       </p>
     </>

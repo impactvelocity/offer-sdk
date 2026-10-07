@@ -153,6 +153,8 @@ function createDashboardAuth() {
     },
     plugins: [
       organization({
+        // One workspace per install: the dashboard has no switcher.
+        organizationLimit: 1,
         schema: {
           organization: { modelName: "auth_organization" },
           member: { modelName: "auth_member" },

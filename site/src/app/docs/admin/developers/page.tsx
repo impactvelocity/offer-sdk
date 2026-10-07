@@ -43,7 +43,7 @@ export default function DevelopersAdminPage() {
               <>
                 <code>pub_…</code>, also called the publishable key. Safe in browser and mobile code, for example as{" "}
                 <code>NEXT_PUBLIC_OFFER_PUBLIC_KEY</code>. It reads an account&apos;s access and the pricing cards, and
-                tracks usage.
+                adds usage.
               </>
             ),
           },
@@ -56,18 +56,17 @@ export default function DevelopersAdminPage() {
         rows={[
           ["Read an account's access (…/namespaces/:id/plan)", "Yes", "Yes"],
           ["Read pricing cards (…/plans/pricing)", "Yes", "Yes"],
-          ["Track usage (…/namespaces/:id/usage/*)", "Yes", "Yes, with a caveat below"],
-          ["Read private plan meta (…/namespaces/:id/full-plan)", "Yes", "Yes, a known issue"],
+          ["Read and add usage (…/namespaces/:id/usage/*)", "Yes", "Yes, for any account"],
+          ["Lower usage (…/usage/:id/remove, a negative …/amount)", "Yes", "No"],
+          ["Read private plan meta (…/namespaces/:id/full-plan)", "Yes", "No"],
           ["Create, update and delete accounts", "Yes", "No"],
           ["Manage plans, entitlements, add-ons and incentives", "Yes", "No"],
           ["Read analytics", "Yes", "No"],
           ["Update or delete the app, regenerate keys", "Yes", "No"],
         ]}
       />
-      <Callout tone="warning" title="The public key can do more than it should.">
-        The API currently lets the public key read <code>/full-plan</code>, which includes private plan meta, and track
-        usage with any amount, including negative ones. Until that&apos;s fixed, keep real secrets out of plan meta and
-        track anything you bill on from your server.
+      <Callout tone="warning" title="The public key isn't tied to one account.">
+        Anyone with it can add usage to any account by id. Track anything you bill on from your server.
       </Callout>
       <p>
         The <strong>Connection</strong> section at the bottom shows the base URL your product should call, the app ID,
@@ -104,7 +103,7 @@ export default function DevelopersAdminPage() {
                 variables, creating an account at sign-up, checking access, tracking usage, changing plans from billing
                 webhooks, rendering the pricing page, a <strong>React SDK skill</strong> that a coding agent uses to copy
                 the SDK into your app and wire it up, and an <strong>AI assistant context</strong> block to paste into
-                Claude, Cursor or Copilot.
+                any AI assistant.
               </>
             ),
           },

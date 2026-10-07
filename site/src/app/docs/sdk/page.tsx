@@ -224,9 +224,8 @@ export default function SdkAccessPage() {
       <H2>Add the SDK to your app</H2>
       <p>
         The SDK isn&apos;t published to npm. Its source lives in the dashboard at <code>offer-app/src/sdk</code>, and
-        apps in the monorepo import it through TypeScript path aliases. The blog test bed maps <code>@offer/sdk</code>{" "}
-        and <code>@offer/sdk/checkout</code> this way, so SDK changes show up there without a build step. Add the
-        cancel flow entry point the same way when you need it.
+        apps in the monorepo import it through TypeScript path aliases, so SDK changes show up without a build step. Map
+        each entry point you use.
       </p>
       <Code title="tsconfig.json" lang="json" code={tsconfig} />
       <FileTree
@@ -245,7 +244,7 @@ export default function SdkAccessPage() {
       <p>
         A coding agent can do the copying for you. <strong>Developers → Integration → Install the React SDK with an
         agent</strong> in the dashboard gives you a <code>SKILL.md</code> that carries the SDK&apos;s source and your
-        app&apos;s API URL and app ID. Save it as <code>.claude/skills/offer-sdk/SKILL.md</code> for Claude Code, or
+        app&apos;s API URL and app ID. Save it in your coding agent&apos;s skills folder, or
         paste it into any other agent. It never includes the secret key.
       </p>
       <Callout title="Two providers share a name.">
@@ -318,7 +317,7 @@ export default function SdkAccessPage() {
       <p>
         Server code uses <code>OfferClient</code> with the secret key. Its <code>request()</code> method takes any
         API path, adds the key and JSON headers, and throws an <code>OfferApiError</code> for any non-2xx response.
-        The blog keeps helpers like these in one server-only module.
+        Keep helpers like these in one server-only module.
       </p>
       <Code title="lib/offer.ts" lang="ts" code={serverClient} />
       <p>Then gate the feature where the action happens, not only in the UI:</p>
@@ -341,11 +340,11 @@ export default function SdkAccessPage() {
         head={["Route", "What it does"]}
         rows={[
           ["POST …/usage/:entitlementId/add", "Adds 1."],
-          ["POST …/usage/:entitlementId/remove", "Subtracts 1, for example when a post is deleted."],
+          ["POST …/usage/:entitlementId/remove", "Subtracts 1, for example when a post is deleted. Secret key only."],
           [
             "POST …/usage/:entitlementId/amount",
             <>
-              Adds <code>{"{ \"amount\": n }"}</code>. Use a negative integer to subtract.
+              Adds <code>{"{ \"amount\": n }"}</code>. Use a negative integer to subtract, with the secret key.
             </>,
           ],
           ["GET …/usage", "Counts for every entitlement on the account's plan."],
@@ -361,8 +360,7 @@ export default function SdkAccessPage() {
       <H3>Soft and hard limits</H3>
       <p>
         By default a counter keeps counting past its limit. <code>can</code> turns <code>false</code> and your code
-        decides what to do. The blog treats comments this way: it checks <code>can</code> first, then records the
-        comment.
+        decides what to do. Check <code>can</code> first, then record the usage.
       </p>
       <p>
         To have the API enforce a limit, set <code>overage</code> on the entitlement with{" "}
@@ -421,8 +419,8 @@ export default function SdkAccessPage() {
         ]}
       />
       <Callout tone="warning" title="The publishable key is not scoped to one account.">
-        Anyone with it can read any account&apos;s <code>/plan</code> and <code>/full-plan</code> by id, and record
-        usage for it. <code>/full-plan</code> includes private meta, so read <code>/plan</code> in the browser. For
+        Anyone with it can read any account&apos;s <code>/plan</code> by id and add usage for it. It can&apos;t read{" "}
+        <code>/full-plan</code> or lower a counter; those need the secret key. For
         reads that must stay with one account, mint an account token on your server (see{" "}
         <Link href="/docs/sdk/cancel-flows">Cancel flows</Link>) and pass it as <code>apiKey</code>. A token can read
         its own account&apos;s <code>/plan</code>, <code>/full-plan</code> and <code>/subscription</code>.

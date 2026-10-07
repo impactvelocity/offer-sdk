@@ -25,9 +25,9 @@ export function SettingsView() {
 
   return (
     <>
-      <PageHeader icon={<Settings />} title="App settings" />
+      <PageHeader icon={<Settings />} title="App Settings" />
       <PageBody width="narrow">
-        <PageTitle title="App settings" description={app ? `Manage ${app.name}` : "Manage this app"} />
+        <PageTitle title="App Settings" description={app ? `Manage ${app.name}` : "Manage this app"} />
         {isLoading ? (
           <div className="flex flex-col gap-4">
             <Skeleton className="h-8 w-full" />
@@ -48,7 +48,7 @@ export function SettingsView() {
                 <LinkRow
                   href={`/apps/${appId}/developers/keys`}
                   icon={<Key />}
-                  title="API keys"
+                  title="API Keys"
                   description="View and regenerate the secret and public keys"
                 />
                 <LinkRow
@@ -141,12 +141,12 @@ function DangerZone({ app }: { app: App }) {
       description:
         "This permanently deletes the app and everything in it: plans, entitlements, add-ons, incentives, accounts and usage history. Your product's API calls start failing immediately. This can't be undone.",
       typeToConfirm: app.name,
-      confirmLabel: "Delete app",
+      confirmLabel: "Delete App",
       onConfirm: () => remove.mutateAsync(),
     });
 
   return (
-    <Section title="Danger zone">
+    <Section title="Danger Zone">
       <div className="flex items-center justify-between gap-4 rounded-lg border border-danger/30 px-5 py-4">
         <div className="min-w-0">
           <p className="text-sm font-medium text-fg">Delete app</p>
@@ -156,7 +156,7 @@ function DangerZone({ app }: { app: App }) {
         </div>
         <Button variant="danger" onClick={onDelete}>
           <Trash2 />
-          Delete app
+          Delete App
         </Button>
       </div>
     </Section>

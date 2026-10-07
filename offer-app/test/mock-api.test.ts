@@ -13,7 +13,7 @@ let app: { id: string; api_key: string; public_key: string };
 const base = () => `/apps/${app.id}`;
 
 beforeAll(async () => {
-  app = (await call("POST", "/apps", { name: "Test app" }, null)).body;
+  app = (await call("POST", "/apps", { name: "Test app" })).body;
   await call("POST", `${base()}/entitlements`, { id: "AI Credits", name: "AI credits", type: "usage" });
   await call("POST", `${base()}/entitlements`, { id: "sso", name: "SSO", type: "boolean" });
   await call("POST", `${base()}/addons`, { id: "boost", name: "Boost" });
@@ -135,7 +135,7 @@ describe("mock offer api", () => {
   });
 
   it("deletes the app and everything in it", async () => {
-    const temp = (await call("POST", "/apps", { name: "Temp" }, null)).body;
+    const temp = (await call("POST", "/apps", { name: "Temp" })).body;
     await call("POST", `/apps/${temp.id}/entitlements`, { id: "x", name: "X", type: "usage" });
     expect((await call("DELETE", `/apps/${temp.id}`)).body).toEqual({ deleted: true });
     expect((await call("GET", `/apps/${temp.id}`)).status).toBe(404);
@@ -305,7 +305,7 @@ describe("mock agent threads", () => {
 describe("sample data", () => {
   it("creates a catalog, backdated accounts with usage history, and saved reports", async () => {
     const { addSampleData } = await import("@/server/offer-api");
-    const sample = (await call("POST", "/apps", { name: "Sample" }, null)).body;
+    const sample = (await call("POST", "/apps", { name: "Sample" })).body;
     await addSampleData(sample.id, "saas");
 
     expect((await call("GET", `/apps/${sample.id}/plans`)).body).toHaveLength(5);

@@ -4,7 +4,7 @@ import { Callout, Code, DocsHeader, H2, H3, Table, TermList } from "@/components
 
 export const metadata: Metadata = {
   title: "Agent and MCP",
-  description: "Chat with Claude about an app's catalog and accounts, approve every change it proposes, and manage the app's MCP server from the dashboard.",
+  description: "Chat with an AI agent about an app's catalog and accounts, approve every change it proposes, and manage the app's MCP server from the dashboard.",
 };
 
 export default function AgentDocsPage() {
@@ -12,7 +12,7 @@ export default function AgentDocsPage() {
     <>
       <DocsHeader
         title="Agent and MCP"
-        lead="The Agent page is a chat with Claude that can look up your catalog, accounts and usage, and change plans, entitlements, add-ons and incentives. Every change waits for your approval. The MCP server page connects outside assistants to the same app."
+        lead="The Agent page is a chat with an AI agent that can look up your catalog, accounts and usage, and change plans, entitlements, add-ons and incentives. Every change waits for your approval. The MCP server page connects outside assistants to the same app."
       />
 
       <H2>Turn on the agent</H2>
@@ -36,6 +36,11 @@ AGENT_APPROVAL_SECRET=...`}
         The agent works the same against the hosted API and the mock. Its tools go through the same gateway as the rest
         of the dashboard, so its answers match what the pages show. You need the same access as for the app itself:
         signed in, with the app in your active workspace.
+      </p>
+      <p>
+        The agent is off for the shared demo login. <strong>Agent</strong> is left out of its nav and Quick actions,{" "}
+        <code>/apps/[appId]/agent</code> redirects to the app&apos;s Overview, and <code>POST /api/agent</code>{" "}
+        answers 403. Sign in as the admin to use it.
       </p>
 
       <H2>Chats</H2>
@@ -171,8 +176,8 @@ AGENT_APPROVAL_SECRET=...`}
 
       <H2>The MCP server page</H2>
       <p>
-        The agent lives in the dashboard. To work with an app from an assistant you already use, such as Claude,
-        Claude Code, Cursor or ChatGPT, connect it to the app&apos;s MCP server instead. The server runs in the Offer
+        The agent lives in the dashboard. To work with an app from an AI assistant or coding agent you already
+        use, connect it to the app&apos;s MCP server instead. The server runs in the Offer
         API at <code>{"<API URL>/apps/<appId>/mcp"}</code> and has a tool for each endpoint in the API reference.
       </p>
       <p>
@@ -200,7 +205,7 @@ AGENT_APPROVAL_SECRET=...`}
       <p>
         Unlike the agent, an MCP client doesn&apos;t show you an approval card for each change. The access level
         decides what it can do, and most clients ask before running a tool that deletes. Everything about the server,
-        from connecting each client to the OAuth flow, is in <Link href="/docs/api/mcp">MCP server</Link>. How Claude
+        from connecting each client to the OAuth flow, is in <Link href="/docs/api/mcp">MCP server</Link>. How AI
         is used across the product is in <Link href="/docs/ai">AI features</Link>.
       </p>
     </>

@@ -15,7 +15,7 @@ export function EditCancelFlow() {
   const id = flows.data?.find((f) => f.id === "default")?.id ?? flows.data?.[0]?.id;
   // Fetched on its own for the API's capabilities (dynamic offers, workflows).
   const flow = useCancelFlow(appId, id);
-  const crumbs = [{ label: "Cancel flow", href: `/apps/${appId}/cancel-flow`, icon: <DoorOpen /> }];
+  const crumbs = [{ label: "Cancel Flow", href: `/apps/${appId}/cancel-flow`, icon: <DoorOpen /> }];
 
   if (flows.isLoading || flow.isLoading) {
     return (
@@ -38,7 +38,7 @@ export function EditCancelFlow() {
           description="Create one from the template first."
           action={
             <Link href={`/apps/${appId}/cancel-flow`} className={buttonVariants({ variant: "primary" })}>
-              Set up a cancel flow
+              Set Up a Cancel Flow
             </Link>
           }
         />

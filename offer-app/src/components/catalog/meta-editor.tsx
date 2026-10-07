@@ -169,7 +169,7 @@ export function MetaEditor({ appId, plan }: { appId: string; plan: Plan }) {
             onClick={() => setRows((rs) => [...rs, { uid: `new-${Date.now()}`, key: "", value: "", private: false }])}
           >
             <Plus />
-            Add field
+            Add Field
           </Button>
           {duplicates.size ? <span className="text-xs text-danger-fg">Duplicate key: {[...duplicates].join(", ")}</span> : null}
           <div className="ml-auto flex items-center gap-2">
@@ -179,7 +179,7 @@ export function MetaEditor({ appId, plan }: { appId: string; plan: Plan }) {
               </Button>
             ) : null}
             <Button size="sm" variant="primary" disabled={!dirty || duplicates.size > 0} loading={save.isPending} onClick={() => save.mutate()}>
-              Save metadata
+              Save Metadata
             </Button>
           </div>
         </div>

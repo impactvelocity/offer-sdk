@@ -68,11 +68,11 @@ export function PlatformPrimitives({ className }: { className?: string }) {
             top.includes(title) ? "lg:col-span-3" : "lg:col-span-2",
           )}
         >
-          {/* Neon badge in the cell's tone, after the primary button's recipe. */}
-          <span className="absolute top-0 left-6 z-10 inline-flex h-8 items-center rounded-full bg-[color-mix(in_oklch,var(--tone)_14%,transparent)] px-3.5 text-sm font-medium text-(--tone) shadow-[inset_0_0_0_1px_var(--tone),0_0_18px_-4px_var(--tone)]">
+          {/* Soft badge tinted with the cell's tone, white text. */}
+          <span className="absolute top-0 left-6 z-10 inline-flex h-10 items-center rounded-md bg-[color-mix(in_oklch,var(--tone)_28%,transparent)] px-5 text-lg font-medium text-white">
             {title}
           </span>
-          <DiagramReveal className="mx-auto my-8 w-full max-w-[380px]">
+          <DiagramReveal className="mx-auto my-10 w-full max-w-[380px]">
             <Diagram />
           </DiagramReveal>
           <p className="max-w-md text-base text-pretty text-fg-secondary">{body}</p>

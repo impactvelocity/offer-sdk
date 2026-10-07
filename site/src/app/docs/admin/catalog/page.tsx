@@ -99,8 +99,9 @@ export default function CatalogDocsPage() {
             term: "Side panel",
             children: (
               <>
-                <strong>Details</strong> (edit the name and description in place), <strong>Checkout link</strong> for
-                paid plans, an <strong>Internal note</strong> for your team, and <strong>SDK response</strong>: what{" "}
+                <strong>Details</strong> (edit the name and description in place), <strong>Checkout link</strong> for a
+                plan that isn&apos;t free and has a price on its pricing card, an <strong>Internal note</strong> for
+                your team, and <strong>SDK response</strong>: what{" "}
                 <code>GET /namespaces/:id/plan</code> returns for a new account on this plan.
               </>
             ),
@@ -174,11 +175,6 @@ export default function CatalogDocsPage() {
           },
         ]}
       />
-      <Callout tone="warning" title="Private meta isn't secret yet.">
-        The API currently lets the public key read <code>/full-plan</code>. The dashboard&apos;s{" "}
-        <strong>API keys</strong> page lists this as a known issue. Until it&apos;s fixed, keep real secrets out of plan
-        metadata.
-      </Callout>
 
       <H2>Add-ons</H2>
       <p>

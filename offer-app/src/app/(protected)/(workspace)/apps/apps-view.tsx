@@ -27,7 +27,7 @@ export function AppsView() {
         actions={
           <Button variant="primary" onClick={() => setOpen(true)}>
             <Plus />
-            New app
+            New App
           </Button>
         }
       />
@@ -53,7 +53,7 @@ export function AppsView() {
               action={
                 <Button variant="primary" onClick={() => setOpen(true)}>
                   <Plus />
-                  New app
+                  New App
                 </Button>
               }
             />

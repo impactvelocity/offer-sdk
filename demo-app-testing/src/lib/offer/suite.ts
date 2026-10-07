@@ -273,6 +273,7 @@ export async function runSuite(): Promise<SuiteResult> {
     eq(plan.meta.internal_price_id, "price_pro_internal", "internal_price_id");
   });
   await test("public key reads /plan", async () => eq((await pub.get<NamespacePlan>(`${nsPath}/plan`)).plan.id, "pro", "plan"));
+  await test("public key can't read /full-plan → 401", () => rejects(pub.get(`${nsPath}/full-plan`), 401));
   await test("public key can't PATCH the account → 401", () => rejects(pub.patch(nsPath, { plan: "business" }), 401));
   await test("unknown plan on PATCH → 404", () => rejects(api.patch(nsPath, { plan: "nope" }), 404));
 

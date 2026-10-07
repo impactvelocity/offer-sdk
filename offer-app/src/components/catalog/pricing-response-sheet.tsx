@@ -36,7 +36,7 @@ export function PricingResponseSheet({ appId, plan, dirty }: { appId: string; pl
     <Sheet open={open} onOpenChange={setOpen}>
       <Button size="sm" className="w-full" onClick={() => setOpen(true)}>
         <Braces />
-        View API response
+        View API Response
       </Button>
       <SheetContent>
         <div className="flex items-start gap-3 border-b border-border px-5 py-4">

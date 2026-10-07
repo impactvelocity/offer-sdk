@@ -107,7 +107,7 @@ export function AuthForm({ mode, demo }: { mode: "sign-in" | "setup"; demo?: { e
                   }}
                   disabled={pending !== null || (email === demo.email && password === demo.password)}
                 >
-                  Fill in
+                  Fill In
                 </Button>
               </span>
             }
@@ -170,7 +170,7 @@ export function AuthForm({ mode, demo }: { mode: "sign-in" | "setup"; demo?: { e
             </div>
             <Button size="md" className="w-full" onClick={useDemo} loading={pending === "demo"} disabled={pending !== null}>
               <Sparkles className="text-accent-fg" />
-              Explore the demo workspace
+              Explore the Demo Workspace
             </Button>
           </>
         ) : null}

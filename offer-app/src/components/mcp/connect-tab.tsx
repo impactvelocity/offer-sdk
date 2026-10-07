@@ -36,7 +36,7 @@ export function ConnectTab({
   return (
     <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_340px]">
       <Card className="min-w-0">
-        <CardHeader title="Connect a client" description="Pick where you'll use Offer. Every client gets the same tools." />
+        <CardHeader title="Connect a Client" description="Pick where you'll use Offer. Every client gets the same tools." />
         <div className="grid grid-cols-2 gap-2 border-b border-border p-4 sm:grid-cols-3">
           {CLIENTS.map((c) => (
             <button
@@ -136,7 +136,7 @@ function TryAsking({ examples: ex, usageName, isToolOn }: { examples: Examples; 
   ];
   return (
     <Card>
-      <CardHeader title="Try asking" description="Written against this app's real IDs." />
+      <CardHeader title="Try Asking" description="Written against this app's real IDs." />
       <ul className="divide-y divide-border">
         {prompts.map((p) => (
           <PromptRow key={p.text} text={p.text} tools={p.tools} isToolOn={isToolOn} />
@@ -189,7 +189,7 @@ function HowItWorks() {
   ];
   return (
     <Card>
-      <CardHeader title="How it works" />
+      <CardHeader title="How It Works" />
       <ol className="flex flex-col gap-4 px-5 py-4">
         {steps.map((s, i) => (
           <li key={s.title} className="flex gap-3">

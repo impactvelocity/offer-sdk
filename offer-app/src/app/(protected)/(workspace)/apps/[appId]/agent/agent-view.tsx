@@ -79,7 +79,7 @@ export function AgentView({ enabled, initialThreadId }: { enabled: boolean; init
             </Button>
             <Button size="sm" onClick={newChat}>
               <SquarePen />
-              New chat
+              New Chat
             </Button>
           </>
         }
@@ -170,7 +170,7 @@ function ChatPane({
         action={
           <Button variant="primary" onClick={onNewChat}>
             <SquarePen />
-            New chat
+            New Chat
           </Button>
         }
       />

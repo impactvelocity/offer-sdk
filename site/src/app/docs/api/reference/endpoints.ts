@@ -12,6 +12,7 @@ const NONE = "No credential";
 const SECRET = "Secret key";
 const PUBLIC = "Secret or publishable key";
 const ACCOUNT_READ = "Secret key, publishable key, or the account's own token";
+const ACCOUNT_PRIVATE = "Secret key, or the account's own token";
 const ACCOUNT_TOKEN = "Secret key or the account's own token";
 const ADMIN = "Admin key only";
 
@@ -28,8 +29,8 @@ export const MCP_ENDPOINTS: EndpointDoc[] = [
     summary: "The app's MCP server: one JSON-RPC message (or a batch) per request, answered with JSON. 401 points to the resource metadata; 403 when the server is turned off.",
     auth: MCP_AUTH,
   },
-  { method: "GET", path: `${app}/mcp`, summary: "405. The server is stateless and never streams to the client.", auth: MCP_AUTH },
-  { method: "DELETE", path: `${app}/mcp`, summary: "405. There is no session to end.", auth: MCP_AUTH },
+  { method: "GET", path: `${app}/mcp`, summary: "405. The server is stateless and never streams to the client.", auth: NONE },
+  { method: "DELETE", path: `${app}/mcp`, summary: "405. There is no session to end.", auth: NONE },
   {
     method: "GET",
     path: "/.well-known/oauth-protected-resource/apps/:appId/mcp",
@@ -106,7 +107,7 @@ export const ENDPOINT_GROUPS: EndpointGroup[] = [
     title: "Apps",
     intro: "An app is one product you sell. Creating one returns its secret and publishable keys.",
     endpoints: [
-      { method: "POST", path: "/apps", summary: "Creates an app. Body: { name, plan? }. Returns the app with api_key and public_key.", auth: NONE },
+      { method: "POST", path: "/apps", summary: "Creates an app. Body: { name, plan? }. Returns the app with api_key and public_key.", auth: ADMIN },
       { method: "GET", path: app, summary: "The app record, including its keys and checkout_url.", auth: SECRET },
       { method: "PATCH", path: app, summary: "Merges fields into the app, such as name or checkout_url. Key fields are ignored.", auth: SECRET },
       { method: "DELETE", path: app, summary: "Deletes the app and every plan, entitlement, add-on, incentive, account and counter in it.", auth: SECRET },
@@ -143,7 +144,7 @@ export const ENDPOINT_GROUPS: EndpointGroup[] = [
         summary: "Effective access: plan, offer extras and incentive merged, with usage, max, left and can per entitlement. Private meta removed.",
         auth: ACCOUNT_READ,
       },
-      { method: "GET", path: `${account}/full-plan`, summary: "Same as /plan, with private meta included.", auth: ACCOUNT_READ },
+      { method: "GET", path: `${account}/full-plan`, summary: "Same as /plan, with private meta included.", auth: ACCOUNT_PRIVATE },
       { method: "POST", path: `${account}/addons`, summary: "Gives the account an add-on of its own. Body: { id }.", auth: SECRET },
       { method: "DELETE", path: `${account}/addons/:addonId`, summary: "Removes an add-on the account owns.", auth: SECRET },
     ],
@@ -155,8 +156,8 @@ export const ENDPOINT_GROUPS: EndpointGroup[] = [
       { method: "GET", path: `${account}/usage`, summary: "Counts for every entitlement on the account's plan, as { [entitlementId]: count }.", auth: PUBLIC },
       { method: "GET", path: `${account}/usage/:entitlementId`, summary: "One counter: { entitlement, count }.", auth: PUBLIC },
       { method: "POST", path: `${account}/usage/:entitlementId/add`, summary: "Adds 1. Returns 402 with an upgrade offer when a blocking limit would be passed.", auth: PUBLIC },
-      { method: "POST", path: `${account}/usage/:entitlementId/remove`, summary: "Subtracts 1.", auth: PUBLIC },
-      { method: "POST", path: `${account}/usage/:entitlementId/amount`, summary: "Adds { amount } (an integer, negative to subtract). Positive amounts can return 402.", auth: PUBLIC },
+      { method: "POST", path: `${account}/usage/:entitlementId/remove`, summary: "Subtracts 1.", auth: SECRET },
+      { method: "POST", path: `${account}/usage/:entitlementId/amount`, summary: "Adds { amount } (an integer, negative to subtract). Positive amounts can return 402. A negative amount with the publishable key returns 403.", auth: PUBLIC },
     ],
   },
   {
@@ -298,7 +299,7 @@ export const ENDPOINT_GROUPS: EndpointGroup[] = [
     intro: "The steps, questions and save offers a customer sees when they cancel.",
     endpoints: [
       { method: "GET", path: `${app}/cancel-flows`, summary: "Every flow, with sessions and saves in the last 30 days.", auth: SECRET },
-      { method: "GET", path: `${app}/cancel-flows/capabilities`, summary: "Whether dynamic offers (Claude) and workflow pauses (Render) are configured on this API.", auth: SECRET },
+      { method: "GET", path: `${app}/cancel-flows/capabilities`, summary: "Whether dynamic offers (AI) and workflow pauses (Render) are configured on this API.", auth: SECRET },
       { method: "POST", path: `${app}/cancel-flows`, summary: "Creates a flow. Body: { id?, name?, status?, steps? }. Without steps, starts from a template.", auth: SECRET },
       { method: "GET", path: `${app}/cancel-flows/:flowId`, summary: "One flow.", auth: SECRET },
       { method: "PATCH", path: `${app}/cancel-flows/:flowId`, summary: "Updates name, status (active or draft) or steps. steps replaces the whole list.", auth: SECRET },

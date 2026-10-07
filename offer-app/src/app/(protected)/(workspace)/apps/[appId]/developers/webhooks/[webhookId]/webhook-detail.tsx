@@ -88,7 +88,7 @@ export function WebhookDetail({ webhookId }: { webhookId: string }) {
           description={`There's no webhook endpoint with the ID “${webhookId}” in this app.`}
           action={
             <Link href={`/apps/${appId}/developers/webhooks`} className={buttonVariants({ variant: "primary" })}>
-              All webhooks
+              All Webhooks
             </Link>
           }
         />
@@ -120,7 +120,7 @@ export function WebhookDetail({ webhookId }: { webhookId: string }) {
       description: zapier
         ? "Zapier doesn't check signatures, so your Zap keeps working."
         : `The old secret stops working immediately. Deliveries fail verification until you update ${WEBHOOK_SECRET_ENV} on your server.`,
-      confirmLabel: "Roll secret",
+      confirmLabel: "Roll Secret",
       tone: "default",
       onConfirm: () => roll.mutateAsync(),
     });
@@ -320,7 +320,7 @@ export function WebhookDetail({ webhookId }: { webhookId: string }) {
                 </p>
                 <a href="https://zapier.com/app/zaps" target="_blank" rel="noreferrer" className={buttonVariants({ size: "xs", className: "mt-3" })}>
                   <ZapierMark className="size-3.5" />
-                  Open my Zaps
+                  Open My Zaps
                   <ArrowUpRight />
                 </a>
               </PanelSection>
@@ -343,7 +343,7 @@ function SubscribedEvents({ endpoint, onEdit }: { endpoint: WebhookEndpoint; onE
         </p>
         <Button size="xs" onClick={onEdit}>
           <Pencil />
-          Edit events
+          Edit Events
         </Button>
       </div>
       {WEBHOOK_CATEGORIES.map((category) => {

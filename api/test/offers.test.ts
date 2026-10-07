@@ -168,11 +168,11 @@ const paypalWebhook = (event_type: string, resource: unknown, sig = "good") =>
 const eventTypes = async (): Promise<string[]> =>
   (await sql`select type from webhook_events where app_id = ${appId} order by created_at`).map((r: any) => r.type as string);
 
-const fullPlan = async (account: string) => (await call("GET", a(`/namespaces/${account}/full-plan`), { key: pub })).json;
+const fullPlan = async (account: string) => (await call("GET", a(`/namespaces/${account}/full-plan`), { key: apiKey })).json;
 
 beforeAll(async () => {
   await migrate();
-  const created = await call("POST", "/apps", { key: null, body: { name: "Scrapely" } });
+  const created = await call("POST", "/apps", { body: { name: "Scrapely" } });
   ({ id: appId, api_key: apiKey, public_key: pub } = created.json);
 
   const post = (path: string, body: unknown) => call("POST", a(path), { key: apiKey, body });
@@ -651,6 +651,9 @@ describe("accounts", () => {
 describe("usage limits", () => {
   const add = (account: string, amount: number) =>
     call("POST", a(`/namespaces/${account}/usage/scrapes/amount`), { key: pub, body: { amount } });
+  // Lowering a counter needs the secret key.
+  const subtract = (account: string, amount: number) =>
+    call("POST", a(`/namespaces/${account}/usage/scrapes/amount`), { key: apiKey, body: { amount: -amount } });
   const approveFromLink = (url: string) => approveSubscription(url.split("/").pop()!);
 
   test("overage must be allow or block", async () => {
@@ -661,7 +664,8 @@ describe("usage limits", () => {
   test("allow keeps counting past the limit", async () => {
     await call("POST", a("/namespaces"), { key: apiKey, body: { id: "hooli", name: "Hooli", plan: "free" } });
     expect((await add("hooli", 150)).json.count).toBe(150);
-    await add("hooli", -150);
+    expect((await add("hooli", -150)).status).toBe(403);
+    await subtract("hooli", 150);
   });
 
   test("block answers 402 with an upgrade an agent can show", async () => {
@@ -686,7 +690,7 @@ describe("usage limits", () => {
     expect(again.json.offer.checkout_url).toBe(res.json.offer.checkout_url);
     expect((await fullPlan("hooli")).entitlements.find((e: any) => e.id === "scrapes").usage).toBe(100);
     // Lowering usage is never blocked.
-    expect((await add("hooli", -1)).status).toBe(200);
+    expect((await subtract("hooli", 1)).status).toBe(200);
     await add("hooli", 1);
   });
 

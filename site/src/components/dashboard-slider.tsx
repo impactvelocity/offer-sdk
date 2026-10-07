@@ -24,7 +24,7 @@ import { cn } from "@/lib/utils";
 interface Screen {
   /** Same as the dashboard's nav label. */
   label: string;
-  /** Route the shot was taken on, under the demo app. */
+  /** Route the shot was taken on, under /apps/app_lnpSrz. Not shown; kept for retaking shots. */
   path: string;
   image: StaticImageData;
   /** Caption: a bright opening sentence, then a dimmed one that continues it. */
@@ -33,7 +33,6 @@ interface Screen {
 }
 
 // Shot at 1440×900 in dark mode from the demo workspace's "Notebook AI" app (pnpm seed:demo).
-const APP_PATH = "/apps/app_lnpSrz";
 
 const screens: Screen[] = [
   {
@@ -54,7 +53,7 @@ const screens: Screen[] = [
     label: "Agent",
     path: "/agent",
     image: agent,
-    title: "Ask Claude to change the catalog.",
+    title: "Ask the Agent to change the catalog.",
     body: "It looks up plans and accounts, and every change waits on a diff you approve.",
   },
   {
@@ -69,7 +68,7 @@ const screens: Screen[] = [
     path: "/cancel-flow/edit",
     image: cancelFlow,
     title: "Ask why before they cancel.",
-    body: "Write the questions, then let Claude pick a discount, pause or downgrade from the answer.",
+    body: "Write the questions, then let the agent pick a discount, pause or downgrade from the answer.",
   },
   {
     label: "Plans",
@@ -125,7 +124,7 @@ const screens: Screen[] = [
     path: "/developers/mcp",
     image: mcp,
     title: "Connect AI assistants to your app.",
-    body: "Give Claude, Cursor and ChatGPT the same tools as the API, with OAuth, access levels and an activity log.",
+    body: "Give AI assistants and coding agents the same tools as the API, with OAuth, access levels and an activity log.",
   },
   {
     label: "Webhooks",
@@ -143,10 +142,8 @@ const screens: Screen[] = [
   },
 ];
 
-const pad = (n: number) => String(n).padStart(2, "0");
-
 /**
- * Screenshots of every dashboard page in a window frame. Pick a page from the strip above it,
+ * Screenshots of every dashboard page in a rounded frame. Pick a page from the strip above it,
  * use the arrows (or arrow keys), or swipe on touch screens; the caption below follows along.
  */
 export function DashboardSlider({ className }: { className?: string }) {
@@ -225,18 +222,6 @@ export function DashboardSlider({ className }: { className?: string }) {
       <div className="relative mt-5">
         <div className="absolute -inset-x-10 -top-10 -bottom-10 -z-10 bg-brand-glow blur-2xl" aria-hidden />
         <div className="overflow-hidden rounded-2xl border border-border-strong bg-panel shadow-2xl shadow-black/50">
-          <div className="flex h-10 items-center justify-between gap-4 border-b border-border px-4 font-mono text-xs text-fg-muted">
-            <span className="flex min-w-0 items-center gap-2">
-              <span className="size-2 shrink-0 rounded-full bg-accent" aria-hidden />
-              <span className="truncate">
-                app.offersdk.com{APP_PATH}
-                {screen.path}
-              </span>
-            </span>
-            <span className="tabular shrink-0">
-              {pad(index + 1)} / {pad(screens.length)}
-            </span>
-          </div>
           <div
             className="overflow-hidden bg-canvas touch-pan-y"
             onPointerDown={onPointerDown}

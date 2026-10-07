@@ -171,7 +171,7 @@ export function ApplyToAccount({ appId, incentive }: { appId: string; incentive:
       )}
       <Button size="xs" variant="ghost" className="self-start" onClick={() => setApiOpen(true)}>
         <Braces />
-        Apply from your backend
+        Apply from Your Backend
       </Button>
       <Sheet open={apiOpen} onOpenChange={setApiOpen}>
         <SheetContent className="max-w-[640px]">

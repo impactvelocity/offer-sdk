@@ -51,7 +51,7 @@ export function OffersView() {
 
   return (
     <>
-      <PageHeader icon={<BadgePercent />} title="Offers" actions={offers !== null ? newButton("New offer") : null} />
+      <PageHeader icon={<BadgePercent />} title="Offers" actions={offers !== null ? newButton("New Offer") : null} />
       <Toolbar>
         <InputGroup
           size="sm"
@@ -63,7 +63,6 @@ export function OffersView() {
         />
       </Toolbar>
       <PageBody>
-        <PaypalCallout appId={appId} className="mx-6 mt-4" />
         {isLoading ? (
           <div className="flex flex-col gap-2 p-6">
             {[0, 1, 2, 3].map((i) => (
@@ -83,7 +82,7 @@ export function OffersView() {
             icon={<BadgePercent />}
             title="No offers yet"
             description="An offer is a deal on your plans: a lower price for a while, extra limits, and add-ons sold at checkout. Share its link in ads, with affiliates or from support, and buyers pay with PayPal."
-            action={newButton("Create offer")}
+            action={newButton("Create Offer")}
           />
         ) : (
           <>
@@ -186,6 +185,7 @@ export function OffersView() {
             </TableFooter>
           </>
         )}
+        <PaypalCallout appId={appId} className="mx-6 my-6" />
       </PageBody>
     </>
   );

@@ -149,7 +149,7 @@ export function PricingEditor({ appId, plan }: { appId: string; plan: Plan }) {
         </Card>
         <Card className="@container">
           <CardHeader
-            title="Pricing card"
+            title="Pricing Card"
             actions={plan.pricingCard ? <Badge color="green" dot>Published</Badge> : <Badge>Not set</Badge>}
           />
           <div className="flex flex-col gap-5 p-5">
@@ -240,7 +240,7 @@ export function PricingEditor({ appId, plan }: { appId: string; plan: Plan }) {
                   onClick={() => set("benefits", [...draft.benefits, { id: `b${Date.now().toString(36)}`, title: "" }])}
                 >
                   <Plus />
-                  Add benefit
+                  Add Benefit
                 </Button>
               </div>
             </Field>
@@ -261,7 +261,7 @@ export function PricingEditor({ appId, plan }: { appId: string; plan: Plan }) {
                 }}
               >
                 <Trash2 />
-                Remove card
+                Remove Card
               </Button>
             ) : null}
             <div className="ml-auto flex items-center gap-2">
@@ -276,7 +276,7 @@ export function PricingEditor({ appId, plan }: { appId: string; plan: Plan }) {
                 loading={save.isPending}
                 disabled={!draft.title.trim() || invalidPrice || (!dirty && Boolean(plan.pricingCard))}
               >
-                {plan.pricingCard ? "Save changes" : "Publish pricing card"}
+                {plan.pricingCard ? "Save Changes" : "Publish Pricing Card"}
               </Button>
             </div>
           </div>

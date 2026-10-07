@@ -26,7 +26,7 @@ const cases: { title: string; body: string; tone: MarkerTone; Diagram: Component
     body: "When an account runs low on credits, show the next plan up and take payment through PayPal.",
     tone: "green",
     Diagram: UpsellDiagram,
-    detail: <Detail>Upgrade shown at 90% of the credit limit</Detail>,
+    detail: <Detail>Upgrade shown at 90% of credits</Detail>,
   },
   {
     title: "Churn saves",
@@ -81,7 +81,8 @@ export function UseCasesSection() {
         />
 
         <article
-          style={cardStyle("green")}
+          // The wide card's glow and grid sit in the top-left corner, behind the funnel.
+          style={{ ...cardStyle("green"), "--glow-at": "0% 0%", "--glow-size": "40% 80%", "--grid-size": "36% 72%" } as CSSProperties}
           className="diagram-cell group mt-16 grid items-center gap-8 rounded-2xl border border-border bg-panel p-6 shadow-lg sm:p-8 lg:grid-cols-[2fr_5fr]"
         >
           <DiagramReveal className="mx-auto w-full max-w-[280px]">
@@ -96,12 +97,10 @@ export function UseCasesSection() {
               </span>
             </h3>
             <ol className="mt-8 grid gap-px overflow-hidden rounded-xl border border-border bg-border sm:grid-cols-2 xl:grid-cols-4">
-              {funnel.map((s, i) => (
+              {funnel.map((s) => (
                 <li key={s.step} className="bg-bg p-4">
                   <div className="flex items-baseline justify-between gap-2 text-xs">
-                    <span className="text-fg-tertiary">
-                      <span className="font-mono tabular">0{i + 1}</span> {s.step}
-                    </span>
+                    <span className="text-fg-tertiary">{s.step}</span>
                     <span className="font-mono text-fg-secondary tabular">{s.price}</span>
                   </div>
                   <p className="mt-4 font-medium text-fg">{s.offer}</p>

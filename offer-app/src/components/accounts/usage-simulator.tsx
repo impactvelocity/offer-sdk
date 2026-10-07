@@ -112,7 +112,7 @@ export function UsageSimulator({
           onChange={(e) => setAmount(e.target.value)}
         />
         <Button size="sm" type="submit" loading={pending === "amount"} disabled={!amountValid || Boolean(pending)}>
-          Add amount
+          Add Amount
         </Button>
       </form>
       {amount.trim() && !amountValid ? (

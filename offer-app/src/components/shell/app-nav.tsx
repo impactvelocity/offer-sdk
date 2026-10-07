@@ -54,7 +54,7 @@ export function AppNav({ appId, className }: { appId: string; className?: string
           ) : null}
           {cancelFlows.data !== null ? (
             <NavItem href={`${base}/cancel-flow`} icon={<DoorOpen />} active={is("/cancel-flow")}>
-              Cancel flow
+              Cancel Flow
             </NavItem>
           ) : null}
         </div>
@@ -85,13 +85,13 @@ export function AppNav({ appId, className }: { appId: string; className?: string
             Integration
           </NavItem>
           <NavItem href={`${base}/developers/api`} icon={<Braces />} active={is("/developers/api")}>
-            API reference
+            API Reference
           </NavItem>
           <NavItem href={`${base}/developers/mcp`} icon={<Plug />} active={is("/developers/mcp")}>
-            MCP server
+            MCP Server
           </NavItem>
           <NavItem href={`${base}/developers/keys`} icon={<Key />} active={is("/developers/keys")}>
-            API keys
+            API Keys
           </NavItem>
           <NavItem href={`${base}/developers/webhooks`} icon={<Webhook />} active={is("/developers/webhooks")} count={webhooks.data?.length}>
             Webhooks
@@ -100,7 +100,7 @@ export function AppNav({ appId, className }: { appId: string; className?: string
       </NavPanelBody>
       <NavPanelFooter>
         <NavItem href={`${base}/settings`} icon={<Settings />} active={is("/settings")}>
-          App settings
+          App Settings
         </NavItem>
       </NavPanelFooter>
     </NavPanel>

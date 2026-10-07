@@ -8,26 +8,10 @@ import { MCP_TOOL_COUNT, MCP_TOOL_GROUPS, type ToolKind } from "./tools";
 export const metadata: Metadata = {
   title: "MCP server",
   description:
-    "Connect Claude, Claude Code, Cursor, VS Code or ChatGPT to an app over MCP: the server URL, OAuth and secret-key auth, access levels, every tool, resource and prompt, and the dashboard controls.",
+    "Connect AI assistants and coding agents to an app over MCP: the server URL, OAuth and secret-key auth, access levels, every tool, resource and prompt, and the dashboard controls.",
 };
 
 const SERVER_URL = "https://api.example.com/apps/app_AbCdEf/mcp";
-
-const claudeCodeOAuth = `claude mcp add --transport http offer ${SERVER_URL}`;
-
-const claudeCodeKey = `export OFFER_SECRET_KEY=key_…
-claude mcp add --transport http offer ${SERVER_URL} \\
-  --header "Authorization: Bearer $OFFER_SECRET_KEY"`;
-
-const claudeCodeJson = `{
-  "mcpServers": {
-    "offer": {
-      "type": "http",
-      "url": "${SERVER_URL}",
-      "headers": { "Authorization": "Bearer \${OFFER_SECRET_KEY}" }
-    }
-  }
-}`;
 
 const cursorJson = `{
   "mcpServers": {
@@ -89,7 +73,7 @@ export default function McpDocsPage() {
     <>
       <DocsHeader
         title="MCP server"
-        lead="Every app has an MCP server that gives AI assistants the same tools as the API. Connect Claude, Claude Code, Cursor, VS Code or ChatGPT, sign in with OAuth or use the secret key, and choose how much each connection can change."
+        lead="Every app has an MCP server that gives AI assistants the same tools as the API. Connect any MCP client, sign in with OAuth or use the secret key, and choose how much each connection can change."
       />
 
       <p>
@@ -135,9 +119,9 @@ export default function McpDocsPage() {
           },
         ]}
       />
-      <Callout title="Claude and ChatGPT connect from their own servers.">
-        Their connectors need the API on a public HTTPS URL. A local API at <code>localhost:6767</code> works with
-        clients that run on your machine: Claude Code, Cursor and VS Code.
+      <Callout title="Web chat apps connect from their own servers.">
+        Their connectors, such as ChatGPT&apos;s, need the API on a public HTTPS URL. A local API at <code>localhost:6767</code> works with
+        clients that run on your machine, such as Cursor, VS Code and terminal coding agents.
       </Callout>
 
       <H2>Connect a client</H2>
@@ -146,35 +130,6 @@ export default function McpDocsPage() {
         with the app&apos;s server URL. Snippets that use a key read it from <code>OFFER_SECRET_KEY</code> rather than
         holding it.
       </p>
-
-      <H3>Claude</H3>
-      <p>For claude.ai and the Claude desktop app. Custom connectors sign in with OAuth.</p>
-      <ol>
-        <li>
-          Open <strong>Settings → Connectors</strong> and choose <strong>Add custom connector</strong>.
-        </li>
-        <li>
-          Name it <code>Offer</code>, paste the server URL and click <strong>Add</strong>.
-        </li>
-        <li>
-          Click <strong>Connect</strong>, sign in to the dashboard, and pick an access level (and the app, if asked).
-        </li>
-        <li>In a chat, turn Offer on from the tools menu.</li>
-      </ol>
-
-      <H3>Claude Code</H3>
-      <p>
-        With OAuth, add the server, then run <code>/mcp</code> in Claude Code, select <code>offer</code> and choose{" "}
-        <strong>Authenticate</strong>. A browser window opens on the dashboard&apos;s sign-in page.
-      </p>
-      <Code lang="bash" title="Terminal" code={claudeCodeOAuth} />
-      <p>With the secret key, send it as a header instead:</p>
-      <Code lang="bash" title="Terminal" code={claudeCodeKey} />
-      <p>
-        Add <code>--scope project</code> to write the server to <code>.mcp.json</code> and share it with your team. The
-        file expands <code>{"${OFFER_SECRET_KEY}"}</code> from each person&apos;s environment:
-      </p>
-      <Code lang="json" title=".mcp.json" code={claudeCodeJson} />
 
       <H3>Cursor</H3>
       <p>
@@ -222,7 +177,7 @@ export default function McpDocsPage() {
         rows={[
           [
             "OAuth access token",
-            "Claude, ChatGPT, and any client that signs in. One connection per person and client.",
+            "ChatGPT, Cursor, VS Code and any client that signs in. One connection per person and client.",
             "The tools its access level covers, among those switched on for the app.",
           ],
           [
@@ -307,8 +262,8 @@ export default function McpDocsPage() {
         head={["Level", "Scope", "Tools it covers"]}
         rows={[
           ["Read only", <code key="s">mcp:read</code>, "Look up accounts, the catalog, usage, analytics and webhooks. Nothing changes."],
-          ["Read & write", <code key="s">mcp:write</code>, "Also create and update accounts, plans, incentives, usage and webhooks. No deletes."],
-          ["Full access", <code key="s">mcp:full</code>, "Everything, including deletes."],
+          ["Read & write", <code key="s">mcp:write</code>, "Also create and update accounts, plans, entitlements, add-ons, incentives and webhooks, attach entitlements and add-ons, record usage, rename the app, send test events and retry deliveries. No deletes."],
+          ["Full access", <code key="s">mcp:full</code>, "Everything, including deletes, detaching entitlements and add-ons, and removing an account's incentive."],
         ]}
       />
       <p>An OAuth connection can call a tool when both of these hold:</p>
@@ -330,15 +285,20 @@ export default function McpDocsPage() {
       </p>
       <Callout title="Clients confirm before destructive tools.">
         Tools carry MCP annotations: reads are <code>readOnlyHint</code>, deletes are <code>destructiveHint</code>, and
-        the two that call your webhook URLs are <code>openWorldHint</code>. Claude and most other clients ask before
+        the two that call your webhook URLs are <code>openWorldHint</code>. Most clients ask before
         running a destructive tool.
       </Callout>
 
       <H2>Tools</H2>
       <p>
-        {MCP_TOOL_COUNT} tools, one for each endpoint in the dashboard&apos;s API reference. Arguments are the
-        endpoint&apos;s path parameters, query parameters and body fields, with the same names. Routes below are
-        relative to <code>/apps/:appId</code>, and the last column is the lowest access level that can call each tool.
+        {MCP_TOOL_COUNT} tools, each wrapping one endpoint. Arguments are the endpoint&apos;s path parameters, query
+        parameters and body fields, with the same names. A few filters are left out, such as <code>offer</code> on{" "}
+        <code>list_accounts</code>. Routes below are relative to <code>/apps/:appId</code>, and the last column is the
+        lowest access level that can call each tool.
+      </p>
+      <p>
+        Tools take the account id as <code>namespaceId</code>, so routes show it as <code>:namespaceId</code>. The{" "}
+        <Link href="/docs/api/reference">Endpoint reference</Link> writes the same parameter as <code>:accountId</code>.
       </p>
       {MCP_TOOL_GROUPS.map((group) => (
         <Fragment key={group.title}>
@@ -363,7 +323,7 @@ export default function McpDocsPage() {
       </ul>
 
       <H3>Not available over MCP</H3>
-      <p>These endpoints are in the API reference but have no tool, because a mistake would lock you out:</p>
+      <p>These endpoints have no tool, because a mistake would lock you out:</p>
       <Table
         head={["Endpoint", "Why"]}
         rows={[
@@ -377,9 +337,9 @@ export default function McpDocsPage() {
         ]}
       />
       <p>
-        Offers, checkouts, subscriptions, PayPal, cancel flows, saved reports, account tokens and add-ons on single
-        accounts aren&apos;t in the dashboard&apos;s API reference, so they have no tools either. Call the{" "}
-        <Link href="/docs/api/reference">API</Link> directly for those.
+        Tools cover accounts, usage, the catalog, analytics, webhooks and the app. Offers, checkouts, subscriptions,
+        PayPal, cancel flows and cancel sessions, saved reports, account tokens, account add-ons and history import
+        aren&apos;t exposed over MCP. Use the <Link href="/docs/api/reference">REST API</Link> for those.
       </p>
 
       <H2>Resources</H2>
@@ -453,10 +413,6 @@ export default function McpDocsPage() {
           },
         ]}
       />
-      <Callout title="Mock mode shows samples.">
-        The server runs in the Offer API, so with <code>OFFER_API_URL=mock</code> the page shows sample switches,
-        connections and activity. Point the dashboard at a real API to connect clients.
-      </Callout>
 
       <H2>Endpoints</H2>
       <p>

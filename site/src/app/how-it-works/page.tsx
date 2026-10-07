@@ -4,9 +4,9 @@ import { DemoPlayground } from "@/components/demo/playground";
 import { SectionHeading } from "@/components/section-heading";
 
 export const metadata: Metadata = {
-  title: "How it works",
+  title: "React SDK",
   description:
-    "Try Offer SDK on a mock app: switch plans, use up credits, fail a payment, then watch an agent save a cancellation and build a checkout per visitor.",
+    "See the Offer React SDK respond in real time on a mock app: switch plans, use up credits, fail a payment, then watch an agent save a cancellation and build a checkout per visitor.",
 };
 
 export default function DemoPage() {
@@ -16,11 +16,12 @@ export default function DemoPage() {
       <div className="mx-auto max-w-6xl px-4 pt-16 pb-20 sm:px-6">
         <div className="max-w-2xl">
           <h1 className="font-display text-4xl font-medium text-balance sm:text-5xl">
-            Watch your app react to plan changes
+            See the React SDK respond to changes in real time
           </h1>
           <p className="mt-4 text-fg-muted">
-            Acme Docs is a mock app on a simulated Offer SDK. Switch plans, burn credits or fail a payment, and watch
-            features, paywalls and offers update live. The log shows every SDK call. No real accounts are touched.
+            Acme Docs is a mock React app on a simulated Offer SDK. Switch plans, burn credits or fail a payment, and
+            watch features, paywalls and offers update the moment the account changes. The log shows every SDK call.
+            No real accounts are touched.
           </p>
         </div>
         <div className="mt-12">

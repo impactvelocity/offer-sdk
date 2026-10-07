@@ -56,7 +56,7 @@ const toolCall = async (key: string, name: string, args: Record<string, unknown>
 
 beforeAll(async () => {
   await migrate();
-  const created = await call("POST", "/apps", { key: null, body: { name: "MCP Test" } });
+  const created = await call("POST", "/apps", { body: { name: "MCP Test" } });
   ({ id: appId, api_key: apiKey } = created.json);
   await call("POST", `/apps/${appId}/entitlements`, { key: apiKey, body: { id: "credits", name: "Credits", type: "usage" } });
   await call("POST", `/apps/${appId}/plans`, { key: apiKey, body: { id: "free", name: "Free", isFree: true } });
@@ -317,7 +317,7 @@ describe("oauth", () => {
   });
 
   test("tokens only work for their own app", async () => {
-    const other = (await call("POST", "/apps", { key: null, body: { name: "Other" } })).json;
+    const other = (await call("POST", "/apps", { body: { name: "Other" } })).json;
     const res = await call("POST", `/apps/${other.id}/mcp`, { key: access, body: { jsonrpc: "2.0", id: 1, method: "ping" } });
     expect(res.status).toBe(401);
   });

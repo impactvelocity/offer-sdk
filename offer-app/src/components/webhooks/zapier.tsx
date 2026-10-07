@@ -179,7 +179,7 @@ function ZapierForm({ appId, initialEvent, onClose }: { appId: string; initialEv
               router.push(`/apps/${appId}/developers/webhooks/${result.endpoint.id}`);
             }}
           >
-            View endpoint
+            View Endpoint
           </Button>
           <Button variant="primary" onClick={onClose}>
             Done
@@ -230,7 +230,7 @@ function ZapierForm({ appId, initialEvent, onClose }: { appId: string; initialEv
           Cancel
         </Button>
         <Button type="submit" variant="primary" loading={connect.isPending} disabled={!url.trim() || Boolean(problem)} kbd="↵">
-          Connect and send sample
+          Connect and Send Sample
         </Button>
       </DialogFooter>
     </form>

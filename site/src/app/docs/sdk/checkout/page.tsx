@@ -117,6 +117,7 @@ const startBody = `{
 
 const checkoutRow = `{
   "id": "chk_Q2wErTyUiOpAsDfG",
+  "app_id": "app_AbCdEf",
   "offer_id": "launch_50",
   "plan_id": "pro",
   "interval": "month",
@@ -126,7 +127,23 @@ const checkoutRow = `{
   "ref": "newsletter",
   "status": "created",
   "currency": "USD",
-  "total_today": 23.5,
+  "total_today": 25,
+  "quote": {
+    "offer_id": "launch_50",
+    "offer_name": "Launch week",
+    "plan_id": "pro",
+    "plan_name": "Pro",
+    "interval": "month",
+    "currency": "USD",
+    "price": 10,
+    "list_price": 20,
+    "cycles": 3,
+    "bumps": [{ "id": "support", "label": "Priority support", "amount": 15, "grant": { "addons": ["priority_support"] } }],
+    "setup_fee": 15,
+    "total_today": 25,
+    "renews_at_price": 20,
+    "extras": { "entitlements": [], "addons": [], "ends": "subscription" }
+  },
   "paypal": { "kind": "subscription", "id": "I-BW452GLLEP1G" },
   "approve_url": "https://www.sandbox.paypal.com/webapps/billing/subscriptions?ba_token=…",
   "created_at": "2026-10-01T12:00:00.000Z",
@@ -213,9 +230,7 @@ export default function SdkCheckoutPage() {
       <Code title="app/pricing/page.tsx" lang="tsx" code={serverPage} />
       <Code title="app/pricing/checkout-form.tsx" lang="tsx" code={clientForm} />
       <p>
-        The blog test bed&apos;s <code>/pricing</code> page is this pattern with every component and a debug panel
-        that prints <code>useOffer()</code>. The dashboard&apos;s <code>/demo/checkout</code> page is a styled
-        version.
+        The dashboard&apos;s <code>/demo/checkout</code> page is a styled version of this pattern.
       </p>
 
       <H2>OfferProvider</H2>
@@ -262,7 +277,15 @@ export default function SdkCheckoutPage() {
           ["Offer.Bump", "bump, children?: (props: BumpRenderProps) => ReactNode", "A checkbox with label, price and description."],
           ["Offer.Summary", "children?: (ctx) => ReactNode", "Line items, the total due today and the renewal terms."],
           ["Offer.Email", "label?, placeholder?", "An email field. Renders nothing when the provider has an account."],
-          ["Offer.Checkout", "onSuccess?, style?, children?: (ctx) => ReactNode", "PayPal's buttons for the selection, plus status and error text."],
+          [
+            "Offer.Checkout",
+            "onSuccess?, style?, children?: (ctx) => ReactNode",
+            <>
+              PayPal&apos;s buttons for the selection, plus status and error text. <code>children</code> replaces all of
+              it and PayPal&apos;s buttons don&apos;t load, so a custom button calls <code>ctx.redirectToPaypal()</code>.
+              See <a href="#paying-on-paypals-page">Paying on PayPal&apos;s page</a>.
+            </>,
+          ],
         ]}
       />
 
@@ -394,7 +417,7 @@ export default function SdkCheckoutPage() {
       <p>
         Drafts can&apos;t be bought, and publishing needs PayPal. To see a draft on your real page, send its fields to{" "}
         <code>POST /apps/:appId/offers/draft-preview</code> with the secret key from your server, and pass the result
-        as <code>initialOffer</code>. Nothing is stored. The blog does this for <code>?preview=1</code>.
+        as <code>initialOffer</code>. Nothing is stored.
       </p>
 
       <H2>Helpers</H2>

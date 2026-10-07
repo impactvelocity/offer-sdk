@@ -149,7 +149,14 @@ export default function EnvironmentPage() {
           ],
           ["DEMO_APP_ID", "None", "App for the public PayPal checkout demo at /demo/checkout."],
           ["DEMO_PUBLISHABLE_KEY", "None", "That app's publishable key."],
-          ["BETTER_AUTH_SECRET", "None", "Mock mode only, where sign-in runs inside the dashboard."],
+          [
+            "BETTER_AUTH_SECRET",
+            "A fixed dev value",
+            <>
+              Mock mode only, where sign-in runs inside the dashboard. Unset, sessions are signed with a value that is
+              public in the source, so set your own on any mock dashboard other people can reach.
+            </>,
+          ],
           ["BETTER_AUTH_URL", "None", "Mock mode only. The dashboard's own URL."],
         ]}
       />
@@ -166,24 +173,12 @@ export default function EnvironmentPage() {
         ]}
       />
 
-      <H2>Marketing site</H2>
-      <Table
-        head={["Variable", "Description"]}
-        rows={[
-          [
-            "NEXT_PUBLIC_APP_URL",
-            <>
-              The dashboard&apos;s URL, used by the site&apos;s sign-in and demo links. Defaults to{" "}
-              <code>https://app.offersdk.com</code> in production builds and <code>http://localhost:6768</code> in dev.
-            </>,
-          ],
-        ]}
-      />
-
       <H2>Scripts</H2>
       <p>
         <code>pnpm seed:demo</code> reads <code>APP_URL</code>, the dashboard whose demo workspace it builds (or rebuilds
-        with <code>--reset</code>), and defaults to <code>http://localhost:6768</code>. See{" "}
+        with <code>--reset</code>), and defaults to <code>http://localhost:6768</code>. With <code>--reset</code> it
+        also reads <code>ADMIN_API_KEY</code>, the API&apos;s admin key. That defaults to <code>dev-admin-key</code>{" "}
+        for a local dashboard and is required for a deployed one. See{" "}
         <Link href="/docs/deploy">Deploy on Render</Link> for resetting a deployed dashboard&apos;s demo.
       </p>
     </>

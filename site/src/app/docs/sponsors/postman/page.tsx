@@ -64,13 +64,14 @@ export default function PostmanDocsPage() {
           <p>
             For a deployed API, import <code>offer-api.postman_environment.json</code>, select{" "}
             <strong>Offer API (deployed)</strong> in the environment menu, and set <code>baseUrl</code> to your API&apos;s
-            URL and <code>adminKey</code> to its <code>ADMIN_API_KEY</code>.
+            URL and <code>adminKey</code> to its <code>ADMIN_API_KEY</code>. Quickstart creates its app with the admin
+            key, so it needs both.
           </p>
         </Step>
         <Step title="Run Quickstart">
           <p>
             Open the <strong>Quickstart</strong> folder and send its requests in order, or press <strong>Run</strong> on
-            the folder to send them all. <strong>Create an app</strong> saves the new app&apos;s id, secret key and
+            the folder to send them all. <strong>Create an app</strong> uses the admin key and saves the new app&apos;s id, secret key and
             publishable key into the collection variables. The rest creates a <code>posts</code> entitlement, a Free plan
             with 3 posts and a Pro plan with 100, an account called <code>user_42</code>, one recorded post, and an
             upgrade to Pro.
@@ -182,6 +183,11 @@ export default function PostmanDocsPage() {
           [<><code>accountToken</code></>, <>Empty</>, "Accounts → Mint an account token."],
           [<><code>webhookUrl</code></>, <><code>https://example.com/offer-webhooks</code></>, "You. Point it at a receiver you can watch, such as webhook.site."],
           [<><code>paypalClientId</code>, <code>paypalClientSecret</code></>, <>Empty</>, "You, from a PayPal sandbox REST app."],
+          [<><code>orgId</code>, <code>userId</code>, <code>threadId</code></>, <><code>postman_workspace</code>, <code>postman_user</code>, <code>postman_thread</code></>, "You. Used by the Admin and MCP OAuth folders."],
+          [<><code>mcpSessionId</code>, <code>mcpConnectionId</code></>, <>Empty</>, "The MCP server folder."],
+          [<><code>oauthRedirectUri</code>, <code>oauthCodeVerifier</code>, <code>oauthCodeChallenge</code></>, <>A local callback and a fixed PKCE pair</>, "You. The MCP OAuth folder uses them as is."],
+          [<><code>oauthClientId</code>, <code>oauthRequestId</code>, <code>oauthCode</code></>, <>Empty</>, "The MCP OAuth folder, one step at a time."],
+          [<><code>mcpAccessToken</code>, <code>mcpRefreshToken</code></>, <>Empty</>, "The MCP OAuth folder's token requests."],
         ]}
       />
 

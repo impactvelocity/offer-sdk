@@ -61,7 +61,7 @@ export function AnalyticsTab({
             />
           </Card>
           <Card>
-            <CardHeader title="Usage by entitlement" />
+            <CardHeader title="Usage by Entitlement" />
             <div className="p-2">
               <BarList
                 items={rows.map((r) => ({

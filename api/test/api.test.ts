@@ -73,8 +73,10 @@ describe("public routes", () => {
 });
 
 describe("apps", () => {
-  test("create without auth", async () => {
-    const res = await call("POST", "/apps", { key: null, body: { name: "My SaaS", plan: "pro" } });
+  test("create needs the admin key", async () => {
+    expect((await call("POST", "/apps", { key: null, body: { name: "Nope" } })).status).toBe(401);
+    expect((await call("POST", "/apps", { key: "not-the-admin-key", body: { name: "Nope" } })).status).toBe(401);
+    const res = await call("POST", "/apps", { body: { name: "My SaaS", plan: "pro" } });
     expect(res.status).toBe(201);
     expect(res.json.id).toMatch(/^app_[A-Za-z]{6}$/);
     expect(res.json.api_key).toMatch(/^key_[A-Za-z]{32}$/);
@@ -91,7 +93,7 @@ describe("apps", () => {
   });
 
   test("key from another app is rejected", async () => {
-    const other = await call("POST", "/apps", { key: null, body: { name: "Other" } });
+    const other = await call("POST", "/apps", { body: { name: "Other" } });
     expect((await call("GET", `/apps/${appId}`, { key: other.json.api_key })).status).toBe(401);
     await call("DELETE", `/apps/${other.json.id}`);
   });
@@ -392,6 +394,12 @@ describe("usage + plan resolution", () => {
       entitlement: "api_calls",
       count: 7,
     });
+    // The public key can add usage but never lower it.
+    expect((await call("POST", `${base}/api_calls/remove`, { key: publicKey })).status).toBe(401);
+    expect((await call("POST", `${base}/api_calls/amount`, { key: publicKey, body: { amount: -7 } })).status).toBe(403);
+    // A positive amount gets past auth (404 here, not 401).
+    const ghost = `/apps/${appId}/namespaces/ghost/usage/api_calls/amount`;
+    expect((await call("POST", ghost, { key: publicKey, body: { amount: 2 } })).status).toBe(404);
     expect((await call("GET", `${base}/seats`, { key: apiKey })).json.count).toBe(0);
     expect((await call("GET", base, { key: apiKey })).json).toEqual({ api_calls: 7, sso: 0 });
   });
@@ -422,6 +430,11 @@ describe("usage + plan resolution", () => {
     const full = await call("GET", `/apps/${appId}/namespaces/user_1/full-plan`, { key: apiKey });
     expect(full.json.plan.meta).toEqual({ color: "gold", secret: "s" });
     expect(full.json.plan.privateMetaKeys).toEqual(["secret"]);
+    // Private meta stays on the server: the public key can't read /full-plan.
+    expect((await call("GET", `/apps/${appId}/namespaces/user_1/full-plan`, { key: publicKey })).status).toBe(401);
+    // Ids that contain a public route's word don't open other routes to the public key.
+    expect((await call("GET", `/apps/${appId}/namespaces/pricing_bot/full-plan`, { key: publicKey })).status).toBe(401);
+    expect((await call("DELETE", `/apps/${appId}/entitlements/usage_x`, { key: publicKey })).status).toBe(401);
 
     const over = await call("GET", `/apps/${appId}/namespaces/user_3/plan`, { key: apiKey });
     expect(over.json.entitlements[0]).toMatchObject({ usage: 25, max: 3, left: 0, can: false });
@@ -539,7 +552,7 @@ describe("webhooks", () => {
   const create = (body: unknown) => call("POST", hooks(), { key: whKey, body });
 
   test("setup", async () => {
-    const res = await call("POST", "/apps", { key: null, body: { name: "Hooks" } });
+    const res = await call("POST", "/apps", { body: { name: "Hooks" } });
     ({ id: wh, api_key: whKey, public_key: whPub } = res.json);
     await call("POST", `/apps/${wh}/entitlements`, { key: whKey, body: { id: "credits", type: "usage", name: "Credits" } });
     await call("POST", `/apps/${wh}/plans`, { key: whKey, body: { id: "basic", name: "Basic" } });
@@ -1097,7 +1110,7 @@ describe("dashboard auth", () => {
     expect(ws.status).toBe(200);
     const wsId: string = ws.json.id;
     // The dashboard keeps the workspace's apps in an org record with the same id.
-    const wsApp = await call("POST", "/apps", { key: null, body: { name: "Workspace app" } });
+    const wsApp = await call("POST", "/apps", { body: { name: "Workspace app" } });
     await call("POST", "/orgs", { body: { id: wsId, app_ids: [wsApp.json.id] } });
 
     // An invited email joins the workspace when it signs up.

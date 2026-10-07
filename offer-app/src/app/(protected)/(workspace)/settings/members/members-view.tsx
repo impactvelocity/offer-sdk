@@ -92,7 +92,7 @@ export function MembersView() {
       const ok = await confirm({
         title: `Make ${name} an owner?`,
         description: "Owners have full control, including removing other owners and deleting the workspace.",
-        confirmLabel: "Make owner",
+        confirmLabel: "Make Owner",
         tone: "default",
       });
       if (!ok) return;
@@ -105,7 +105,7 @@ export function MembersView() {
     return confirm({
       title: `Remove ${name}?`,
       description: `${name} loses access to ${workspace.name} and all of its apps right away. You can invite them again later.`,
-      confirmLabel: "Remove member",
+      confirmLabel: "Remove Member",
       onConfirm: () => remove.mutateAsync(member.id),
     });
   };
@@ -232,7 +232,7 @@ export function MembersView() {
           </Section>
 
           <Section
-            title="Invite people"
+            title="Invite People"
             description={
               canManage || !myRole
                 ? "New members get access to every app in this workspace."
@@ -277,7 +277,7 @@ export function MembersView() {
                     loading={invite.isPending}
                   >
                     <Send />
-                    Send invite
+                    Send Invite
                   </Button>
                 </div>
                 {inviteError ? <p className="text-xs text-danger-fg">{inviteError}</p> : null}
@@ -290,7 +290,7 @@ export function MembersView() {
           </Section>
 
           {pending.length ? (
-            <Section title="Pending invitations" description="They join automatically when they sign up with the invited email.">
+            <Section title="Pending Invitations" description="They join automatically when they sign up with the invited email.">
               <Card className="overflow-hidden">
                 <TableContainer>
                   <Table className={cardTable}>

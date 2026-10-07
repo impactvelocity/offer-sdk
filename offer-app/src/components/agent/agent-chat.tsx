@@ -11,7 +11,7 @@ import {
   type UIDataTypes,
   type UIMessage,
 } from "ai";
-import { Check, Copy, RotateCw, ShieldCheck, Sparkles } from "lucide-react";
+import { Check, Copy, RotateCw, Sparkles } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Conversation,
@@ -236,12 +236,7 @@ export function AgentChat({
             autoFocus
           />
           <PromptInputFooter>
-            <PromptInputTools>
-              <span className="flex items-center gap-1.5 px-1.5 text-xs text-fg-tertiary">
-                <ShieldCheck className="size-3.5 text-fg-icon" />
-                You approve every change · Claude Sonnet 5.5
-              </span>
-            </PromptInputTools>
+            <PromptInputTools />
             <PromptInputSubmit status={status} onStop={stop} disabled={!enabled || !input.trim()} />
           </PromptInputFooter>
         </PromptInput>

@@ -2,7 +2,7 @@ import { Layers2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export function LogoMark({ className }: { className?: string }) {
-  return <Layers2 className={cn("size-[22px] shrink-0 text-fg", className)} strokeWidth={2} aria-hidden />;
+  return <Layers2 className={cn("size-[22px] shrink-0 text-accent", className)} strokeWidth={2} aria-hidden />;
 }
 
 export function Logo({ className }: { className?: string }) {

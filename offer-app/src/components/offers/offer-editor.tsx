@@ -250,7 +250,7 @@ export function OfferEditor({ appId, offer, source }: { appId: string; offer?: O
           { label: "Offers", href: `/apps/${appId}/offers`, icon: <BadgePercent /> },
           ...(offer ? [{ label: offer.name, href: back }] : []),
         ]}
-        title={offer ? "Edit" : "New offer"}
+        title={offer ? "Edit" : "New Offer"}
         actions={
           <>
             <Link href={back} className={buttonVariants()}>
@@ -258,7 +258,7 @@ export function OfferEditor({ appId, offer, source }: { appId: string; offer?: O
             </Link>
             <Button variant="primary" disabled={!canSave} loading={save.isPending} onClick={() => save.mutate()}>
               <Save />
-              {offer ? "Save offer" : "Create draft"}
+              {offer ? "Save Offer" : "Create Draft"}
             </Button>
           </>
         }
@@ -272,7 +272,7 @@ export function OfferEditor({ appId, offer, source }: { appId: string; offer?: O
               if (canSave) save.mutate();
             }}
           >
-            <Section title="Details" description="How the offer is named in the dashboard and introduced on the checkout page.">
+            <Section title="Details" description="The offer's name and checkout copy.">
               <div className="flex flex-col gap-4">
                 <NameIdFields
                   state={nameId}
@@ -292,10 +292,7 @@ export function OfferEditor({ appId, offer, source }: { appId: string; offer?: O
               </div>
             </Section>
 
-            <Section
-              title="Pricing"
-              description="One discount for every plan in the offer. Each plan can override it below."
-            >
+            <Section title="Pricing" description="Applies to every plan unless the plan sets its own price.">
               <div className="flex flex-col gap-4">
                 <Segmented
                   value={draft.discountKind}
@@ -317,12 +314,12 @@ export function OfferEditor({ appId, offer, source }: { appId: string; offer?: O
                         onChange={(e) => set("discountValue", e.target.value)}
                       />
                     </Field>
-                    <Field label="For how many payments" description="Then the list price. Empty means it never ends.">
+                    <Field label="Discounted payments" description="Leave empty to discount every payment.">
                       <Input type="number" min={1} placeholder="Always" value={draft.cycles} onChange={(e) => set("cycles", e.target.value)} />
                     </Field>
                   </div>
                 ) : null}
-                <Field label="Billing options" description="Which ways to pay the checkout page offers. Lifetime needs one-time prices.">
+                <Field label="Billing options" description="Lifetime needs a one-time price.">
                   <div className="flex flex-wrap gap-4">
                     {INTERVALS.map((interval) => (
                       <label key={interval} className="flex items-center gap-2 text-sm text-fg">
@@ -344,10 +341,7 @@ export function OfferEditor({ appId, offer, source }: { appId: string; offer?: O
               </div>
             </Section>
 
-            <Section
-              title="Plans"
-              description="Each plan keeps its entitlements and list price. Add extras to give more than the plan does."
-            >
+            <Section title="Plans" description="Plans buyers can choose. Extras add to what a plan includes.">
               {plans.isLoading ? (
                 <Skeleton className="h-32" />
               ) : (
@@ -362,8 +356,8 @@ export function OfferEditor({ appId, offer, source }: { appId: string; offer?: O
             </Section>
 
             <Section
-              title="Order bumps"
-              description="One-time add-ons offered at checkout, like a setup call or a credit pack."
+              title="Order Bumps"
+              description="One-time add-ons at checkout, like a setup call or credit pack."
               actions={
                 <Button
                   size="sm"
@@ -375,14 +369,14 @@ export function OfferEditor({ appId, offer, source }: { appId: string; offer?: O
                   }
                 >
                   <Plus />
-                  Add bump
+                  Add Bump
                 </Button>
               }
             >
               <BumpsEditor draft={draft} setDraft={setDraft} addons={addons} entitlements={entitlements} plans={plans.data ?? []} />
             </Section>
 
-            <Section title="Availability" description="When the offer stops taking new buyers. Existing buyers keep their price.">
+            <Section title="Availability" description="Existing buyers keep their price after the offer ends.">
               <div className="grid grid-cols-2 gap-4">
                 <Field label="Ends" hint="(optional)">
                   <Input type="datetime-local" value={draft.expiresAt} onChange={(e) => set("expiresAt", e.target.value)} />
@@ -411,7 +405,7 @@ function PreviewPanel({ preview, hasPlans }: { preview: ReturnType<typeof useDra
   return (
     <div className="flex flex-col gap-3">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-fg">Checkout preview</h3>
+        <h3 className="text-sm font-semibold text-fg">Checkout Preview</h3>
         {preview.pending ? <span className="text-xs text-fg-tertiary">Updating…</span> : null}
       </div>
       {preview.error ? (
@@ -429,7 +423,7 @@ function PreviewPanel({ preview, hasPlans }: { preview: ReturnType<typeof useDra
       ) : (
         <Skeleton className="h-80" />
       )}
-      <p className="text-xs text-fg-tertiary">Built with the checkout SDK&apos;s components, priced by the API.</p>
+      <p className="text-xs text-fg-tertiary">Live checkout, priced by the API.</p>
     </div>
   );
 }
@@ -529,7 +523,7 @@ function PlansEditor({
                             variant="ghost"
                             onClick={() => updatePlan(plan.id, (p) => ({ ...p, prices: { ...p.prices, [interval]: { amount: "0", cycles: "" } } }))}
                           >
-                            Set a price
+                            Set a Price
                           </Button>
                         </div>
                       );
@@ -572,7 +566,7 @@ function PlansEditor({
                       </div>
                     );
                   })}
-                  <span className="text-xs text-fg-tertiary">Leave a price empty to use the offer&apos;s discount (shown in grey).</span>
+                  <span className="text-xs text-fg-tertiary">Empty uses the offer&apos;s discount (in grey).</span>
                 </div>
 
                 <div className="grid gap-2">
@@ -637,7 +631,7 @@ function PlansEditor({
                       onClick={() => updatePlan(plan.id, (p) => ({ ...p, entitlements: [...p.entitlements, { id: "", max: "" }] }))}
                     >
                       <Plus />
-                      Add extra
+                      Add Extra
                     </Button>
                     {entry.entitlements.length ? (
                       <Select
@@ -676,7 +670,7 @@ function BumpsEditor({
   plans: Plan[];
 }) {
   if (!draft.bumps.length) {
-    return <p className="text-sm text-fg-tertiary">No bumps. Add one to offer something extra at checkout.</p>;
+    return <p className="text-sm text-fg-tertiary">No bumps yet.</p>;
   }
   const update = (key: string, patch: Partial<BumpDraft>) =>
     setDraft((d) => ({ ...d, bumps: d.bumps.map((b) => (b.key === key ? { ...b, ...patch } : b)) }));
@@ -749,7 +743,7 @@ function BumpsEditor({
             )}
           </div>
           {included.length > 1 ? (
-            <Field label="Shown with" description="No selection means every plan.">
+            <Field label="Shown with" description="Leave empty for every plan.">
               <div className="flex flex-wrap gap-4">
                 {included.map((plan) => (
                   <label key={plan.id} className="flex items-center gap-2 text-sm text-fg">

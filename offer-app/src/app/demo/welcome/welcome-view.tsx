@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import styles from "../demo.module.css";
 
-interface FullPlan {
+interface ResolvedPlan {
   plan: { id: string; name: string };
   offer: string | null;
   incentive: string | null;
@@ -26,7 +26,7 @@ interface Props {
 
 export function WelcomeView({ apiUrl, appId, publishableKey, account, overrides }: Props) {
   const base = `${apiUrl.replace(/\/+$/, "")}/apps/${encodeURIComponent(appId)}/namespaces/${encodeURIComponent(account)}`;
-  const [plan, setPlan] = useState<FullPlan | null>(null);
+  const [plan, setPlan] = useState<ResolvedPlan | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [scrape, setScrape] = useState<{ ok: boolean; text: string; link?: string | null } | null>(null);
 
@@ -42,16 +42,16 @@ export function WelcomeView({ apiUrl, appId, publishableKey, account, overrides 
   );
 
   const load = useCallback(async () => {
-    const res = await request("/full-plan");
-    if (res.status === 200) setPlan(res.body as FullPlan);
+    const res = await request("/plan");
+    if (res.status === 200) setPlan(res.body as ResolvedPlan);
     else setError((res.body as { error?: string }).error ?? `Couldn't load the account (${res.status})`);
   }, [request]);
 
   useEffect(() => {
     let active = true;
-    request("/full-plan").then((res) => {
+    request("/plan").then((res) => {
       if (!active) return;
-      if (res.status === 200) setPlan(res.body as FullPlan);
+      if (res.status === 200) setPlan(res.body as ResolvedPlan);
       else setError((res.body as { error?: string }).error ?? `Couldn't load the account (${res.status})`);
     });
     return () => {
@@ -99,7 +99,7 @@ export function WelcomeView({ apiUrl, appId, publishableKey, account, overrides 
               {plan.offer && <span className={styles.chip}>via {plan.offer}</span>}
             </h1>
             <p className={styles.muted}>
-              Account <code>{account}</code>. This page reads access with <code>GET /full-plan</code>, the same call the app
+              Account <code>{account}</code>. This page reads access with <code>GET /plan</code>, the same call the app
               made before offers existed.
             </p>
 

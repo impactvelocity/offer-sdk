@@ -122,7 +122,7 @@ export function ImpactByPlan({
 
   const header = (
     <CardHeader
-      title="Impact by plan"
+      title="Impact by Plan"
       description="What accounts on each plan get once this incentive is applied. Their plan itself doesn't change."
     />
   );

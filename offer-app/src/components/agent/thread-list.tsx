@@ -56,7 +56,7 @@ export function ThreadList({
     confirm({
       title: "Delete this chat?",
       description: `“${thread.title || "New chat"}” will be deleted for good. Changes the agent already made stay in place.`,
-      confirmLabel: "Delete chat",
+      confirmLabel: "Delete Chat",
       tone: "danger",
       onConfirm: async () => {
         await remove.mutateAsync(thread.id);

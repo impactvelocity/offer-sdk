@@ -58,7 +58,7 @@ import type {
 } from "@/lib/api/types";
 import { cn, formatNumber, pluralize } from "@/lib/utils";
 import { StatStrip } from "../stat-strip";
-import { buildUsageChart, rankedBy, useAccountNames, useEntitlementColors, usageTrend, type UsageMetric } from "../usage-data";
+import { buildUsageChart, useAccountNames, useEntitlementColors, usageTrend, type UsageMetric } from "../usage-data";
 
 const TOP_LIMIT = 100;
 const NONE: ReadonlySet<string> = new Set();
@@ -136,7 +136,7 @@ export function AnalyticsView() {
     const ok = await confirm({
       title: `Delete “${activeReport.name}”?`,
       description: "Only the saved view is removed. Usage data isn't affected.",
-      confirmLabel: "Delete report",
+      confirmLabel: "Delete Report",
       tone: "danger",
       onConfirm: () => reportMutations.remove.mutateAsync(activeReport.id),
     });
@@ -214,7 +214,7 @@ export function AnalyticsView() {
         action={
           <Button onClick={() => summary.refetch()} loading={summary.isFetching}>
             <RotateCw />
-            Try again
+            Try Again
           </Button>
         }
       />
@@ -229,9 +229,9 @@ export function AnalyticsView() {
           <>
             <Link href={`/apps/${appId}/developers`} className={buttonVariants({ variant: "primary" })}>
               <BookOpen />
-              Integration guide
+              Integration Guide
             </Link>
-            {period !== "alltime" && hasAnyUsage ? <Button onClick={() => setPeriod("alltime")}>Show all time</Button> : null}
+            {period !== "alltime" && hasAnyUsage ? <Button onClick={() => setPeriod("alltime")}>Show All Time</Button> : null}
           </>
         }
       />
@@ -251,14 +251,7 @@ export function AnalyticsView() {
 
         <Card>
           <CardHeader
-            title="Usage over time"
-            description={[
-              filterName,
-              intervalLabel(period),
-              chart ? (chart.granularity === "week" ? "Weekly" : "Daily") : null,
-            ]
-              .filter(Boolean)
-              .join(" · ")}
+            title="Usage Over Time"
             actions={
               timeseries.data ? (
                 <Segmented
@@ -319,7 +312,6 @@ export function AnalyticsView() {
           rows={top.data}
           loading={top.isLoading}
           error={top.error}
-          description={`${filterName ?? "All entitlements"} · ${intervalLabel(period)}`}
           emptyText={filterName ? `No account used ${filterName} in this period.` : "No account has usage in this period."}
         />
       </div>
@@ -340,14 +332,14 @@ export function AnalyticsView() {
                     Reset
                   </Button>
                   <Button onClick={updateActive} loading={reportMutations.update.isPending}>
-                    Update report
+                    Update Report
                   </Button>
                 </>
               ) : null
             ) : (
               <Button onClick={() => setNameDialog("create")}>
                 <BookmarkPlus />
-                Save report
+                Save Report
               </Button>
             )
           ) : null
@@ -485,10 +477,7 @@ function ByEntitlement({
 
   return (
     <Card className="overflow-hidden">
-      <CardHeader
-        title="By entitlement"
-        description="Select rows to focus the page on them, e.g. AI credits alone or together with another entitlement."
-      />
+      <CardHeader title="By Entitlement" />
       <TableContainer className="[&_tbody_tr:last-child>td]:border-b-0">
         <Table>
           <THead>
@@ -577,14 +566,12 @@ function TopAccounts({
   rows,
   loading,
   error,
-  description,
   emptyText,
 }: {
   appId: string;
   rows: TopAccountUsage[] | undefined;
   loading: boolean;
   error: Error | null;
-  description: string;
   emptyText: string;
 }) {
   const router = useRouter();
@@ -597,10 +584,7 @@ function TopAccounts({
 
   return (
     <Card className="overflow-hidden">
-      <CardHeader
-        title="Top accounts"
-        description={rows?.length ? `${description} · Ranked by ${rankedBy(rows) === "calls" ? "calls" : "usage"}` : description}
-      />
+      <CardHeader title="Top Accounts" />
       {loading ? (
         <div className="flex flex-col gap-2 p-6">
           {Array.from({ length: 5 }, (_, i) => (

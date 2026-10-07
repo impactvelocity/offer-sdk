@@ -131,8 +131,8 @@ function item(def: RequestDef) {
 
 const DESCRIPTION = `Every route of the Offer API (Offer SDK's Hono service).
 
-1. Start the API locally (\`pnpm dev:api\`) or point \`baseUrl\` at a deployed one with the environment file.
-2. Run the **Quickstart** folder top to bottom. It creates an app and saves its keys into the collection variables.
+1. Start the API locally (\`pnpm dev:api\`): \`baseUrl\` and \`adminKey\` already point at it. For a deployed API, import the environment file and set its \`baseUrl\` and \`adminKey\` (the API's ADMIN_API_KEY).
+2. Run the **Quickstart** folder top to bottom. It creates an app with the admin key and saves the app's keys into the collection variables.
 3. Every other folder then works on that app. You can also run the whole collection in order.
 4. **Clean up** deletes what the run created, ending with the app.
 
@@ -169,7 +169,7 @@ export function buildEnvironment() {
     id: "0b7d4e21-8c3f-4a6b-9e15-7f2c1d9a3b48",
     name: "Offer API (deployed)",
     values: [
-      { key: "baseUrl", value: "https://offersdk-api.onrender.com", type: "default", enabled: true },
+      { key: "baseUrl", value: "https://your-api.onrender.com", type: "default", enabled: true },
       { key: "adminKey", value: "", type: "secret", enabled: true },
     ],
     _postman_variable_scope: "environment",

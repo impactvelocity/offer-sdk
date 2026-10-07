@@ -115,7 +115,7 @@ function EndpointForm({ appId, endpoint, onClose }: { appId: string; endpoint?: 
           Cancel
         </Button>
         <Button type="submit" variant="primary" loading={save.isPending} disabled={disabled} kbd="↵">
-          {editing ? "Save changes" : "Add endpoint"}
+          {editing ? "Save Changes" : "Add endpoint"}
         </Button>
       </DialogFooter>
     </form>

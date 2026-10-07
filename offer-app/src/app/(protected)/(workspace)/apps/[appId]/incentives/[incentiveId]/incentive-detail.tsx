@@ -69,7 +69,7 @@ export function IncentiveDetail({ incentiveId }: { incentiveId: string }) {
           description={`There's no incentive with the ID “${incentiveId}” in this app.`}
           action={
             <Link href={`/apps/${appId}/incentives`} className={buttonVariants({ variant: "primary" })}>
-              All incentives
+              All Incentives
             </Link>
           }
         />

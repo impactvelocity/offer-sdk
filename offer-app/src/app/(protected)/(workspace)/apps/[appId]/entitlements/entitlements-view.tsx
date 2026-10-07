@@ -84,7 +84,7 @@ export function EntitlementsView() {
               .join(" and ")} first. Accounts lose it immediately, and usage stops being tracked.`
           : "This can't be undone.",
       typeToConfirm: refs > 0 ? e.id : undefined,
-      confirmLabel: "Delete entitlement",
+      confirmLabel: "Delete Entitlement",
       onConfirm: () => remove.mutateAsync(e.id),
     });
   };
@@ -102,7 +102,7 @@ export function EntitlementsView() {
             <HowItWorksButton topic="entitlements" />
             <Button variant="primary" onClick={() => setCreateOpen(true)}>
               <Plus />
-              New entitlement
+              New Entitlement
             </Button>
           </>
         }
@@ -141,7 +141,7 @@ export function EntitlementsView() {
             action={
               <Button variant="primary" onClick={() => setCreateOpen(true)}>
                 <Plus />
-                Create entitlement
+                Create Entitlement
               </Button>
             }
           />

@@ -15,7 +15,7 @@ const slug = (value: string) =>
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
 
-export function OnboardingForm({ userName, canCancel }: { userName: string; canCancel: boolean }) {
+export function OnboardingForm({ userName }: { userName: string }) {
   const router = useRouter();
   const [name, setName] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -52,17 +52,10 @@ export function OnboardingForm({ userName, canCancel }: { userName: string; canC
           <Field label="Workspace name" error={error}>
             <Input autoFocus required value={name} onChange={(e) => setName(e.target.value)} placeholder="Acme Inc." />
           </Field>
-          <div className="flex items-center gap-2">
-            {canCancel ? (
-              <Button size="md" onClick={() => router.back()}>
-                Cancel
-              </Button>
-            ) : null}
-            <Button type="submit" variant="primary" size="md" loading={pending} disabled={!name.trim()} className="flex-1">
-              Continue
-              <ArrowRight />
-            </Button>
-          </div>
+          <Button type="submit" variant="primary" size="md" loading={pending} disabled={!name.trim()}>
+            Continue
+            <ArrowRight />
+          </Button>
         </form>
       </div>
     </div>

@@ -22,10 +22,8 @@ export interface WorkspaceOrg {
 interface WorkspaceContextValue {
   user: WorkspaceUser;
   workspace: WorkspaceOrg;
-  workspaces: WorkspaceOrg[];
   /** Signed in as the shared, read-only demo login (see @/lib/demo). */
   demo: boolean;
-  switchWorkspace: (id: string) => Promise<void>;
   signOut: () => Promise<void>;
 }
 
@@ -45,22 +43,11 @@ export function useIsDemo() {
 export function WorkspaceProvider({
   user,
   workspace,
-  workspaces,
   demo,
   children,
-}: Omit<WorkspaceContextValue, "switchWorkspace" | "signOut"> & { children: ReactNode }) {
+}: Omit<WorkspaceContextValue, "signOut"> & { children: ReactNode }) {
   const router = useRouter();
   const queryClient = useQueryClient();
-
-  const switchWorkspace = useCallback(
-    async (organizationId: string) => {
-      await authClient.organization.setActive({ organizationId });
-      queryClient.clear();
-      router.push("/apps");
-      router.refresh();
-    },
-    [queryClient, router],
-  );
 
   const signOut = useCallback(async () => {
     await authClient.signOut();
@@ -70,7 +57,7 @@ export function WorkspaceProvider({
   }, [queryClient, router]);
 
   return (
-    <WorkspaceContext.Provider value={{ user, workspace, workspaces, demo, switchWorkspace, signOut }}>
+    <WorkspaceContext.Provider value={{ user, workspace, demo, signOut }}>
       {children}
     </WorkspaceContext.Provider>
   );

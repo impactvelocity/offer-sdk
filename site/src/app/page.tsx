@@ -8,6 +8,7 @@ import { DashboardSlider } from "@/components/dashboard-slider";
 import { ProductTabs } from "@/components/feature-tabs/product-tabs";
 import { PlatformPrimitives } from "@/components/platform-primitives";
 import { SectionHeading } from "@/components/section-heading";
+import { PartsSection } from "@/components/sections/parts";
 import { ProblemsSection } from "@/components/sections/problems";
 import { UseCasesSection } from "@/components/sections/use-cases";
 import { WalkthroughVideo } from "@/components/walkthrough-video";
@@ -104,20 +105,22 @@ export default function LandingPage() {
         </div>
       </section>
 
+      <PartsSection />
+
       <ProblemsSection />
 
       <section id="product" className="mx-auto max-w-6xl scroll-mt-20 px-4 py-24 sm:px-6 sm:py-32">
         <SectionHeading
-          title="One answer to “what can this account do?”"
-          lead="Check access with the API or React SDK, and let an agent pick the offer."
+          title="An agent that fights churn for you."
+          lead="It sees what each account uses and makes the offer that keeps them, right at the cancel button."
         />
         <ProductTabs className="mt-16" />
       </section>
 
       <section id="dashboard" className="mx-auto max-w-6xl scroll-mt-20 px-4 py-24 sm:px-6 sm:py-32">
         <SectionHeading
-          title="The dashboard, page by page."
-          lead="Every screen here is the demo workspace you can sign in to."
+          title="The admin app you host."
+          lead="Manage your plans, offers and accounts in one place."
         />
         <DashboardSlider className="mt-16" />
       </section>
@@ -137,7 +140,7 @@ export default function LandingPage() {
           title="One checkout page for every offer."
           lead="Built from SDK components, styled like your app."
         />
-        <div className="mt-16 grid items-start gap-12 lg:grid-cols-[1fr_3fr] lg:gap-8">
+        <div className="mt-16 grid items-start gap-12 lg:grid-cols-[2fr_3fr] lg:gap-12">
           <div>
             <p className="text-base/7 text-pretty text-fg-secondary">
               Every link carries its own offer, and the server re-checks each price before it reaches PayPal.

@@ -2,7 +2,7 @@
   "info": {
     "_postman_id": "6f2a9c3e-5b1d-4e8f-9a7c-2d4b6e8f0a13",
     "name": "Offer API",
-    "description": "Every route of the Offer API (Offer SDK's Hono service).\n\n1. Start the API locally (`pnpm dev:api`) or point `baseUrl` at a deployed one with the environment file.\n2. Run the **Quickstart** folder top to bottom. It creates an app and saves its keys into the collection variables.\n3. Every other folder then works on that app. You can also run the whole collection in order.\n4. **Clean up** deletes what the run created, ending with the app.\n\nRequests send the app's secret key unless their Auth tab says otherwise: browser routes use the publishable key, cancel sessions use an account token, the Admin folder and the dashboard's MCP routes use the admin key, and the OAuth folder's last requests use the MCP access token it obtains.\n\nGenerated from api/postman/requests.ts. Run `bun run postman` in api/ after changing routes.",
+    "description": "Every route of the Offer API (Offer SDK's Hono service).\n\n1. Start the API locally (`pnpm dev:api`): `baseUrl` and `adminKey` already point at it. For a deployed API, import the environment file and set its `baseUrl` and `adminKey` (the API's ADMIN_API_KEY).\n2. Run the **Quickstart** folder top to bottom. It creates an app with the admin key and saves the app's keys into the collection variables.\n3. Every other folder then works on that app. You can also run the whole collection in order.\n4. **Clean up** deletes what the run created, ending with the app.\n\nRequests send the app's secret key unless their Auth tab says otherwise: browser routes use the publishable key, cancel sessions use an account token, the Admin folder and the dashboard's MCP routes use the admin key, and the OAuth folder's last requests use the MCP access token it obtains.\n\nGenerated from api/postman/requests.ts. Run `bun run postman` in api/ after changing routes.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "auth": {
@@ -31,7 +31,7 @@
       "key": "baseUrl",
       "value": "http://localhost:6767",
       "type": "string",
-      "description": "The Offer API. Override it with an environment for a deployed API."
+      "description": "The Offer API. http://localhost:6767 is pnpm dev:api; use the environment file for a deployed API."
     },
     {
       "key": "adminKey",
@@ -266,7 +266,14 @@
           "request": {
             "method": "POST",
             "auth": {
-              "type": "noauth"
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminKey}}",
+                  "type": "string"
+                }
+              ]
             },
             "header": [
               {
@@ -292,7 +299,7 @@
                 "apps"
               ]
             },
-            "description": "No key needed. Saves the app's id, secret key and publishable key into the collection variables."
+            "description": "Saves the app's id, secret key and publishable key into the collection variables. Admin key only. App keys get 401."
           },
           "response": []
         },
@@ -514,7 +521,7 @@
             },
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/apps/{{appId}}/namespaces/{{accountId}}/full-plan",
+              "raw": "{{baseUrl}}/apps/{{appId}}/namespaces/{{accountId}}/plan",
               "host": [
                 "{{baseUrl}}"
               ],
@@ -523,7 +530,7 @@
                 "{{appId}}",
                 "namespaces",
                 "{{accountId}}",
-                "full-plan"
+                "plan"
               ]
             },
             "description": "The plan with every entitlement resolved: usage, max, left and can. Sent with the publishable key, as a browser would. Works with the publishable key, the account's own token, the secret key or the admin key."
@@ -627,7 +634,7 @@
                 "plan"
               ]
             },
-            "description": "Same as full-plan, with private meta keys removed. posts now has a max of 100. Works with the publishable key, the account's own token, the secret key or the admin key."
+            "description": "posts now has a max of 100. Works with the publishable key, the account's own token, the secret key or the admin key."
           },
           "response": []
         }
@@ -2118,16 +2125,6 @@
           "name": "Get the account's full plan",
           "request": {
             "method": "GET",
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{publicKey}}",
-                  "type": "string"
-                }
-              ]
-            },
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/apps/{{appId}}/namespaces/{{accountId}}/full-plan",
@@ -2142,7 +2139,7 @@
                 "full-plan"
               ]
             },
-            "description": "Works with the publishable key, the account's own token, the secret key or the admin key."
+            "description": "Private meta keys included. Works with the account's own token, the secret key or the admin key."
           },
           "response": []
         },
@@ -2207,7 +2204,7 @@
     },
     {
       "name": "Usage",
-      "description": "Counters for usage entitlements. A boolean entitlement returns 400. Works with the publishable key, the secret key or the admin key.",
+      "description": "Counters for usage entitlements. A boolean entitlement returns 400. Works with the publishable key, the secret key or the admin key. The publishable key can't lower a counter: Remove 1 and negative amounts need the secret key.",
       "item": [
         {
           "name": "All counters",
@@ -2310,16 +2307,6 @@
           "name": "Remove 1",
           "request": {
             "method": "POST",
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{publicKey}}",
-                  "type": "string"
-                }
-              ]
-            },
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/apps/{{appId}}/namespaces/{{accountId}}/usage/{{entitlementId}}/remove",
@@ -2335,7 +2322,8 @@
                 "{{entitlementId}}",
                 "remove"
               ]
-            }
+            },
+            "description": "Works with the secret key or the admin key."
           },
           "response": []
         },
@@ -2383,7 +2371,7 @@
                 "amount"
               ]
             },
-            "description": "An integer. Negative amounts subtract."
+            "description": "An integer. Negative amounts subtract, and need the secret key (403 with the publishable key)."
           },
           "response": []
         }
@@ -4819,7 +4807,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"enabled\": true,\n  \"access_level\": \"write\",\n  \"tool_overrides\": {\n    \"delete_app\": false\n  }\n}",
+              "raw": "{\n  \"enabled\": true,\n  \"access_level\": \"write\",\n  \"tool_overrides\": {\n    \"delete_plan\": false\n  }\n}",
               "options": {
                 "raw": {
                   "language": "json"

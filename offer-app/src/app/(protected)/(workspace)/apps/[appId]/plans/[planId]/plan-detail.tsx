@@ -106,7 +106,7 @@ export function PlanDetail({ planId }: { planId: string }) {
           ? `${pluralize(accountTotal, "account")} ${accountTotal === 1 ? "is" : "are"} on this plan. Their access checks will fail until you move them to another plan.`
           : "This can't be undone.",
       typeToConfirm: accountTotal > 0 ? plan.id : undefined,
-      confirmLabel: "Delete plan",
+      confirmLabel: "Delete Plan",
       onConfirm: () => remove.mutateAsync(),
     });
 
@@ -123,7 +123,7 @@ export function PlanDetail({ planId }: { planId: string }) {
           description={`There's no plan with the ID “${planId}” in this app.`}
           action={
             <Link href={`/apps/${appId}/plans`} className={buttonVariants({ variant: "primary" })}>
-              All plans
+              All Plans
             </Link>
           }
         />

@@ -292,11 +292,11 @@ export function trackUsage(c: SnippetContext) {
   const path = `/namespaces/${c.ex.account}/usage/${ent}`;
   return [
     { label: "Add 1", lang: "bash" as const, code: curl(c, "POST", `${path}/add`, "public") },
-    { label: "Remove 1", lang: "bash" as const, code: curl(c, "POST", `${path}/remove`, "public") },
+    { label: "Remove 1", lang: "bash" as const, code: `# Secret key only\n${curl(c, "POST", `${path}/remove`, "secret")}` },
     {
       label: "Add amount",
       lang: "bash" as const,
-      code: `# Adds to the count (negative amounts subtract)\n${curl(c, "POST", `${path}/amount`, "public", { amount: 25 })}`,
+      code: `# Adds to the count (negative amounts subtract, with the secret key only)\n${curl(c, "POST", `${path}/amount`, "public", { amount: 25 })}`,
     },
     {
       label: "JavaScript (server)",

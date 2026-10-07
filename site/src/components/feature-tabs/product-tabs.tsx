@@ -19,20 +19,20 @@ const tabs: FeatureTab[] = [
     visual: <SdkVisual />,
   },
   {
-    id: "agent",
-    label: "Agentic Offers",
-    tone: "pink",
-    title: "An agent that makes the offer at the cancel button",
-    body: "It reads the account's usage, picks from the offers you allow and links straight to PayPal checkout.",
-    visual: <AgentVisual />,
-  },
-  {
     id: "bundles",
     label: "Dynamic Bundles",
     tone: "orange",
     title: "Give every partner their own deal",
     body: "Each affiliate, influencer or sale gets its own mix and price, on one checkout page.",
     visual: <BundlesVisual />,
+  },
+  {
+    id: "agent",
+    label: "Agentic Offers",
+    tone: "pink",
+    title: "Turn cancels into saves",
+    body: "When someone hits cancel, it reads their usage, picks the save offer most likely to keep them and links straight to PayPal checkout.",
+    visual: <AgentVisual />,
   },
 ];
 

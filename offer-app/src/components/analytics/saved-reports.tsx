@@ -195,7 +195,7 @@ function NameForm({
           Cancel
         </Button>
         <Button type="submit" variant="primary" loading={pending} disabled={disabled} kbd="↵">
-          {mode === "create" ? "Save report" : "Save"}
+          {mode === "create" ? "Save Report" : "Save"}
         </Button>
       </DialogFooter>
     </form>

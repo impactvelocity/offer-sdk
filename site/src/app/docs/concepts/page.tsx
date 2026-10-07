@@ -104,7 +104,7 @@ export default function ConceptsPage() {
       </p>
       <Code
         lang="json"
-        code={`{ "id": "contacts", "name": "Contacts", "type": "usage", "usage": 940, "max": 1000, "left": 60, "can": true }`}
+        code={`{ "id": "contacts", "feature": "contacts", "name": "Contacts", "type": "usage", "usage": 940, "max": 1000, "left": 60, "can": true }`}
       />
       <p>
         <code>can</code> is the field to gate on. <code>max: null</code> means unlimited. Two routes return this shape:{" "}
@@ -137,7 +137,7 @@ export default function ConceptsPage() {
       <p>
         A cancel flow is the set of steps a customer sees when they press cancel: questions about why, a save offer, and
         a confirmation. The save offer can be a discount, a pause, a downgrade or an incentive. It can be fixed, or
-        picked per customer by Claude inside limits you set. See{" "}
+        picked per customer by an AI agent inside limits you set. See{" "}
         <Link href="/docs/admin/cancel-flows">Cancel flows</Link> in the dashboard docs.
       </p>
 

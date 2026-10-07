@@ -35,7 +35,9 @@ export const loggingFetch: typeof fetch = async (input, init) => {
     key: keyKind(new Headers(init?.headers).get("Authorization")),
   };
   try {
-    const res = await fetch(input, { ...init, cache: "no-store" });
+    // A signal opts out of Next's per-render GET memoization (no-store alone doesn't), so a
+    // re-read after a write (ensureAccount's GET after a 409) isn't served the earlier 404.
+    const res = await fetch(input, { ...init, cache: "no-store", signal: init?.signal ?? new AbortController().signal });
     requestLog().push({ ...entry, status: res.status, ms: Math.round(performance.now() - started) });
     return res;
   } catch (err) {

@@ -71,7 +71,7 @@ export function ToolsTab({
       <Card>
         <div className="flex flex-col gap-4 p-5 md:flex-row md:items-center">
           <div className="min-w-0 flex-1">
-            <h3 className="text-sm font-semibold text-fg">App-wide access level</h3>
+            <h3 className="text-sm font-semibold text-fg">App-Wide Access Level</h3>
             <p className="mt-0.5 text-sm text-fg-tertiary">{levelInfo?.description}</p>
           </div>
           <Segmented<AccessLevel>
@@ -84,7 +84,7 @@ export function ToolsTab({
           <div className="flex items-center justify-between gap-3 border-t border-border bg-bg-subtle px-5 py-2.5 text-sm text-fg-secondary">
             <span>{pluralize(overrideCount, "tool")} set by hand, ignoring the access level.</span>
             <Button size="xs" variant="ghost" onClick={onResetOverrides}>
-              Reset to defaults
+              Reset to Defaults
             </Button>
           </div>
         ) : null}
@@ -126,7 +126,7 @@ export function ToolsTab({
                   setGroup("all");
                 }}
               >
-                Clear filters
+                Clear Filters
               </Button>
             }
           />

@@ -84,7 +84,7 @@ const products: { id: string; name: string; title: string; lead: string; visual:
     id: "mcp",
     name: "MCP server",
     title: "Your offers and entitlements in any agent.",
-    lead: "Connect Claude, Cursor, VS Code or ChatGPT to your app.",
+    lead: "Connect any AI assistant or coding agent to your app.",
     visual: <McpVisual />,
     benefits: [
       {
@@ -95,7 +95,7 @@ const products: { id: string; name: string; title: string; lead: string; visual:
         title: "Access per connection.",
         body: "Read only, read and write, or full access. Clients ask before they run anything that deletes.",
       },
-      { title: "OAuth or a key.", body: "Sign in with OAuth from Claude and ChatGPT, or use a secret key in Claude Code and Cursor." },
+      { title: "OAuth or a key.", body: "Sign in with OAuth from chat apps, or use a secret key in coding agents." },
       {
         title: "Prompts included.",
         body: "Review your catalog, investigate an account, launch an incentive or debug a webhook in one step.",
@@ -135,7 +135,7 @@ const products: { id: string; name: string; title: string; lead: string; visual:
     id: "cancel",
     name: "Cancel flow",
     title: "A cancel flow that makes the save offer.",
-    lead: "Claude picks one for each customer, and PayPal takes the approval.",
+    lead: "An agent picks one for each customer, and PayPal takes the approval.",
     visual: <CancelVisual />,
     benefits: [
       {
@@ -144,7 +144,7 @@ const products: { id: string; name: string; title: string; lead: string; visual:
       },
       {
         title: "Agentic save offers.",
-        body: "Claude reads the account's usage and reason, then picks a discount, pause, downgrade or incentive.",
+        body: "The agent reads the account's usage and reason, then picks a discount, pause, downgrade or incentive.",
       },
       { title: "Guardrails on the server.", body: "You cap what it can offer, and the API checks every pick against your caps." },
       {

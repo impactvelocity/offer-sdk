@@ -5,7 +5,7 @@ import { Callout, Code, DocsHeader, H2, H3, Table, TermList } from "@/components
 export const metadata: Metadata = {
   title: "AI features",
   description:
-    "How Offer SDK uses Claude: dynamic save offers in cancel flows, with guardrails the API enforces, and the dashboard agent that edits the catalog with your approval.",
+    "How Offer SDK uses AI: dynamic save offers in cancel flows, with guardrails the API enforces, and the dashboard agent that edits the catalog with your approval.",
 };
 
 export default function AiFeaturesPage() {
@@ -13,10 +13,10 @@ export default function AiFeaturesPage() {
     <>
       <DocsHeader
         title="AI features"
-        lead="Claude picks save offers when a customer cancels, and runs the dashboard agent. Both are optional and switch on with an Anthropic API key."
+        lead="An AI model picks save offers when a customer cancels, and runs the dashboard agent. Both are optional and switch on with an Anthropic API key."
       />
 
-      <H2>Where Claude runs</H2>
+      <H2>Where the models run</H2>
       <Table
         head={["Model", "Used for", "Where"]}
         rows={[
@@ -75,18 +75,18 @@ export default function AiFeaturesPage() {
       <H2>Dynamic save offers</H2>
       <p>
         A cancel flow&apos;s offer step can have <strong>Dynamic offers</strong> turned on. When a customer reaches that
-        step, the API sends Claude what it knows about the account and why they&apos;re leaving, and Claude picks one
+        step, the API sends the model what it knows about the account and why they&apos;re leaving, and the model picks one
         offer and writes its copy.
       </p>
       <TermList
         items={[
           {
-            term: "What Claude sees",
+            term: "What the model sees",
             children:
               "The app's name. The customer's plan, price, number of payments, months as a customer, the offer they bought through, and usage against each limit. Their answers to the flow's questions. The offer kinds and limits that apply, and the team's instructions.",
           },
           {
-            term: "What Claude returns",
+            term: "What the model returns",
             children:
               "JSON that matches a schema built for this request: a short reasoning for the team, the offer kind (or none), its numbers, a plan or incentive id, and a headline, body and button label.",
           },
@@ -103,15 +103,15 @@ export default function AiFeaturesPage() {
         ]}
       />
       <p>
-        The system prompt tells Claude to match the offer to the reason (price, low use, a missing feature) and to
+        The system prompt tells the model to match the offer to the reason (price, low use, a missing feature) and to
         respect a decision no offer can fix, such as switching to a competitor or closing the business. It asks for the
         smallest offer likely to work, plain copy with no pressure or fake urgency, and no prices in the text.
       </p>
 
       <H3>Guardrails the API enforces</H3>
       <p>
-        The team sets limits in the cancel flow editor. The API uses them twice: to tell Claude what&apos;s allowed, and
-        to check the answer. Claude&apos;s output is never trusted as is.
+        The team sets limits in the cancel flow editor. The API uses them twice: to tell the model what&apos;s allowed, and
+        to check the answer. The model&apos;s output is never trusted as is.
       </p>
       <Table
         head={["Guardrail", "Range", "Default"]}
@@ -121,15 +121,17 @@ export default function AiFeaturesPage() {
           ["max_discount_cycles", "1 to 24", "3"],
           ["max_pause_months", "1 to 12", "3"],
           ["max_incentive_months", "1 to 24", "3"],
-          ["incentives", "Incentive ids Claude may offer", "None"],
-          ["downgrade_plans", "Plans Claude may move the account to", "Any cheaper plan"],
+          ["incentives", "Incentive ids the model may offer", "None"],
+          ["downgrade_plans", "Plans the model may move the account to", "Any cheaper paid plan"],
           ["instructions", "Up to 2,000 characters", "Empty"],
         ]}
       />
       <ul>
         <li>
-          Kinds are narrowed to what can apply to this account. Discounts and pauses need an active PayPal subscription,
-          a downgrade needs a cheaper allowed plan, and an incentive needs at least one allowed incentive.
+          Kinds are narrowed to what can apply to this account. Discounts, pauses and downgrades need an active,
+          recurring PayPal subscription; a one-time purchase doesn&apos;t qualify. A downgrade also needs an allowed
+          paid plan whose price for the subscription&apos;s billing period (monthly or yearly) is lower than what the
+          account pays now. An incentive needs at least one allowed incentive.
         </li>
         <li>
           Numbers are rounded and clamped: discounts to between 5% and the maximum, discount cycles, pause months and
@@ -145,11 +147,11 @@ export default function AiFeaturesPage() {
         </li>
       </ul>
 
-      <H3>When Claude isn&apos;t used</H3>
+      <H3>When the model isn&apos;t used</H3>
       <p>
         The flow falls back to its static offer (the offer set for the customer&apos;s answer, else the step&apos;s
         default) when there&apos;s no <code>ANTHROPIC_API_KEY</code>, the call fails or times out, the model refuses or
-        runs out of tokens, the JSON doesn&apos;t parse, Claude picks <code>none</code>, or it picks something that
+        runs out of tokens, the JSON doesn&apos;t parse, the model picks <code>none</code>, or it picks something that
         doesn&apos;t apply. If no static offer applies either, the step is skipped. The session records which happened
         in <code>decide</code>:
       </p>
@@ -168,18 +170,19 @@ export default function AiFeaturesPage() {
 
       <H2>The dashboard agent</H2>
       <p>
-        The <strong>Agent</strong> page in each app is a chat with Claude about that app&apos;s catalog. It runs in the
+        The <strong>Agent</strong> page in each app is a chat with an AI agent about that app&apos;s catalog. It runs in the
         dashboard&apos;s own server at <code>POST /api/agent</code>, built on the Vercel AI SDK with its Anthropic
         provider. Each request uses adaptive thinking with a summary shown in the chat, medium effort, and at most 10
         steps.
       </p>
       <p>
-        Only a signed-in user whose active workspace owns the app can use it. Each chat is saved as a thread through the
+        Only a signed-in user whose active workspace owns the app can use it. It&apos;s off for the shared demo login:
+        the page is hidden and <code>POST /api/agent</code> answers 403. Each chat is saved as a thread through the
         API and is private to the user who started it.
       </p>
 
       <H3>Read tools</H3>
-      <p>These run as soon as Claude calls them:</p>
+      <p>These run as soon as the agent calls them:</p>
       <Code
         lang="text"
         code={`
@@ -189,7 +192,7 @@ getAccount  findAccountsNearLimits  getUsage  getTopAccounts`}
       <H3>Write tools</H3>
       <p>
         These change plans, entitlements, add-ons and incentives. Each one stops and shows the user a card with the
-        change. Nothing runs until the user approves it. If the user declines, Claude is told to ask what they want
+        change. Nothing runs until the user approves it. If the user declines, the agent is told to ask what they want
         instead of trying again.
       </p>
       <Code
@@ -220,10 +223,10 @@ createIncentive  updateIncentive  deleteIncentive`}
         <Link href="/docs/admin/agent">Agent and MCP</Link> shows what using the agent looks like in the dashboard.
       </p>
 
-      <H2>Claude as an MCP client</H2>
+      <H2>Bring your own assistant over MCP</H2>
       <p>
-        You can also bring your own Claude. Each app has an <Link href="/docs/api/mcp">MCP server</Link> in the API,
-        and Claude, Claude Code and other MCP clients connect to it with OAuth or the secret key. That needs no
+        You can also bring your own AI assistant. Each app has an <Link href="/docs/api/mcp">MCP server</Link> in the API,
+        and any MCP client connects to it with OAuth or the secret key. That needs no
         Anthropic API key on your side: the model runs in the client, and the server only serves tools, resources and
         prompts.
       </p>

@@ -112,7 +112,7 @@ async function start(account: string) {
 
 beforeAll(async () => {
   await migrate();
-  const created = await call("POST", "/apps", { key: null, body: { name: "Scrapely" } });
+  const created = await call("POST", "/apps", { body: { name: "Scrapely" } });
   ({ id: appId, api_key: apiKey, public_key: pub } = created.json);
 
   await secret("POST", "/entitlements", { id: "scrapes", name: "Scrapes", type: "usage" });
@@ -162,12 +162,12 @@ describe("account tokens", () => {
     const forged = Buffer.from(JSON.stringify({ a: appId, n: "tok_other", e: 9999999999 })).toString("base64url");
     expect((await call("GET", a("/namespaces/tok_other/plan"), { key: `act_${forged}.${sig}` })).status).toBe(401);
     expect((await call("GET", a("/namespaces/tok_user/plan"), { key: `act_${payload}.x${sig}` })).status).toBe(401);
-    const otherApp = (await call("POST", "/apps", { key: null, body: { name: "Other" } })).json;
+    const otherApp = (await call("POST", "/apps", { body: { name: "Other" } })).json;
     expect((await call("GET", `/apps/${otherApp.id}/namespaces/tok_user/plan`, { key: token })).status).toBe(401);
   });
 
   test("rotating the secret key revokes tokens", async () => {
-    const rotated = (await call("POST", "/apps", { key: null, body: { name: "Rotating" } })).json;
+    const rotated = (await call("POST", "/apps", { body: { name: "Rotating" } })).json;
     await call("POST", `/apps/${rotated.id}/plans`, { key: rotated.api_key, body: { id: "x", name: "X" } });
     await call("POST", `/apps/${rotated.id}/namespaces`, { key: rotated.api_key, body: { id: "u1", name: "u1", plan: "x" } });
     const { token } = (await call("POST", `/apps/${rotated.id}/namespaces/u1/token`, { key: rotated.api_key })).json;

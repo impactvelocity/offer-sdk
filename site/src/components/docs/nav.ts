@@ -10,7 +10,7 @@ export const DOCS_NAV: DocsGroup[] = [
       { title: "Quickstart", href: "/docs/quickstart", description: "Run the stack locally and check your first entitlement." },
       { title: "Project structure", href: "/docs/structure", description: "The monorepo, the services, and how a request moves through them." },
       { title: "Core concepts", href: "/docs/concepts", description: "Apps, accounts, plans, entitlements, add-ons, incentives and offers." },
-      { title: "AI features", href: "/docs/ai", description: "Claude picks save offers and runs the dashboard agent." },
+      { title: "AI features", href: "/docs/ai", description: "AI picks save offers and runs the dashboard agent." },
     ],
   },
   {
@@ -44,7 +44,7 @@ export const DOCS_NAV: DocsGroup[] = [
       { title: "Authentication", href: "/docs/api", description: "Base URL, keys, account tokens and errors." },
       { title: "Endpoint reference", href: "/docs/api/reference", description: "Every route, grouped by resource." },
       { title: "Webhooks", href: "/docs/api/webhooks", description: "Events, signatures and retries." },
-      { title: "MCP server", href: "/docs/api/mcp", description: "Connect Claude, Cursor and other assistants with OAuth or a key." },
+      { title: "MCP server", href: "/docs/api/mcp", description: "Connect AI assistants and coding agents with OAuth or a key." },
     ],
   },
   {

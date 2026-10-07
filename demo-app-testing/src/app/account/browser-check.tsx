@@ -4,7 +4,7 @@ import { OfferApiError, OfferProvider, useOfferClient } from "@offer/sdk";
 import { useEffect, useState } from "react";
 
 // The core SDK in the browser: <OfferProvider> + useOfferClient() with the
-// publishable key. Public keys may read plan state and pricing and track
+// publishable key. Public keys may read plan state and pricing and add
 // usage; anything else must come back 401.
 
 interface Check {
@@ -25,8 +25,8 @@ function Checks({ appId, accountId }: { appId: string; accountId: string }) {
       { label: "usage counts", path: `${ns}/usage`, expect: 200 },
       { label: "one counter", path: `${ns}/usage/posts`, expect: 200 },
       { label: "pricing cards", path: `${app}/plans/pricing`, expect: 200 },
-      // Legacy rule: the public key can read /full-plan, private meta included.
-      { label: "full plan (incl. private meta!)", path: `${ns}/full-plan`, expect: 200 },
+      // Private meta stays on the server.
+      { label: "full plan (private meta)", path: `${ns}/full-plan`, expect: 401 },
       { label: "account record", path: ns, expect: 401 },
       { label: "plan list", path: `${app}/plans`, expect: 401 },
     ];

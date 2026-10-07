@@ -100,7 +100,7 @@ export function CreateAppDialog({ open, onOpenChange }: { open: boolean; onOpenC
               Cancel
             </Button>
             <Button type="submit" variant="primary" loading={create.isPending} disabled={demo || !name.trim()} kbd="↵">
-              Create app
+              Create App
             </Button>
           </DialogFooter>
         </form>

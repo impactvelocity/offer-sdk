@@ -17,10 +17,9 @@ export default function SponsorsPage() {
       />
 
       <p>
-        The <a href={DEVPOST_URL}>PayPal AI Hackathon</a> is run by PayPal. Every entry has to integrate the PayPal
-        Developer Platform (in sandbox), and partner tools are optional. Offer SDK uses PayPal for every payment and
-        three of the partner tools: Render, Zapier and Postman. The AI side of the product is covered in{" "}
-        <Link href="/docs/ai">AI features</Link>.
+        Offer SDK is an entry in the <a href={DEVPOST_URL}>PayPal AI Hackathon</a>. It uses PayPal for every payment,
+        Render to host the stack and run pauses, Zapier to carry webhooks to other apps, and Postman for a request
+        collection. The AI side of the product is covered in <Link href="/docs/ai">AI features</Link>.
       </p>
 
       <H2>At a glance</H2>
@@ -110,12 +109,6 @@ export default function SponsorsPage() {
         without copying values by hand. A test in the API fails when a route has no request, so the collection
         can&apos;t fall behind the code. <Link href="/docs/sponsors/postman">Postman</Link> has the download and the
         steps.
-      </p>
-
-      <H2>Partner tools we don&apos;t use</H2>
-      <p>
-        The hackathon also lists AG Grid, APIMatic, Astropods, Bryntum, Channel3, Elastic and KERNEL. Offer SDK
-        doesn&apos;t use any of them.
       </p>
 
       <H2>Sponsor pages</H2>

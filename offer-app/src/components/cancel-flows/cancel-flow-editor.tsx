@@ -197,7 +197,7 @@ export function CancelFlowEditor({ appId, flow }: { appId: string; flow: CancelF
   return (
     <>
       <PageHeader
-        crumbs={[{ label: "Cancel flow", href: back, icon: <DoorOpen /> }]}
+        crumbs={[{ label: "Cancel Flow", href: back, icon: <DoorOpen /> }]}
         title="Edit"
         actions={
           <>
@@ -206,7 +206,7 @@ export function CancelFlowEditor({ appId, flow }: { appId: string; flow: CancelF
             </Link>
             <Button variant="primary" disabled={problems.length > 0} loading={save.isPending} onClick={() => save.mutate()}>
               <Save />
-              Save flow
+              Save Flow
             </Button>
           </>
         }
@@ -231,7 +231,7 @@ export function CancelFlowEditor({ appId, flow }: { appId: string; flow: CancelF
                   </Button>
                   <Button size="sm" onClick={() => addStep("text")}>
                     <MessageSquareText />
-                    Free text
+                    Free Text
                   </Button>
                 </>
               }
@@ -320,7 +320,7 @@ export function CancelFlowEditor({ appId, flow }: { appId: string; flow: CancelF
             </Section>
 
             <Section
-              title="Save offer"
+              title="Save Offer"
               description="Shown after the questions, before the customer can cancel. Skipped when nothing applies to them."
               actions={<Switch checked={!!offer} onCheckedChange={toggleOffer} aria-label="Make a save offer" />}
             >
@@ -341,9 +341,9 @@ export function CancelFlowEditor({ appId, flow }: { appId: string; flow: CancelF
 
                   <div className="flex flex-col gap-3">
                     <div>
-                      <h3 className="text-sm font-semibold text-fg">Offer for each answer</h3>
+                      <h3 className="text-sm font-semibold text-fg">Offer for Each Answer</h3>
                       <p className="text-sm text-fg-tertiary">
-                        The first answer with an offer wins. {offer.dynamic ? "Used when Claude can't decide." : ""}
+                        The first answer with an offer wins. {offer.dynamic ? "Used when the agent can't decide." : ""}
                       </p>
                     </div>
                     <div className="flex flex-col divide-y divide-border rounded-lg border border-border">
@@ -620,11 +620,11 @@ function DynamicOffers({
         </span>
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
-            <h3 className="text-sm font-semibold text-fg">Dynamic offers</h3>
+            <h3 className="text-sm font-semibold text-fg">Dynamic Offers</h3>
             {offer.dynamic ? <Badge color="brand">On</Badge> : null}
           </div>
           <p className="text-sm text-fg-tertiary">
-            Claude reads why this customer is leaving, their plan, tenure and usage, then picks the offer most likely to keep them and
+            The agent reads why this customer is leaving, their plan, tenure and usage, then picks the offer most likely to keep them and
             writes its copy. It can only choose within the limits below; the API enforces them.
           </p>
         </div>
@@ -635,7 +635,7 @@ function DynamicOffers({
       ) : null}
       {offer.dynamic ? (
         <div className="flex flex-col gap-4">
-          <Field label="Claude may offer">
+          <Field label="Agent may offer">
             <div className="grid grid-cols-2 gap-2">
               {KINDS.map((k) => (
                 <label key={k} className="flex items-start gap-2 rounded-lg border border-border bg-bg px-3 py-2 text-sm">
@@ -688,7 +688,7 @@ function DynamicOffers({
               </div>
             </Field>
           ) : null}
-          <Field label="Instructions" hint="(optional)" description="Your voice, and anything Claude should know about your customers.">
+          <Field label="Instructions" hint="(optional)" description="Your voice, and anything the agent should know about your customers.">
             <Textarea
               rows={3}
               value={g.instructions}
@@ -757,9 +757,9 @@ function PreviewPanel({
       <div className="flex items-center gap-2">
         <Input size="sm" placeholder="Price for account ID (optional)" value={account} onChange={(e) => setAccount(e.target.value)} />
         {dynamic ? (
-          <label className="flex shrink-0 items-center gap-2 text-xs text-fg-secondary" title="Calls Claude for each preview">
-            <Switch checked={useClaude} onCheckedChange={setUseClaude} aria-label="Ask Claude" />
-            Ask Claude
+          <label className="flex shrink-0 items-center gap-2 text-xs text-fg-secondary" title="Calls the agent for each preview">
+            <Switch checked={useClaude} onCheckedChange={setUseClaude} aria-label="Ask the agent" />
+            Ask the agent
           </label>
         ) : null}
       </div>
@@ -784,7 +784,7 @@ function PreviewPanel({
           <span>
             {offerShown ? (
               <>
-                {offerShown.source === "dynamic" ? "Claude picked" : "Fixed offer"}: <span className="text-fg">{KIND_LABELS[offerShown.kind]}</span>
+                {offerShown.source === "dynamic" ? "Agent picked" : "Fixed offer"}: <span className="text-fg">{KIND_LABELS[offerShown.kind]}</span>
               </>
             ) : (
               "No offer applies; the step is skipped."
@@ -792,7 +792,7 @@ function PreviewPanel({
             · priced for {result.preview.account?.id === "sample" ? `a sample ${result.preview.account.plan_name} customer` : result.preview.account?.id}
           </span>
           {offerShown?.reasoning ? <span className="text-fg-secondary">“{offerShown.reasoning}”</span> : null}
-          {result.preview.dynamic && !result.preview.dynamic.used ? <span>Claude: {result.preview.dynamic.skipped}</span> : null}
+          {result.preview.dynamic && !result.preview.dynamic.used ? <span>Agent skipped: {result.preview.dynamic.skipped}</span> : null}
         </div>
       ) : null}
     </div>

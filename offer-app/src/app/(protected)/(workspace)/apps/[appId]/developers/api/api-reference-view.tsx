@@ -77,7 +77,7 @@ export function ApiReferenceView() {
     <>
       <PageHeader
         icon={<Braces />}
-        title="API reference"
+        title="API Reference"
         badge={<Badge>{ENDPOINTS.length} endpoints</Badge>}
         actions={
           <>
@@ -91,7 +91,7 @@ export function ApiReferenceView() {
             ) : null}
             <Link href={`/apps/${ctx.appId}/developers`} className={buttonVariants()}>
               <Code />
-              Integration guide
+              Integration Guide
             </Link>
           </>
         }
@@ -104,7 +104,7 @@ export function ApiReferenceView() {
             onClick={() => setExpanded(allOpen ? new Set() : new Set(filtered.map(endpointId)))}
           >
             {allOpen ? <ChevronsDownUp /> : <ChevronsUpDown />}
-            {allOpen ? "Collapse all" : "Expand all"}
+            {allOpen ? "Collapse All" : "Expand All"}
           </Button>
         }
       >
@@ -182,7 +182,7 @@ export function ApiReferenceView() {
                     setGroup("all");
                   }}
                 >
-                  Clear filters
+                  Clear Filters
                 </Button>
               }
             />

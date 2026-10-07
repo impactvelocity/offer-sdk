@@ -22,7 +22,7 @@ const spec = {
       PublicAuth: {
         type: "http",
         scheme: "bearer",
-        description: "App public key (`pub_...`) returned on app creation. Read-only — only valid for GET /namespaces/:namespaceId/plan.",
+        description: "App public key (`pub_...`) returned on app creation, safe to ship to browsers. Valid for GET /namespaces/:namespaceId/plan, reading usage, adding usage (/add, or /amount with a non-negative amount), GET pricing, and the checkout routes.",
       },
     },
     schemas: {
@@ -268,7 +268,8 @@ const spec = {
       post: {
         tags: ["Apps"],
         summary: "Create an app",
-        security: [],
+        description: "Requires the admin key (`ADMIN_API_KEY`).",
+        security: [{ AdminAuth: [] }],
         requestBody: {
           required: true,
           content: {
@@ -1189,7 +1190,7 @@ const spec = {
       get: {
         tags: ["Namespaces"],
         summary: "Get resolved plan state for a namespace",
-        description: "Returns the namespace's plan with live usage counts per entitlement. Meta fields with `private: true` are stripped. Accepts the app `public_key` as a Bearer token for frontend use.",
+        description: "Returns the namespace's plan with live usage counts per entitlement. Meta keys listed in the plan's `privateMetaKeys` are stripped. Accepts the app `public_key` as a Bearer token for frontend use.",
         security: [{ BearerAuth: [] }, { PublicAuth: [] }],
         parameters: [
           { name: "appId", in: "path", required: true, schema: { type: "string" } },
@@ -1205,7 +1206,8 @@ const spec = {
       get: {
         tags: ["Namespaces"],
         summary: "Get full plan state including private meta",
-        description: "Same as `/plan` but returns all meta fields including those marked `private: true`. Requires the app API key — not available with the public key.",
+        description: "Same as `/plan` but keeps the meta keys listed in the plan's `privateMetaKeys`. Secret key only: the app `public_key` gets 401.",
+        security: [{ BearerAuth: [] }],
         parameters: [
           { name: "appId", in: "path", required: true, schema: { type: "string" } },
           { name: "namespaceId", in: "path", required: true, schema: { type: "string" } },
@@ -1269,7 +1271,8 @@ const spec = {
       post: {
         tags: ["Usage"],
         summary: "Decrement usage by 1",
-        security: [{ BearerAuth: [] }, { PublicAuth: [] }],
+        description: "Secret key only: the app `public_key` can't lower a counter.",
+        security: [{ BearerAuth: [] }],
         parameters: [
           { name: "appId", in: "path", required: true, schema: { type: "string" } },
           { name: "namespaceId", in: "path", required: true, schema: { type: "string" } },
@@ -1285,6 +1288,7 @@ const spec = {
       post: {
         tags: ["Usage"],
         summary: "Adjust usage by a custom amount",
+        description: "With the app `public_key`, a negative amount returns 403.",
         security: [{ BearerAuth: [] }, { PublicAuth: [] }],
         parameters: [
           { name: "appId", in: "path", required: true, schema: { type: "string" } },

@@ -59,7 +59,7 @@ export default function DocsOverviewPage() {
         Offer SDK is an entry in the <a href={DEVPOST_URL}>PayPal AI Hackathon</a>. PayPal handles every payment,
         Render hosts the stack and runs pauses as Workflows, Zapier carries webhooks to other apps, and Postman has a
         request for every API route. <Link href="/docs/sponsors">How sponsors are used</Link> covers each one, and{" "}
-        <Link href="/docs/ai">AI features</Link> covers where Claude picks save offers and runs the dashboard agent.
+        <Link href="/docs/ai">AI features</Link> covers where AI picks save offers and runs the dashboard agent.
       </p>
 
       {DOCS_NAV.slice(1).map((group) => (

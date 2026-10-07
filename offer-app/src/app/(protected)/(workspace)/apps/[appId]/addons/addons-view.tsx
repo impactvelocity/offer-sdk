@@ -80,7 +80,7 @@ export function AddonsView() {
               .join(" and ")} first. Accounts stop receiving it in their addons immediately.`
           : "This can't be undone.",
       typeToConfirm: refs > 0 ? addon.id : undefined,
-      confirmLabel: "Delete add-on",
+      confirmLabel: "Delete Add-on",
       onConfirm: () => remove.mutateAsync(addon.id),
     });
   };
@@ -96,7 +96,7 @@ export function AddonsView() {
             <HowItWorksButton topic="addons" />
             <Button variant="primary" onClick={() => setCreateOpen(true)}>
               <Plus />
-              New add-on
+              New Add-on
             </Button>
           </>
         }
@@ -128,7 +128,7 @@ export function AddonsView() {
             action={
               <Button variant="primary" onClick={() => setCreateOpen(true)}>
                 <Plus />
-                Create add-on
+                Create Add-on
               </Button>
             }
           />

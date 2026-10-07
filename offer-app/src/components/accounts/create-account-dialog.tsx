@@ -148,7 +148,7 @@ function CreateAccountForm({ appId, onOpenChange }: Omit<Props, "open">) {
           Cancel
         </Button>
         <Button type="submit" variant="primary" loading={create.isPending} disabled={disabled} kbd="↵">
-          Create account
+          Create Account
         </Button>
       </DialogFooter>
     </form>

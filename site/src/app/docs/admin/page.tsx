@@ -37,7 +37,7 @@ export default function DashboardTourPage() {
           <p>
             Enter your name, email and a password of at least 8 characters, then click{" "}
             <strong>Create admin account</strong>. You&apos;re signed in straight away. There&apos;s no password reset
-            email yet, so keep the password somewhere safe.
+            email, so keep the password somewhere safe.
           </p>
         </Step>
         <Step title="Name your first workspace">
@@ -68,13 +68,13 @@ export default function DashboardTourPage() {
 
       <H2>Workspaces</H2>
       <p>
-        A workspace holds your apps, and the admin owns every workspace they create. Team members aren&apos;t
-        available yet, so there&apos;s no members page or invitations.
+        A workspace holds your apps. Each install has a single workspace, named during onboarding and owned by the
+        admin; the API refuses to create a second one. The admin is the workspace&apos;s only member, so there&apos;s
+        no members page or invitations.
       </p>
       <p>
-        Workspace settings live under <code>/settings</code>: <strong>General</strong> (name, slug, ID, delete the
-        workspace) and <strong>Profile</strong> (your name, appearance, password and sessions). To switch workspaces or create another one, open the logo menu at the top of the rail and choose{" "}
-        <strong>Switch workspace</strong>.
+        Workspace settings live under <code>/settings</code>: <strong>General</strong> (name, slug and ID) and{" "}
+        <strong>Profile</strong> (your name, appearance, password and sessions).
       </p>
 
       <H2>Apps</H2>
@@ -86,8 +86,15 @@ export default function DashboardTourPage() {
       <TermList
         items={[
           { term: "Blank app", children: "An empty catalog." },
-          { term: "SaaS sample", children: "Free, Starter, Pro and Enterprise plans with usage limits, add-ons and promos." },
-          { term: "Course sample", children: "One-time access tiers for an online course or community." },
+          {
+            term: "SaaS sample",
+            children:
+              "Free, Starter, Pro, Enterprise and Lifetime deal plans with usage limits, add-ons and incentives, plus sample accounts and usage history. Against the hosted API it also creates a draft offer and an active cancel flow. Mock mode creates neither.",
+          },
+          {
+            term: "Course sample",
+            children: "Free preview, Core course and All access: one-time access tiers for an online course, with sample accounts and usage.",
+          },
         ]}
       />
       <p>
@@ -105,9 +112,9 @@ export default function DashboardTourPage() {
             children: (
               <>
                 The narrow column on the left. The logo opens the workspace menu (<strong>All apps</strong>,{" "}
-                <strong>New app</strong>, <strong>Workspace settings</strong>,{" "}
-                <strong>Switch workspace</strong>). Below it is one tile per app, then a light/dark toggle, settings
-                and your account menu (<strong>Profile</strong>, <strong>Theme</strong>, <strong>Sign out</strong>).
+                <strong>New app</strong>, <strong>Workspace settings</strong>). Below it is one tile per app, then a light/dark toggle, settings
+                and your account menu (<strong>Profile</strong>, <strong>Workspace settings</strong>, <strong>Theme</strong>,{" "}
+                <strong>Sign out</strong>).
               </>
             ),
           },
@@ -139,7 +146,7 @@ export default function DashboardTourPage() {
             "/agent",
             "Agent",
             <>
-              Chat with Claude about your catalog and approve the changes it proposes. See{" "}
+              Chat with an AI agent about your catalog and approve the changes it proposes. See{" "}
               <Link href="/docs/admin/agent">Agent and MCP</Link>.
             </>,
           ],
@@ -187,7 +194,7 @@ export default function DashboardTourPage() {
             "/developers/mcp",
             "Developers → MCP server",
             <>
-              Connect Claude, Cursor and other assistants to the app, choose what they can do, and see every call.
+              Connect AI assistants and coding agents to the app, choose what they can do, and see every call.
               See <Link href="/docs/api/mcp">MCP server</Link>.
             </>,
           ],
@@ -209,7 +216,7 @@ export default function DashboardTourPage() {
       />
       <p>
         <strong>Offers</strong> and <strong>Cancel flow</strong> only appear when the API supports them, so they are
-        hidden in mock mode.
+        hidden in mock mode. <strong>Agent</strong> is hidden on the demo login.
       </p>
 
       <H2>Analytics</H2>
@@ -238,7 +245,8 @@ export default function DashboardTourPage() {
       </p>
       <ul>
         <li>
-          <strong>Navigate</strong>: every page of the current app.
+          <strong>Navigate</strong>: the current app&apos;s pages from the nav panel, except{" "}
+          <strong>Cancel flow</strong>. <strong>Agent</strong> is left out on the demo login.
         </li>
         <li>
           <strong>Create</strong>: <strong>New plan</strong>, <strong>New entitlement</strong>,{" "}
@@ -247,9 +255,14 @@ export default function DashboardTourPage() {
         </li>
         <li>
           <strong>Workspace</strong>: <strong>All apps</strong>, <strong>New app</strong>,{" "}
-          <strong>Workspace settings</strong> and the theme.
+          <strong>Workspace settings</strong>, switching between light and dark, and{" "}
+          <strong>Use system theme</strong>.
         </li>
       </ul>
+      <p>
+        <strong>Navigate</strong> and <strong>Create</strong> only show inside an app. On <code>/apps</code> and{" "}
+        <code>/settings</code> the list has the <strong>Workspace</strong> group alone.
+      </p>
       <p>
         Typing also searches the current app&apos;s plans, incentives and entitlements by name or ID, and its accounts
         by name or ID. Matching records are listed first.
@@ -260,8 +273,8 @@ export default function DashboardTourPage() {
         The demo workspace is a shared login with sample data, for showing the dashboard without setting anything up.
         It signs in as <code>demo@offersdk.dev</code> (password <code>demo-password</code>) to a workspace called Acme
         Labs with two apps: Notebook AI (a SaaS) and Course Hub (an online course). Both have catalogs, accounts that
-        signed up over several months, usage history and saved reports. Notebook AI also has a draft offer and a live
-        cancel flow.
+        signed up over several months, usage history and saved reports. Against the hosted API, Notebook AI also has
+        a draft offer and an active cancel flow.
       </p>
       <Steps>
         <Step title="Start the API and the dashboard">
@@ -288,23 +301,44 @@ APP_URL=https://your-dashboard.example.com ADMIN_API_KEY=… pnpm seed:demo --re
           />
           <p>
             The script calls the dashboard, so it needs the dashboard&apos;s URL (<code>APP_URL</code>, default{" "}
-            <code>http://localhost:6768</code>). The demo login is read-only, so <code>--reset</code> also needs the
-            API&apos;s <code>ADMIN_API_KEY</code>. Locally it defaults to <code>dev-admin-key</code>. Without{" "}
-            <code>--reset</code>, it builds the demo ahead of the first click and leaves an existing one alone.
+            <code>http://localhost:6768</code>). With <code>--reset</code>, the dashboard deletes the demo apps and
+            builds them again from the sample data. The demo login can&apos;t do that, so <code>--reset</code> needs
+            the API&apos;s <code>ADMIN_API_KEY</code>. Locally it defaults to <code>dev-admin-key</code>. In mock mode
+            the dashboard refuses <code>--reset</code>; restart the dev server instead. Without <code>--reset</code>,
+            the script builds the demo ahead of the first click and leaves an existing one alone.
           </p>
         </Step>
       </Steps>
-      <H3>What the demo account can&apos;t do</H3>
+      <H3>The demo is read-only</H3>
       <p>
-        Many visitors share the demo login, so the API stops it from changing its profile, email or password,
-        deleting itself, signing out other sessions, editing, deleting or leaving the workspace, and inviting,
-        removing or changing the role of members. Those calls fail with “The demo workspace is read-only. Sign in with your admin
-        account to make changes.” Everything inside the apps stays editable, which is why <code>--reset</code> exists.
+        Many visitors share the demo login, so it can look at everything and change nothing. You can open every page,
+        browse the catalogs, accounts and analytics, and preview offers and cancel flows, but nothing saves. A banner
+        at the top of each page says so, and the workspace and profile settings are disabled.
       </p>
-      <Callout title="The guard lives in the hosted API.">
-        It is part of the API&apos;s better-auth setup. In mock mode the dashboard runs its own in-memory auth, which
-        doesn&apos;t block these calls.
-      </Callout>
+      <ul>
+        <li>
+          The dashboard&apos;s <code>/api/admin</code> gateway only lets the demo login read. The two exceptions are
+          the previews that save nothing: an offer&apos;s checkout preview and a cancel flow&apos;s save offer
+          preview.
+        </li>
+        <li>
+          The dashboard&apos;s <code>/api/auth</code> refuses changes to the demo login&apos;s profile, email,
+          password and sessions, and to its workspace and members.
+        </li>
+        <li>
+          The hosted API refuses the same account and workspace changes for the demo login. It also lets the demo
+          apps&apos; secret keys, which the dashboard shows, make only <code>GET</code> requests.
+        </li>
+      </ul>
+      <p>
+        Refused calls answer 403 with “The demo workspace is read-only. Sign in with your admin account to make
+        changes.” The dashboard checks these itself, so the demo is read-only in mock mode too.
+      </p>
+      <p>
+        The <Link href="/docs/admin/agent">Agent</Link> is off for the demo login. It&apos;s left out of the nav and
+        Quick actions, <code>/apps/[appId]/agent</code> redirects to the app&apos;s Overview, and{" "}
+        <code>POST /api/agent</code> answers 403.
+      </p>
 
       <H2>Mock mode</H2>
       <p>
@@ -328,6 +362,10 @@ APP_URL=https://your-dashboard.example.com ADMIN_API_KEY=… pnpm seed:demo --re
         <li>
           The mock doesn&apos;t sell anything or run cancel flows. The <strong>Offers</strong> and{" "}
           <strong>Cancel flow</strong> nav items and the <strong>Payments</strong> settings are hidden.
+        </li>
+        <li>
+          The mock has no MCP server. <strong>Developers → MCP server</strong> is marked <strong>Preview</strong> and
+          shows sample connections and activity. Its switches only change local state.
         </li>
       </ul>
       <p>

@@ -7,6 +7,6 @@ import { useAppId, useOffer } from "@/lib/api/hooks";
 export function NewOffer({ from }: { from: string | null }) {
   const appId = useAppId();
   const source = useOffer(appId, from);
-  if (from && source.isLoading) return <EditorSkeleton crumbs="New offer" />;
+  if (from && source.isLoading) return <EditorSkeleton crumbs="New Offer" />;
   return <OfferEditor appId={appId} source={source.data ?? null} />;
 }

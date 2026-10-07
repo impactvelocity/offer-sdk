@@ -130,7 +130,7 @@ export function ConsentForm({
 
         <div className="mt-6 flex flex-col gap-2">
           <Button type="submit" name="decision" value="approve" variant="primary" size="md" className="w-full" loading={pending === "approve"} disabled={pending !== null}>
-            Allow access
+            Allow Access
           </Button>
           <Button type="submit" name="decision" value="deny" size="md" className="w-full" loading={pending === "deny"} disabled={pending !== null}>
             Cancel

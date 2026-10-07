@@ -153,15 +153,20 @@ usage.get("/:entitlementId", async (c) => {
 usage.post("/:entitlementId/add", async (c) => increment(c, await resolveUsageContext(c), "add", 1));
 
 // POST /apps/:appId/namespaces/:namespaceId/usage/:entitlementId/remove
+// Secret key only (lib/auth.ts).
 usage.post("/:entitlementId/remove", async (c) => increment(c, await resolveUsageContext(c), "remove", -1));
 
 // POST /apps/:appId/namespaces/:namespaceId/usage/:entitlementId/amount
-// Body: { amount: number }
+// Body: { amount: number }. The public key can't send a negative amount.
 usage.post("/:entitlementId/amount", async (c) => {
   const ctx = await resolveUsageContext(c);
   const { amount } = (await readJson(c)) ?? {};
   if (typeof amount !== "number" || !Number.isInteger(amount)) {
     return c.json({ error: "amount must be an integer" }, 400);
+  }
+  // A browser holding the public key mustn't be able to lower its own count.
+  if (amount < 0 && c.get("publicKey")) {
+    return c.json({ error: "The public key can only add usage. Subtract with the secret key." }, 403);
   }
   return increment(c, ctx, "amount", amount);
 });
