@@ -1,0 +1,30 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>04 API</title><link rel="stylesheet" href="../frame.css"><link rel="stylesheet" href="simple.css"></head>
+<body>
+  <h1 class="head">One API call answers what a user can do. <span>At the limit, it returns an upgrade offer instead of an error.</span></h1>
+  <style>.code pre{font-size:24px;padding:24px 30px}.code .bar{height:54px}.code .bar b{font-size:20px}.code .bar .st{font-size:18px}.code .hl{width:calc(100% + 60px);margin:0 -30px;padding:0 30px}</style>
+  <div class="stage">
+    <div class="code" style="left:0;top:0;width:1010px">
+      <div class="bar"><i></i><i></i><i></i><b><span style="color:var(--accent-fg)">GET</span> …/namespaces/user_42/full-plan</b><span class="st ok">200 OK</span></div>
+<pre>{
+  <span class="k">"plan"</span>: { <span class="k">"id"</span>: <span class="s">"pro"</span>, <span class="k">"name"</span>: <span class="s">"Pro"</span> },
+  <span class="k">"entitlements"</span>: [
+    { <span class="k">"id"</span>: <span class="s">"ai_credits"</span>, <span class="k">"usage"</span>: <span class="n">2180</span>, <span class="k">"max"</span>: <span class="n">2500</span>, <span class="k">"can"</span>: <span class="m">true</span> },
+    { <span class="k">"id"</span>: <span class="s">"export_pdf"</span>, <span class="k">"can"</span>: <span class="m">true</span> }
+  ]
+}</pre>
+    </div>
+    <div class="code" style="right:0;top:340px;width:1010px;z-index:2">
+      <div class="bar"><i></i><i></i><i></i><b><span style="color:var(--accent-fg)">POST</span> …/usage/ai_credits/add</b><span class="st err">402 Payment Required</span></div>
+<pre>{
+  <span class="k">"error"</span>: <span class="s">"limit_reached"</span>,
+<span class="hl">  <span class="k">"offer"</span>: {</span>
+<span class="hl">    <span class="k">"plan"</span>: { <span class="k">"id"</span>: <span class="s">"scale"</span> }, <span class="k">"price"</span>: <span class="n">99</span>,</span>
+<span class="hl">    <span class="k">"checkout_url"</span>: <span class="s">"https://…/checkout?plan=scale"</span></span>
+<span class="hl">  },</span>
+  <span class="k">"retry_after_purchase"</span>: <span class="m">true</span>
+}</pre>
+    </div>
+  </div>
+  <script src="../frame.js"></script>
+</body></html>

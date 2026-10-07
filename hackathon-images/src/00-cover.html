@@ -1,0 +1,25 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>00 Cover</title><link rel="stylesheet" href="frame.css">
+<style>
+  /* Cover / project thumbnail: visible backdrop, centred logo + big two-line headline. No top chrome. */
+  .bg { opacity: .62; -webkit-mask-image: radial-gradient(85% 75% at 50% 55%, rgb(0 0 0 / .35) 20%, #000 75%); }
+  .glow { width: 1400px; height: 900px; left: 200px; top: 260px; background: radial-gradient(closest-side, rgb(52 213 153 / .14), transparent); }
+  .cover { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 70px; }
+  .mark { display: flex; align-items: center; justify-content: center; gap: 28px; }
+  .mark svg { width: 120px; height: 120px; color: var(--accent); filter: drop-shadow(0 0 22px rgb(52 213 153 / .45)); }
+  .mark h1 { margin: 0; font-size: 112px; line-height: 1; font-weight: 600; letter-spacing: -.025em; font-variation-settings: "GEOM" 50; }
+  .line { margin: 0; text-align: center; font-size: 150px; line-height: 1.08; font-weight: 600;
+    letter-spacing: .005em; color: var(--text); font-variation-settings: "GEOM" 50; text-shadow: 0 4px 40px rgb(0 0 0 / .6); }
+</style></head>
+<body>
+  <div class="bg"></div><div class="glow"></div><div class="edge"></div>
+  <div class="cover">
+    <div class="mark">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M13 13.74a2 2 0 0 1-2 0L2.5 8.87a1 1 0 0 1 0-1.74L11 2.26a2 2 0 0 1 2 0l8.5 4.87a1 1 0 0 1 0 1.74z"/>
+        <path d="m20 14.285 1.5.845a1 1 0 0 1 0 1.74L13 21.74a2 2 0 0 1-2 0l-8.5-4.87a1 1 0 0 1 0-1.74l1.5-.845"/></svg>
+      <h1>Offer SDK</h1>
+    </div>
+    <p class="line">Agentic Entitlement<br>&amp; Offer API</p>
+  </div>
+</body></html>

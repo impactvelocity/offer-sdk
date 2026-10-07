@@ -706,34 +706,9 @@
   }
 }
 
-@keyframes video-rec {
-  50% {
-    opacity: 0.25;
-  }
-}
-
-@keyframes video-ping {
-  from {
-    opacity: 0.6;
-    transform: scale(1);
-  }
-  to {
-    opacity: 0;
-    transform: scale(1.9);
-  }
-}
-
 @media (prefers-reduced-motion: no-preference) {
   .video-frame {
     animation: video-spin 8s linear infinite;
-  }
-
-  .video-rec {
-    animation: video-rec 1.6s ease-in-out infinite;
-  }
-
-  .video-ping {
-    animation: video-ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
   }
 }
 

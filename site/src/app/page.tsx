@@ -63,7 +63,7 @@ export default function LandingPage() {
             Built for the PayPal AI Hackathon
           </a>
           <h1 className="max-w-4xl font-display text-4xl font-medium tracking-wider text-balance sm:text-5xl lg:text-6xl">
-            The agentic access &amp; offer SDK for your app
+            The Agentic Access &amp; Offer SDK for your app
           </h1>
           <p className="mt-6 max-w-2xl text-xl/9 text-pretty text-fg">
             Self-host your own entitlements, access and offers that secure your app and give you the freedom to

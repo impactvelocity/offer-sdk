@@ -1,0 +1,89 @@
+/* Offer SDK hackathon images — 3:2 frame (1800×1200, rendered @2x).
+   Brand from videos/offer-sdk-launch/frame.md: near-black canvas, one neon green accent,
+   two-tone left-aligned statement, no eyebrows / icon tiles / gradient text. */
+
+@font-face { font-family: "Cal Sans"; src: url("assets/fonts/CalSansVF.woff2") format("woff2"); font-weight: 400 700; font-display: block; }
+@font-face { font-family: "Geist Mono"; src: url("assets/fonts/geist-mono-latin.woff2") format("woff2"); font-weight: 400 600; font-display: block; }
+
+:root {
+  --canvas: #0b0b0d; --panel: #131315; --surface: #18181b; --border: #26262b; --border-strong: #34343a;
+  --text: #ececee; --muted: rgb(236 236 238 / .58); --faint: #6f7178;
+  --accent: #34d599; --accent-fg: #5fe3b1; --cyan: #2cc0de; --danger-fg: #ff8a8d; --warning-fg: #ffc35f;
+  --code-key: #93b8ff; --code-string: #6fd69f; --code-number: #ffa072; --code-comment: #7f828a;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; width: 1800px; height: 1200px; overflow: hidden; background: var(--canvas); }
+body {
+  position: relative; font-family: "Cal Sans", system-ui, sans-serif; font-variation-settings: "GEOM" 25;
+  color: var(--text); -webkit-font-smoothing: antialiased;
+}
+
+/* backdrop: the site's neon line art, faded toward the middle, plus one soft glow */
+.bg { position: absolute; inset: 0; background: url("assets/section-bg-neon.webp") center / cover; opacity: .32;
+  -webkit-mask-image: radial-gradient(120% 90% at 50% 60%, transparent 30%, #000 85%); }
+.glow { position: absolute; width: 1400px; height: 900px; left: 200px; top: 340px; border-radius: 50%;
+  background: radial-gradient(closest-side, rgb(52 213 153 / .10), transparent); pointer-events: none; }
+
+/* the frame: hairline border inset from the edge */
+.edge { position: absolute; inset: 22px; border: 1px solid rgb(255 255 255 / .07); border-radius: 28px; pointer-events: none; }
+
+.top { position: absolute; left: 72px; right: 72px; top: 58px; height: 44px; display: flex; align-items: center; justify-content: space-between; }
+.logo { display: flex; align-items: center; gap: 12px; font-size: 32px; font-weight: 600; letter-spacing: -.015em; font-variation-settings: "GEOM" 50; }
+.logo svg { width: 32px; height: 32px; }
+.sponsors { display: flex; align-items: center; gap: 26px; color: #fff; font-size: 28px; font-weight: 600; letter-spacing: -.01em; font-variation-settings: "GEOM" 50; }
+.sponsors .sep { width: 1px; height: 26px; background: rgb(255 255 255 / .28); }
+.sponsors .paypal { font-style: italic; font-weight: 700; letter-spacing: -.02em; }
+
+.head { position: absolute; left: 72px; top: 150px; width: 1560px; margin: 0; font-size: 52px; line-height: 1.1; font-weight: 500;
+  letter-spacing: -.012em; font-variation-settings: "GEOM" 50; }
+.head span { color: rgb(236 236 238 / .8); }
+
+.stage { position: absolute; left: 72px; right: 72px; top: 318px; bottom: 62px; }
+.center { display: flex; align-items: center; justify-content: center; }
+
+/* a cropped video still / screenshot: --x --y --w --h are fractions of the source */
+.shot { position: relative; overflow: hidden; border-radius: 22px; border: 1px solid var(--border); background: #111113;
+  box-shadow: 0 50px 120px -40px #000, 0 0 0 1px rgb(255 255 255 / .02); }
+.shot > img { position: absolute; left: 0; top: 0; display: block; width: calc(100% / var(--w));
+  transform: translate(calc(var(--x) * -100%), calc(var(--y) * -100%)); }
+.shot.bare { border: 0; background: transparent; box-shadow: none; }
+
+/* app window around a dashboard screenshot */
+.win { position: absolute; overflow: hidden; border-radius: 16px; border: 1px solid var(--border-strong); background: var(--panel);
+  box-shadow: 0 40px 100px -30px #000, 0 0 0 1px rgb(0 0 0 / .4); }
+.win .bar { height: 40px; display: flex; align-items: center; gap: 8px; padding: 0 16px; border-bottom: 1px solid var(--border); background: #151517; }
+.win .bar i { width: 11px; height: 11px; border-radius: 50%; background: #2c2c31; }
+.win .bar .url { margin: 0 auto; font-family: "Geist Mono", monospace; font-size: 15px; color: var(--faint); padding-right: 50px; }
+.win > img { display: block; width: 100%; }
+
+/* callout: neon hairline chip, bright lead + muted rest */
+.call { position: absolute; z-index: 5; display: flex; align-items: center; gap: 13px; padding: 13px 20px 13px 16px; white-space: nowrap;
+  background: rgb(16 16 18 / .94); border: 1px solid rgb(52 213 153 / .6); border-radius: 14px; font-size: 22px; line-height: 1.2;
+  box-shadow: 0 0 26px -8px rgb(52 213 153 / .55), 0 18px 40px -14px #000; }
+.call::before { content: ""; width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; background: var(--accent); box-shadow: 0 0 10px var(--accent); }
+.call span { color: var(--muted); }
+.call.red { border-color: rgb(255 138 141 / .55); box-shadow: 0 0 26px -8px rgb(229 72 77 / .5), 0 18px 40px -14px #000; }
+.call.red::before { background: var(--danger-fg); box-shadow: 0 0 10px var(--danger-fg); }
+
+/* small label above a panel */
+.label { font-size: 24px; font-weight: 500; margin: 0 0 14px 4px; font-variation-settings: "GEOM" 50; }
+.label span { color: var(--muted); }
+
+/* code panel (app-kit .ak-code look) */
+.code { position: absolute; border-radius: 16px; border: 1px solid var(--border-strong); background: #131315; overflow: hidden;
+  box-shadow: 0 40px 100px -30px #000; }
+.code .bar { height: 46px; display: flex; align-items: center; gap: 8px; padding: 0 18px; border-bottom: 1px solid var(--border); }
+.code .bar i { width: 11px; height: 11px; border-radius: 50%; background: #2c2c31; }
+.code .bar b { margin-left: 10px; font-weight: 400; font-size: 17px; color: var(--muted); }
+.code .bar .st { margin-left: auto; font-family: "Geist Mono", monospace; font-size: 16px; padding: 4px 10px; border-radius: 6px; }
+.code .bar .ok { color: var(--accent-fg); background: rgb(52 213 153 / .12); }
+.code .bar .err { color: var(--danger-fg); background: rgb(229 72 77 / .15); }
+.code pre { margin: 0; padding: 20px 24px; font-family: "Geist Mono", monospace; font-size: 19px; line-height: 1.62; color: var(--text); white-space: pre; }
+.code .m { color: var(--accent-fg); } .code .k { color: var(--code-key); } .code .s { color: var(--code-string); }
+.code .n { color: var(--code-number); } .code .c { color: var(--code-comment); } .code .p { color: var(--faint); }
+.code .hl { display: inline-block; width: calc(100% + 48px); margin: 0 -24px; padding: 0 24px; background: rgb(52 213 153 / .08); box-shadow: inset 3px 0 0 var(--accent); }
+
+.chip { display: inline-flex; align-items: center; height: 42px; padding: 0 16px; border-radius: 10px; border: 1px solid var(--border-strong);
+  background: #151517; font-family: "Geist Mono", monospace; font-size: 17px; color: var(--text); }
+.chip.on { border-color: rgb(52 213 153 / .7); color: var(--accent-fg); box-shadow: 0 0 18px -6px rgb(52 213 153 / .6); }

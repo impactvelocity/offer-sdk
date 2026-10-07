@@ -1,0 +1,6 @@
+/* Simple variant: roomier headline, quieter backdrop, bigger picture, few or no callouts. */
+.head { font-size: 50px; line-height: 1.24; letter-spacing: -.008em; top: 146px; width: 1400px; }
+.bg { opacity: .2; }
+.glow { opacity: .7; }
+.stage { top: 330px; }
+.call { font-size: 22px; }

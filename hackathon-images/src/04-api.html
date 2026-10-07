@@ -1,0 +1,31 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>04 API</title><link rel="stylesheet" href="frame.css"></head>
+<body>
+  <h1 class="head">One API answers what a user can do. <span>Read the resolved plan, record usage, and get a 402 with an upgrade offer when a limit is hit.</span></h1>
+  <div class="stage">
+    <div class="win" style="right:0;top:30px;width:820px;opacity:.85"><div class="bar"><i></i><i></i><i></i><span class="url">app.offersdk.com</span></div><img src="assets/screens/api-reference.webp"></div>
+    <div class="code" style="left:0;top:30px;width:900px;z-index:2">
+      <div class="bar"><i></i><i></i><i></i><b><span style="color:var(--accent-fg)">GET</span> /apps/:appId/namespaces/user_42/full-plan</b><span class="st ok">200 OK</span></div>
+<pre>{
+  <span class="k">"plan"</span>: { <span class="k">"id"</span>: <span class="s">"pro"</span>, <span class="k">"name"</span>: <span class="s">"Pro"</span> },
+  <span class="k">"entitlements"</span>: [
+    { <span class="k">"id"</span>: <span class="s">"ai_credits"</span>, <span class="k">"usage"</span>: <span class="n">2180</span>, <span class="k">"max"</span>: <span class="n">2500</span>, <span class="k">"can"</span>: <span class="m">true</span> },
+    { <span class="k">"id"</span>: <span class="s">"export_pdf"</span>, <span class="k">"type"</span>: <span class="s">"boolean"</span>, <span class="k">"can"</span>: <span class="m">true</span> }
+  ]
+}</pre>
+    </div>
+    <div class="code" style="left:200px;top:400px;width:1000px;z-index:3">
+      <div class="bar"><i></i><i></i><i></i><b><span style="color:var(--accent-fg)">POST</span> …/namespaces/user_42/usage/ai_credits/add</b><span class="st err">402 Payment Required</span></div>
+<pre>{
+  <span class="k">"error"</span>: <span class="s">"limit_reached"</span>,
+  <span class="k">"message"</span>: <span class="s">"You've used 2,500 of 2,500 AI credits on the Pro plan. …"</span>,
+<span class="hl">  <span class="k">"offer"</span>: { <span class="k">"plan"</span>: { <span class="k">"id"</span>: <span class="s">"scale"</span> }, <span class="k">"price"</span>: <span class="n">99</span>, <span class="k">"interval"</span>: <span class="s">"month"</span>,</span>
+<span class="hl">             <span class="k">"checkout_url"</span>: <span class="s">"https://app.amazingapp.ai/checkout?plan=scale"</span> },</span>
+  <span class="k">"retry_after_purchase"</span>: <span class="m">true</span>
+}</pre>
+    </div>
+    <div class="call" style="left:560px;top:320px">Every entitlement resolved <span>in one call</span></div>
+    <div class="call" style="left:760px;top:735px">At the limit <span>a 402 with an upgrade offer</span></div>
+  </div>
+  <script src="frame.js"></script>
+</body></html>

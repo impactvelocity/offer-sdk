@@ -10,5 +10,5 @@ export const RENDER_DEPLOY_URL = `https://render.com/deploy?repo=${GITHUB_URL}`;
 /** The hackathon this project was built for. */
 export const DEVPOST_URL = "https://paypalaihackathon.devpost.com/";
 
-/** YouTube ID of the walkthrough video under the hero (the part after `v=` in its URL). Empty until it's uploaded. */
-export const WALKTHROUGH_VIDEO_ID = "";
+/** YouTube ID of the walkthrough video under the hero (the part after `v=` or `youtu.be/` in its URL). */
+export const WALKTHROUGH_VIDEO_ID = "JXntWQaue1g";
