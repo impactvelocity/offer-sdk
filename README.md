@@ -256,4 +256,8 @@ A pnpm monorepo with three Next.js apps and a Workflows service, plus a standalo
 - **[Zapier](https://offersdk.com/docs/sponsors/zapier)** connects through the same signed webhooks.
 - **Claude** picks save offers with structured output. Plan and incentive ids are enums in the schema, so the agent can only name ones that exist, and the server re-checks every number.
 
+## License
+
+[MIT](LICENSE)
+
 <p align="center"><sub>Built for the PayPal AI Hackathon. Your offers, your PayPal, your Render account.</sub></p>

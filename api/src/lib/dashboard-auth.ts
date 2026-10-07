@@ -101,9 +101,13 @@ const DEMO_BLOCKED_PATHS = new Set([
 const guardDemoAccount = createAuthMiddleware(async (ctx) => {
   if (!DEMO_BLOCKED_PATHS.has(ctx.path)) return;
   const session = await getSessionFromCtx(ctx);
-  if (session?.user.email === DEMO_EMAIL) {
-    throw new APIError("FORBIDDEN", { message: DEMO_READ_ONLY_MESSAGE });
+  if (session?.user.email !== DEMO_EMAIL) return;
+  // The dashboard creates the demo's one workspace on its first build.
+  if (ctx.path === "/organization/create") {
+    const [member] = await sql`select 1 from auth_member where "userId" = ${session.user.id} limit 1`;
+    if (!member) return;
   }
+  throw new APIError("FORBIDDEN", { message: DEMO_READ_ONLY_MESSAGE });
 });
 
 function createDashboardAuth() {
