@@ -173,7 +173,7 @@ export function TermList({ items }: { items: { term: ReactNode; children: ReactN
   return (
     <dl className="docs-block divide-y divide-border border-y border-border">
       {items.map((item, i) => (
-        <div key={i} className="grid gap-1 py-4 sm:grid-cols-[minmax(0,13rem)_1fr] sm:gap-6">
+        <div key={i} className="grid grid-cols-[minmax(0,1fr)] gap-1 py-4 sm:grid-cols-[minmax(0,13rem)_minmax(0,1fr)] sm:gap-6">
           <dt className="font-medium text-fg">{item.term}</dt>
           <dd className="text-fg-tertiary">{item.children}</dd>
         </div>

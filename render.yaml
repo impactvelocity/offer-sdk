@@ -83,12 +83,8 @@ services:
         sync: false
       - key: CORS_ORIGINS
         value: "*"
-      # "Explore the demo workspace" on the sign-in page. The first click builds the shared
-      # demo workspace (sample apps, accounts, usage history, an offer and a cancel flow).
-      # The demo login is read-only. Rebuild the demo with:
-      #   APP_URL=https://<this service's URL> ADMIN_API_KEY=<the API's> pnpm seed:demo --reset
-      - key: DEMO_ENABLED
-        value: "true"
+      # DEMO_ENABLED is left out on purpose: your own install has no public demo login. To offer
+      # one, add DEMO_ENABLED=true in the Render dashboard (see offer-app/README.md).
       # Lets corepack fetch the pnpm version pinned in package.json without prompting.
       - key: COREPACK_ENABLE_DOWNLOAD_PROMPT
         value: "0"

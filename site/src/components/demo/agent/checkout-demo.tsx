@@ -4,6 +4,7 @@ import { Check, Handshake, Loader2, Lock, Mail, PartyPopper, RotateCcw, Search, 
 import { useEffect, useEffectEvent, useRef, useState, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { AppWindow, ChoiceCard, Control, Panel, Segmented, SwitchRow } from "../controls";
+import { ControlsDrawer } from "../controls-drawer";
 import { money } from "../state";
 import {
   bumps,
@@ -117,7 +118,11 @@ export function CheckoutDemo() {
 
   return (
     <div ref={root} className="grid gap-6 lg:grid-cols-[288px_minmax(0,1fr)] xl:grid-cols-[288px_minmax(0,1fr)_300px]">
-      <aside className="space-y-4 lg:row-span-2 xl:row-span-1">
+      <ControlsDrawer
+        title="Visitor and guardrails"
+        summary={`${visitor.label} · ${variant === "agent" ? "B · Agent" : "A · Control"}`}
+        className="lg:row-span-2 xl:row-span-1"
+      >
         <Panel title="Visitor">
           {visitors.map((v) => (
             <ChoiceCard
@@ -162,7 +167,7 @@ export function CheckoutDemo() {
         <Control icon={<RotateCcw />} onClick={() => land(visitorId, guardrails, variant)} disabled={phase === "composing" || phase === "paying"}>
           Land again
         </Control>
-      </aside>
+      </ControlsDrawer>
 
       <AppWindow url={`acmedocs.dev/checkout${visitor.query}`} className="h-[600px]">
         <div className="flex h-11 shrink-0 items-center gap-2 border-b border-border px-4">

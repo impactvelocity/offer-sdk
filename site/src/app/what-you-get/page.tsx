@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/metadata";
 import type { ReactNode } from "react";
 import { SectionHeading } from "@/components/section-heading";
 import { OrderSummary } from "@/components/what-you-get/order-summary";
@@ -15,11 +16,11 @@ import {
   ZapierVisual,
 } from "@/components/what-you-get/visuals";
 
-export const metadata: Metadata = {
-  title: "What you get",
-  description:
-    "The Offer API, the admin app, an MCP server, PayPal checkout and agentic cancel flows, plus four bonuses. Free, open source and self-hostable.",
-};
+const title = "What you get: five products and four bonuses";
+const description =
+  "The Offer API, the admin app, an MCP server, PayPal checkout and agentic cancel flows, plus four bonuses. Free, open source and self-hostable.";
+
+export const metadata: Metadata = pageMetadata({ title, description, path: "/what-you-get" });
 
 type Benefit = { title: string; body: ReactNode };
 

@@ -17,6 +17,7 @@ import { useCallback, useEffect, useReducer, useRef } from "react";
 import { highlight } from "@/components/ui/code-block";
 import { cn } from "@/lib/utils";
 import { Control, Panel, Segmented, SwitchRow } from "./controls";
+import { ControlsDrawer } from "./controls-drawer";
 import { MockApp } from "./mock-app";
 import {
   entitlements,
@@ -56,7 +57,11 @@ export function DemoPlayground() {
 
   return (
     <div className="grid gap-6 lg:grid-cols-[288px_minmax(0,1fr)]">
-      <aside className="space-y-4 lg:sticky lg:top-20 lg:self-start">
+      <ControlsDrawer
+        title="Demo settings"
+        summary={`${plans[state.plan].name} plan · ${e.ai_credits.used.toLocaleString()} / ${e.ai_credits.limit.toLocaleString()} credits`}
+        className="lg:sticky lg:top-20 lg:self-start"
+      >
         <Panel title="Plan">
           <Segmented
             label="Plan"
@@ -125,7 +130,7 @@ export function DemoPlayground() {
           <RotateCcw className="size-4" />
           Reset demo
         </button>
-      </aside>
+      </ControlsDrawer>
 
       <div className="min-w-0 space-y-4">
         <MockApp state={state} act={act} />

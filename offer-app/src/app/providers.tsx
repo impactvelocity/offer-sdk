@@ -2,6 +2,7 @@
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState, type ReactNode } from "react";
+import { PostHogIdentify } from "@/components/posthog-identify";
 import { ConfirmProvider } from "@/components/ui/confirm";
 import { Toaster } from "@/components/ui/toast";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -25,6 +26,7 @@ export function Providers({ children }: { children: ReactNode }) {
 
   return (
     <QueryClientProvider client={queryClient}>
+      <PostHogIdentify />
       <TooltipProvider delay={350}>
         <Toaster>
           <ConfirmProvider>{children}</ConfirmProvider>

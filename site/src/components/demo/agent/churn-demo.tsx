@@ -5,6 +5,7 @@ import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { AppWindow, ChoiceCard, Control, Panel, Segmented, SwitchRow } from "../controls";
+import { ControlsDrawer } from "../controls-drawer";
 import { money } from "../state";
 import {
   PRO_PRICE,
@@ -103,7 +104,11 @@ export function ChurnDemo() {
 
   return (
     <div className="grid gap-6 lg:grid-cols-[288px_minmax(0,1fr)] xl:grid-cols-[288px_minmax(0,1fr)_300px]">
-      <aside className="space-y-4 lg:row-span-2 xl:row-span-1">
+      <ControlsDrawer
+        title="Customer and guardrails"
+        summary={`${persona.name} · ${guardrails.maxDiscount === "0" ? "no discounts" : `up to ${guardrails.maxDiscount}% off`}`}
+        className="lg:row-span-2 xl:row-span-1"
+      >
         <Panel title="Customer">
           {personas.map((p) => (
             <ChoiceCard key={p.id} selected={p.id === personaId} onClick={() => choosePersona(p.id)} title={p.name} note={p.note} avatar={p.initials} />
@@ -132,7 +137,7 @@ export function ChurnDemo() {
             Reset
           </Control>
         </Panel>
-      </aside>
+      </ControlsDrawer>
 
       <AppWindow url="app.acmedocs.dev/settings/billing" className="h-[560px]">
         <div className="flex h-12 shrink-0 items-center gap-3 border-b border-border px-4">

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/metadata";
 import { DiagramReveal } from "@/components/diagrams/reveal";
 import { primitives } from "@/components/platform-primitives";
 import { SectionArt } from "@/components/section-art";
@@ -8,10 +9,11 @@ import { cardStyle } from "@/components/sections/use-cases";
 import { WhyTimeline } from "@/components/why/timeline";
 import { cn } from "@/lib/utils";
 
-export const metadata: Metadata = {
-  title: "Pricing Spaghetti",
-  description: "Every SaaS launches with three plans. Then customers show up. Where Offer SDK fits.",
-};
+const title = "Every SaaS launches with three plans. Then customers show up.";
+const description =
+  "This is how pricing turns into spaghetti one reasonable request at a time, and where Offer SDK fits.";
+
+export const metadata: Metadata = pageMetadata({ title, description, path: "/why" });
 
 const asks: { ask: string; hardcoded: string; primitive: Primitive; sdk: string }[] = [
   { ask: "“Can I get a 30-day trial?”", hardcoded: "Email check + deploy", primitive: "Incentives", sdk: "Trial incentive" },

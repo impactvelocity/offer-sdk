@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist_Mono } from "next/font/google";
 import localFont from "next/font/local";
+import { FooterGate } from "@/components/footer-gate";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import "./globals.css";
@@ -16,10 +17,13 @@ const calSans = localFont({
 // Mono for code and section numbers.
 const geistMono = Geist_Mono({ subsets: ["latin"], variable: "--font-geist-mono", display: "swap" });
 
+// Site-wide defaults. Marketing pages set their own title and share card with pageMetadata();
+// docs pages keep this openGraph (and its image), and share cards fall back to their <title>.
 export const metadata: Metadata = {
-  title: { default: "Offer SDK: plans, entitlements and offers for your app", template: "%s · Offer SDK" },
-  description:
-    "Manage plans, entitlements, incentives and offers from one dashboard, and sell them with PayPal checkout from a React SDK.",
+  metadataBase: new URL("https://offersdk.com"),
+  title: { default: "Offer SDK", template: "%s · Offer SDK" },
+  openGraph: { type: "website", siteName: "Offer SDK" },
+  twitter: { card: "summary_large_image" },
 };
 
 export const viewport: Viewport = {
@@ -33,7 +37,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="flex min-h-dvh flex-col">
         <SiteHeader />
         <main className="flex-1">{children}</main>
-        <SiteFooter />
+        <FooterGate>
+          <SiteFooter />
+        </FooterGate>
       </body>
     </html>
   );

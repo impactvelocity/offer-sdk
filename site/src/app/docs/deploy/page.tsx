@@ -94,7 +94,8 @@ export default function DeployPage() {
         </Step>
         <Step title="Try the demo workspace (optional)">
           <p>
-            The Blueprint sets <code>DEMO_ENABLED=true</code>, so the sign-in page offers{" "}
+            The demo is off by default. To turn it on, add <code>DEMO_ENABLED=true</code> under{" "}
+            <strong>offer-app</strong> → Environment in the Render dashboard, and the sign-in page offers{" "}
             <strong>Explore the demo workspace</strong>. The first click builds it in your database, which takes a few
             seconds. The demo login is shared and read-only, so visitors can look around but can&apos;t change or delete
             anything. Send people to <code>/demo-account</code> to open sign-in with the login filled in. To rebuild the
@@ -102,12 +103,6 @@ export default function DeployPage() {
             Render dashboard under <strong>offersdk-api</strong> → Environment):
           </p>
           <Code lang="bash" code="APP_URL=https://offer-app.onrender.com ADMIN_API_KEY=… pnpm seed:demo --reset" />
-          <p>
-            If you don&apos;t want a public demo, change <code>DEMO_ENABLED</code> to <code>&quot;false&quot;</code>{" "}
-            under <strong>offer-app</strong> in your fork&apos;s <code>render.yaml</code>. The Blueprint sets the value
-            itself, so a change made only in the Render dashboard goes back to <code>true</code> on the next Blueprint
-            sync.
-          </p>
         </Step>
       </Steps>
 

@@ -139,7 +139,7 @@ export default function EnvironmentPage() {
             </>,
             <>
               Shows the read-only demo login on the sign-in page (pre-filled at <code>/demo-account</code>). The first
-              sign-in builds the demo workspace. The Blueprint sets <code>true</code>.
+              sign-in builds the demo workspace. Off unless you set it.
             </>,
           ],
           [

@@ -1,6 +1,5 @@
 import { ArrowRight } from "lucide-react";
 import Image from "next/image";
-import Link from "next/link";
 import footerBg from "@/assets/footer-bg.webp";
 import { LogoMark } from "@/components/brand/logo";
 import { buttonVariants } from "@/components/ui/button-variants";
@@ -54,11 +53,7 @@ export function SiteFooter() {
             · Created by{" "}
             <a href="https://hidylanjones.com" target="_blank" rel="noreferrer" className={creditLink}>
               Dylan Jones
-            </a>{" "}
-            ·{" "}
-            <Link href="/how-it-works" className={creditLink}>
-              How it works
-            </Link>
+            </a>
           </p>
         </div>
       </div>

@@ -220,7 +220,7 @@ export function DashboardSlider({ className }: { className?: string }) {
       </div>
 
       <div className="relative mt-5">
-        <div className="absolute -inset-x-10 -top-10 -bottom-10 -z-10 bg-brand-glow blur-2xl" aria-hidden />
+        <div className="absolute -inset-x-4 -top-10 -bottom-10 -z-10 bg-brand-glow blur-2xl sm:-inset-x-10" aria-hidden />
         <div className="overflow-hidden rounded-2xl border border-border-strong bg-panel shadow-2xl shadow-black/50">
           <div
             className="overflow-hidden bg-canvas touch-pan-y"

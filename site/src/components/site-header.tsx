@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { GithubMark } from "@/components/brand/github-mark";
 import { Logo } from "@/components/brand/logo";
+import { MobileMenu } from "@/components/mobile-menu";
 import { buttonVariants } from "@/components/ui/button-variants";
 import { APP_URL, GITHUB_URL } from "@/lib/env";
 
@@ -14,7 +15,7 @@ const nav = [
 export function SiteHeader() {
   return (
     <header className="sticky top-0 z-40 border-b border-border/60 bg-canvas/75 backdrop-blur-md">
-      <nav className="mx-auto flex h-14 max-w-6xl items-center gap-6 px-4 sm:px-6">
+      <nav className="mx-auto flex h-14 max-w-6xl items-center gap-4 px-4 sm:gap-6 sm:px-6">
         <Link href="/" className="focus-ring flex shrink-0 items-center rounded-md" aria-label="Offer SDK home">
           <Logo />
         </Link>
@@ -37,6 +38,7 @@ export function SiteHeader() {
         <a href={`${APP_URL}/demo-account`} target="_blank" rel="noopener noreferrer" className={buttonVariants({ variant: "primary", size: "sm" })}>
           Try Demo Account
         </a>
+        <MobileMenu items={nav} />
       </nav>
     </header>
   );

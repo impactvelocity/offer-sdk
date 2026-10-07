@@ -1,4 +1,5 @@
 import { ArrowDown, ArrowRight } from "lucide-react";
+import type { Metadata } from "next";
 import Image from "next/image";
 import heroBg from "@/assets/hero-bg.webp";
 import { buttonVariants } from "@/components/ui/button-variants";
@@ -13,6 +14,16 @@ import { ProblemsSection } from "@/components/sections/problems";
 import { UseCasesSection } from "@/components/sections/use-cases";
 import { WalkthroughVideo } from "@/components/walkthrough-video";
 import { APP_URL, DEVPOST_URL, RENDER_DEPLOY_URL } from "@/lib/env";
+import { pageMetadata } from "@/lib/metadata";
+
+// The hero's headline and lead.
+export const metadata: Metadata = pageMetadata({
+  title: "The Agentic Access & Offer SDK for your app",
+  description:
+    "Self-host your own entitlements, access and offers that secure your app and give you the freedom to experiment and grow your revenue.",
+  path: "/",
+  absoluteTitle: true,
+});
 
 const steps = [
   "Set up your plans and entitlements in the dashboard.",
@@ -83,9 +94,6 @@ export default function LandingPage() {
             </a>
             <a href={`${APP_URL}/demo-account`} target="_blank" rel="noopener noreferrer" className={buttonVariants({ variant: "secondary", size: "xl" })}>
               Try the Demo Account
-            </a>
-            <a href="#product" className={buttonVariants({ variant: "ghost", size: "xl" })}>
-              How it works
             </a>
           </div>
           <nav aria-label="On this page" className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">

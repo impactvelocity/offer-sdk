@@ -1,13 +1,16 @@
+import { ArrowRight } from "lucide-react";
 import type { Metadata } from "next";
+import Link from "next/link";
+import { pageMetadata } from "@/lib/metadata";
 import { AgentDemo } from "@/components/demo/agent/agent-demo";
 import { DemoPlayground } from "@/components/demo/playground";
 import { SectionHeading } from "@/components/section-heading";
 
-export const metadata: Metadata = {
-  title: "React SDK",
-  description:
-    "See the Offer React SDK respond in real time on a mock app: switch plans, use up credits, fail a payment, then watch an agent save a cancellation and build a checkout per visitor.",
-};
+const title = "See the React SDK respond to changes in real time";
+const description =
+  "Switch plans, use up credits or fail a payment on a mock app, then watch an agent save a cancellation and build a checkout per visitor.";
+
+export const metadata: Metadata = pageMetadata({ title, description, path: "/how-it-works" });
 
 export default function DemoPage() {
   return (
@@ -18,11 +21,17 @@ export default function DemoPage() {
           <h1 className="font-display text-4xl font-medium text-balance sm:text-5xl">
             See the React SDK respond to changes in real time
           </h1>
-          <p className="mt-4 text-fg-muted">
-            Acme Docs is a mock React app on a simulated Offer SDK. Switch plans, burn credits or fail a payment, and
-            watch features, paywalls and offers update the moment the account changes. The log shows every SDK call.
-            No real accounts are touched.
+          <p className="mt-5 text-lg/8 text-pretty text-fg-secondary">
+            Switch plans, burn credits or fail a payment in this mock app, and watch paywalls and offers update
+            instantly. The log shows every SDK call.
           </p>
+          <Link
+            href="/docs/sdk"
+            className="group focus-ring mt-5 inline-flex items-center gap-1.5 rounded-sm text-sm font-medium text-accent-fg"
+          >
+            See how the React SDK works in the docs
+            <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" aria-hidden />
+          </Link>
         </div>
         <div className="mt-12">
           <DemoPlayground />
