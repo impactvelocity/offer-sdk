@@ -105,6 +105,10 @@ export default function ApiAuthenticationPage() {
           ],
         ]}
       />
+      <p>
+        The MCP server at <code>/apps/:appId/mcp</code> also takes OAuth access tokens (<code>mcp_at_…</code>), which
+        work on that route only. See <Link href="/docs/api/mcp">MCP server</Link>.
+      </p>
       <Callout tone="warning" title="Keep the admin and secret keys on servers.">
         The admin key is shared by the API and the dashboard and reaches every app. The secret key can change or
         delete anything in its app. Browsers get the publishable key or an account token.
@@ -177,6 +181,13 @@ export default function ApiAuthenticationPage() {
           <code>/apps/:appId/agent/threads</code>: the dashboard agent&apos;s chat threads
         </li>
         <li>
+          <code>/apps/:appId/mcp/settings</code>, <code>/connections</code> and <code>/calls</code>: the MCP server
+          page
+        </li>
+        <li>
+          <code>/oauth/requests/*</code>: the consent page that approves MCP connections
+        </li>
+        <li>
           <code>/api/auth/*</code>: dashboard sign-in, which the dashboard proxies
         </li>
       </ul>
@@ -186,6 +197,8 @@ export default function ApiAuthenticationPage() {
         <code>GET /</code>, <code>GET /health</code>, <code>GET /openapi.json</code>, <code>GET /docs</code> and{" "}
         <code>GET /event-types</code> are open. So is <code>POST /apps</code>, since a new app has no key yet. PayPal
         calls <code>POST /paypal/webhooks/:appId</code> without a key, and the API verifies each call with PayPal.
+        MCP clients use <code>/.well-known/*</code>, <code>/oauth/register</code>, <code>/oauth/authorize</code>,{" "}
+        <code>/oauth/token</code> and <code>/oauth/revoke</code> to sign in.
       </p>
 
       <H2>Getting and rotating keys</H2>

@@ -14,6 +14,9 @@ import type {
   EntitlementType,
   EntitlementUsageSummary,
   Incentive,
+  McpCallRecord,
+  McpConnectionRecord,
+  McpSettings,
   Offer,
   OfferCheckout,
   OfferInput,
@@ -221,6 +224,16 @@ export const api = {
     ) => request<CancelOfferPreview>("POST", `${app(appId)}/cancel-flows/${enc(id)}/preview-offer`, body),
     sessions: (appId: string, opts: { flow?: string; account?: string; status?: string; limit?: number } = {}) =>
       request<CancelSessionRecord[]>("GET", `${app(appId)}/cancel-sessions`, undefined, opts),
+  },
+
+  mcp: {
+    settings: (appId: string) => request<McpSettings>("GET", `${app(appId)}/mcp/settings`),
+    updateSettings: (appId: string, patch: Partial<Omit<McpSettings, "updated_at">>) =>
+      request<McpSettings>("PATCH", `${app(appId)}/mcp/settings`, patch),
+    connections: (appId: string) => request<McpConnectionRecord[]>("GET", `${app(appId)}/mcp/connections`),
+    revoke: (appId: string, id: string) => request<{ deleted: true }>("DELETE", `${app(appId)}/mcp/connections/${enc(id)}`),
+    calls: (appId: string, opts: { connection_id?: string; limit?: number } = {}) =>
+      request<McpCallRecord[]>("GET", `${app(appId)}/mcp/calls`, undefined, opts),
   },
 
   paypal: {

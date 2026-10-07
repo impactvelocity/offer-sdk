@@ -1,6 +1,9 @@
-// The Offer MCP server's tools, resources and prompts (mock UI; no server yet). Every tool is
-// one API endpoint from ./endpoints: same params, same behaviour, scoped to the app in the
-// server URL so `appId` is never an argument. Endpoints that could lock you out stay off MCP.
+// The Offer MCP server's tools, resources and prompts. Every tool is one API endpoint from
+// ./endpoints: same params, same behaviour, scoped to the app in the server URL so `appId` is
+// never an argument. Endpoints that could lock you out stay off MCP.
+//
+// The server itself runs in the API (api/src/mcp) and reads its tools from tools.json, which
+// `pnpm mcp:tools` writes from mcpToolManifest() below (test/mcp-tools.test.ts fails when stale).
 
 import { ENDPOINTS, PATH_PARAMS, pathParams, type Endpoint, type ExampleKey, type GroupId } from "./endpoints";
 
@@ -144,6 +147,10 @@ const NOTES: Record<string, string> = {
   get_app: "`api_key` and `public_key` are redacted over MCP.",
   update_app: "Only `name` can change. Keys can't be rotated over MCP.",
   merge_plan_meta: "Takes the keys to merge under `meta` instead of as the raw body.",
+  list_webhooks: "Signing secrets are redacted over MCP; copy them from the webhook's page.",
+  get_webhook: "The signing secret is redacted over MCP; copy it from the webhook's page.",
+  create_webhook: "The signing secret is redacted over MCP; copy it from the webhook's page.",
+  update_webhook: "The signing secret is redacted over MCP.",
 };
 
 /** Calls that reach your own systems (webhook URLs), so clients treat them as open-world. */
@@ -176,7 +183,7 @@ function buildSchema(e: Endpoint): JsonSchema {
     properties[q.name] = {
       type,
       description: q.description,
-      ...(q.options ? { enum: q.options } : {}),
+      ...(q.options && type === "string" ? { enum: q.options } : {}),
       ...(q.default !== undefined ? { default: type === "integer" ? Number(q.default) : q.default } : {}),
     };
     if (q.required) required.push(q.name);
@@ -238,6 +245,23 @@ export const MCP_TOOLS: McpTool[] = ENDPOINTS.flatMap((e) => {
     },
   ];
 });
+
+/** What the API's MCP server needs to list and run each tool (api/src/mcp/tools.json). */
+export function mcpToolManifest() {
+  return MCP_TOOLS.map((t) => ({
+    name: t.name,
+    title: t.title,
+    description: t.note ? `${t.description} ${t.note}` : t.description,
+    kind: t.kind,
+    method: t.endpoint.method,
+    path: t.endpoint.path,
+    query: (t.endpoint.query ?? []).map((q) => q.name),
+    /** `fields`: the arguments left after path and query params are the JSON body. `meta`: the `meta` argument is. */
+    body: t.endpoint.method === "GET" || t.endpoint.method === "DELETE" ? null : t.endpoint.body?.some((f) => f.name === "<key>") ? "meta" : "fields",
+    inputSchema: t.inputSchema,
+    annotations: t.annotations,
+  }));
+}
 
 /** Endpoints deliberately kept off MCP, with the reason. */
 export const EXCLUDED_ENDPOINTS: { endpoint: Endpoint; reason: string }[] = ENDPOINTS.flatMap((e) => {

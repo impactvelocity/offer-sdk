@@ -23,6 +23,8 @@ interface WorkspaceContextValue {
   user: WorkspaceUser;
   workspace: WorkspaceOrg;
   workspaces: WorkspaceOrg[];
+  /** Signed in as the shared, read-only demo login (see @/lib/demo). */
+  demo: boolean;
   switchWorkspace: (id: string) => Promise<void>;
   signOut: () => Promise<void>;
 }
@@ -35,10 +37,16 @@ export function useWorkspaceContext() {
   return ctx;
 }
 
+/** True on the shared demo login. False outside a workspace layout. */
+export function useIsDemo() {
+  return useContext(WorkspaceContext)?.demo ?? false;
+}
+
 export function WorkspaceProvider({
   user,
   workspace,
   workspaces,
+  demo,
   children,
 }: Omit<WorkspaceContextValue, "switchWorkspace" | "signOut"> & { children: ReactNode }) {
   const router = useRouter();
@@ -62,7 +70,7 @@ export function WorkspaceProvider({
   }, [queryClient, router]);
 
   return (
-    <WorkspaceContext.Provider value={{ user, workspace, workspaces, switchWorkspace, signOut }}>
+    <WorkspaceContext.Provider value={{ user, workspace, workspaces, demo, switchWorkspace, signOut }}>
       {children}
     </WorkspaceContext.Provider>
   );

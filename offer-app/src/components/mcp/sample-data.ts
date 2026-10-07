@@ -1,16 +1,19 @@
 import type { Examples } from "@/components/developers/use-dev-context";
 import { fillExample } from "@/components/developers/use-dev-context";
 import { MCP_TOOLS, type AccessLevel } from "@/components/developers/mcp-tools";
-import type { ClientId, McpAuth } from "./clients";
+import type { McpCallRecord, McpConnectionRecord } from "@/lib/api/types";
+import { clientFromName, type ClientId, type McpAuth } from "./clients";
 
-// Sample connections and tool calls for the MCP page until the server exists. Built from the
-// app's real ids so the activity log reads like this app's data.
+// Connections and tool calls as the MCP page shows them, plus sample ones for the preview
+// against the in-memory mock (the server runs in the hosted API). Samples use the app's
+// real ids so the activity log reads like this app's data.
 
 export interface McpConnection {
   id: string;
   client: ClientId;
   label: string;
-  user: { name: string; email: string };
+  /** Who approved it. Null for clients using the secret key. */
+  user: { name: string; email: string } | null;
   auth: McpAuth;
   access: AccessLevel;
   connectedAt: string;
@@ -21,7 +24,7 @@ export interface McpConnection {
 export interface McpCall {
   id: string;
   at: string;
-  connectionId: string;
+  connectionId: string | null;
   tool: string;
   args: Record<string, unknown>;
   status: number;
@@ -60,7 +63,7 @@ export function sampleConnections(now: number, me?: { name: string; email: strin
       id: "mcpc_3",
       client: "claude-code",
       label: "Claude Code · billing-service",
-      user: { name: "Marcus Lee", email: "marcus@example.com" },
+      user: null,
       auth: "key",
       access: "full",
       connectedAt: ago(now, 60 * 24 * 30),
@@ -98,4 +101,31 @@ export function sampleActivity(now: number, ex: Examples): McpCall[] {
           ? { error: "Namespace not found" }
           : responseFor(c.tool, ex),
   }));
+}
+
+export function toConnection(r: McpConnectionRecord): McpConnection {
+  return {
+    id: r.id,
+    client: clientFromName(r.client_name),
+    label: r.client_name,
+    user: r.auth === "oauth" ? { name: r.user_name || r.user_email || "Unknown", email: r.user_email ?? "" } : null,
+    auth: r.auth,
+    access: r.access_level,
+    connectedAt: r.created_at,
+    lastUsedAt: r.last_used_at ?? r.created_at,
+    calls7d: r.calls_7d,
+  };
+}
+
+export function toCall(r: McpCallRecord): McpCall {
+  return {
+    id: r.id,
+    at: r.created_at,
+    connectionId: r.connection_id,
+    tool: r.tool,
+    args: r.args ?? {},
+    status: r.status,
+    durationMs: r.duration_ms,
+    result: r.result,
+  };
 }

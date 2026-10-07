@@ -2,7 +2,7 @@
 
 import { Dialog as BaseDialog } from "@base-ui/react/dialog";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowRight, BadgePercent, Braces, ChartColumn, Code, CornerDownLeft, Gift, House, Key, KeyRound, Layers, LayoutGrid, Monitor, Moon, Plug, Plus, Puzzle, Search, Settings, Sparkles, Sun, UserPlus, Users, Webhook } from "lucide-react";
+import { ArrowRight, BadgePercent, Braces, ChartColumn, Code, CornerDownLeft, Gift, House, Key, KeyRound, Layers, LayoutGrid, Monitor, Moon, Plug, Plus, Puzzle, Search, Settings, Sparkles, Sun, Users, Webhook } from "lucide-react";
 import { useRouter } from "next/navigation";
 import {
   createContext,
@@ -22,6 +22,7 @@ import { api } from "@/lib/api/client";
 import { useEntitlements, useIncentives, usePlans } from "@/lib/api/hooks";
 import { setTheme, useTheme } from "@/lib/theme";
 import { cn } from "@/lib/utils";
+import { useIsDemo } from "./workspace-context";
 
 interface Command {
   id: string;
@@ -76,6 +77,7 @@ export function CommandMenuProvider({ appId, children }: { appId?: string; child
 
 function Palette({ appId, close }: { appId?: string; close: () => void }) {
   const router = useRouter();
+  const demo = useIsDemo();
   const [query, setQuery] = useState("");
   const [active, setActive] = useState(0);
   const deferred = useDeferredValue(query.trim());
@@ -106,7 +108,8 @@ function Palette({ appId, close }: { appId?: string; close: () => void }) {
       list.push(
         { id: "nav-overview", group: "Navigate", label: "Overview", icon: <House />, run: () => go(base) },
         { id: "nav-analytics", group: "Navigate", label: "Analytics", icon: <ChartColumn />, run: () => go(`${base}/analytics`) },
-        { id: "nav-agent", group: "Navigate", label: "Agent", icon: <Sparkles />, keywords: "ai chat ask assistant", run: () => go(`${base}/agent`) },
+        // The agent is off on the demo login.
+        ...(demo ? [] : [{ id: "nav-agent", group: "Navigate", label: "Agent", icon: <Sparkles />, keywords: "ai chat ask assistant", run: () => go(`${base}/agent`) }]),
         { id: "nav-plans", group: "Navigate", label: "Plans", icon: <Layers />, run: () => go(`${base}/plans`) },
         { id: "nav-ents", group: "Navigate", label: "Entitlements", icon: <KeyRound />, run: () => go(`${base}/entitlements`) },
         { id: "nav-addons", group: "Navigate", label: "Add-ons", icon: <Puzzle />, run: () => go(`${base}/addons`) },
@@ -130,7 +133,6 @@ function Palette({ appId, close }: { appId?: string; close: () => void }) {
     list.push(
       { id: "ws-apps", group: "Workspace", label: "All apps", icon: <LayoutGrid />, run: () => go("/apps") },
       { id: "ws-new-app", group: "Workspace", label: "New app", icon: <Plus />, run: () => go("/apps?new=1") },
-      { id: "ws-members", group: "Workspace", label: "Invite members", icon: <UserPlus />, run: () => go("/settings/members") },
       { id: "ws-settings", group: "Workspace", label: "Workspace settings", icon: <Settings />, run: () => go("/settings/workspace") },
       {
         id: "theme-toggle",
@@ -167,7 +169,7 @@ function Palette({ appId, close }: { appId?: string; close: () => void }) {
       }
     }
     return list;
-  }, [base, close, deferred, entitlements.data, go, incentives.data, plans.data, resolved]);
+  }, [base, close, deferred, demo, entitlements.data, go, incentives.data, plans.data, resolved]);
 
   const filtered = useMemo(() => {
     const q = deferred.toLowerCase();

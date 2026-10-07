@@ -219,6 +219,14 @@ createIncentive  updateIncentive  deleteIncentive`}
       <p>
         <Link href="/docs/admin/agent">Agent and MCP</Link> shows what using the agent looks like in the dashboard.
       </p>
+
+      <H2>Claude as an MCP client</H2>
+      <p>
+        You can also bring your own Claude. Each app has an <Link href="/docs/api/mcp">MCP server</Link> in the API,
+        and Claude, Claude Code and other MCP clients connect to it with OAuth or the secret key. That needs no
+        Anthropic API key on your side: the model runs in the client, and the server only serves tools, resources and
+        prompts.
+      </p>
     </>
   );
 }

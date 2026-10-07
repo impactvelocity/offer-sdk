@@ -1,4 +1,5 @@
 import { betterAuth } from "better-auth";
+import { APIError } from "better-auth/api";
 import { memoryAdapter, type MemoryDB } from "better-auth/adapters/memory";
 import { nextCookies } from "better-auth/next-js";
 import { organization } from "better-auth/plugins";
@@ -23,6 +24,19 @@ const memory: MemoryDB = (globalForAuth.__offerAuthDb ??= {
 
 export { DEMO_USER };
 
+/** Whether this install has its admin: any account besides the shared demo login. */
+export const localHasAdmin = () => memory.user.some((u) => u.email.toLowerCase() !== DEMO_USER.email);
+
+// One admin per install for now, as in the hosted API (api/src/lib/dashboard-auth.ts):
+// sign-up creates it, then only the demo login and invited emails can sign up.
+function guardSignUp(email: string) {
+  if (email.toLowerCase() === DEMO_USER.email || !localHasAdmin()) return;
+  const invited = memory.invitation.some(
+    (i) => i.email?.toLowerCase() === email.toLowerCase() && i.status === "pending" && new Date(i.expiresAt) > new Date(),
+  );
+  if (!invited) throw new APIError("FORBIDDEN", { message: "Sign-up is closed: this install already has its admin account." });
+}
+
 function createLocalAuth() {
   return betterAuth({
     appName: "Offer SDK",
@@ -33,6 +47,9 @@ function createLocalAuth() {
     databaseHooks: {
       user: {
         create: {
+          before: async (user) => {
+            guardSignUp(user.email);
+          },
           // Mock invitations: accept any pending invite for this email as soon as the user signs up.
           after: async (user) => {
             for (const invite of memory.invitation) {

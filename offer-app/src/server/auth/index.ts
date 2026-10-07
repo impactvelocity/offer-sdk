@@ -1,8 +1,9 @@
 import { headers } from "next/headers";
 import { cache } from "react";
+import { DEMO_BLOCKED_AUTH_PATHS, DEMO_READ_ONLY_MESSAGE } from "@/lib/demo";
 import { env } from "@/server/env";
 import { offerApiMode } from "@/server/offer-api";
-import { DEMO_USER, ensureDemoData, localAuth } from "./local";
+import { DEMO_USER, ensureDemoData, localAuth, localHasAdmin } from "./local";
 import { proxyAuthRequest, remoteAuthCall } from "./remote";
 
 // Dashboard auth (better-auth + organization plugin = workspaces). Where it runs depends
@@ -14,6 +15,9 @@ export { DEMO_USER, ensureDemoData };
 
 /** The mock always has the demo workspace; with the hosted API, it's built on first use (see @/server/demo). Its password is public. */
 export const demoEnabled = offerApiMode === "mock" || env.DEMO_ENABLED;
+
+/** The shared demo login, which is read-only (see @/lib/demo). */
+export const isDemoUser = (user: { email: string } | null | undefined) => user?.email === DEMO_USER.email;
 
 export interface Session {
   user: { id: string; name: string; email: string; image?: string | null };
@@ -29,9 +33,21 @@ export interface Workspace {
 
 /** Handles a browser request to /api/auth/*. */
 export async function handleAuthRequest(request: Request): Promise<Response> {
+  // The API refuses these too; checking here also covers the mock.
+  const path = new URL(request.url).pathname.replace(/^\/api\/auth/, "");
+  if (DEMO_BLOCKED_AUTH_PATHS.has(path) && isDemoUser((await getSession())?.user)) {
+    return Response.json({ code: "DEMO_READ_ONLY", message: DEMO_READ_ONLY_MESSAGE }, { status: 403 });
+  }
   if (offerApiMode === "remote") return proxyAuthRequest(request);
   await ensureDemoData();
   return localAuth().handler(request);
+}
+
+/** Whether this install still needs its admin account (the /setup page). The demo login doesn't count. */
+export async function needsSetup(): Promise<boolean> {
+  if (offerApiMode === "remote") return (await remoteAuthCall<{ needs_setup: boolean }>("GET", "/setup-status")).needs_setup;
+  await ensureDemoData();
+  return !localHasAdmin();
 }
 
 /** Current session for server components and route handlers (deduped per request). */

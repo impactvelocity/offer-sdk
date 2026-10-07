@@ -23,6 +23,17 @@ export const CLIENTS: ClientInfo[] = [
   { id: "other", name: "Other clients", tagline: "Any MCP client" },
 ];
 
+/** Best guess at the client from the name it registered or sent at initialize. */
+export function clientFromName(name: string): ClientId {
+  const n = name.toLowerCase();
+  if (/claude[\s-]?code/.test(n)) return "claude-code";
+  if (n.includes("claude")) return "claude";
+  if (n.includes("cursor")) return "cursor";
+  if (/vs ?code|visual studio code/.test(n)) return "vscode";
+  if (/chatgpt|openai/.test(n)) return "chatgpt";
+  return "other";
+}
+
 export interface ClientSetup {
   /** Steps; `backticks` render as code. */
   steps: string[];

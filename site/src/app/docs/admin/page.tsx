@@ -171,8 +171,8 @@ export default function DashboardTourPage() {
             "/developers/mcp",
             "Developers → MCP server",
             <>
-              A preview of a proposed MCP server. No server runs yet. See{" "}
-              <Link href="/docs/admin/agent">Agent and MCP</Link>.
+              Connect Claude, Cursor and other assistants to the app, choose what they can do, and see every call.
+              See <Link href="/docs/api/mcp">MCP server</Link>.
             </>,
           ],
           [

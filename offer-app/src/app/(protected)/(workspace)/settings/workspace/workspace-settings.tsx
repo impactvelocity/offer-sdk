@@ -4,6 +4,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Building2, DoorOpen, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent, type ReactNode } from "react";
+import { DemoLock } from "@/components/shell/demo";
 import { PageBody, PageHeader, PageTitle } from "@/components/shell/page";
 import { useWorkspaceContext } from "@/components/shell/workspace-context";
 import { Avatar } from "@/components/ui/avatar";
@@ -96,18 +97,20 @@ export function WorkspaceSettings() {
     <>
       <PageHeader crumbs={[{ label: "Workspace", icon: <Building2 /> }]} title="General" />
       <PageBody width="narrow">
-        <PageTitle title="General" description="Settings that apply to everyone in this workspace and all of its apps." />
-        <Section title="Workspace" description="How your workspace appears to members.">
+        <PageTitle title="General" description="Settings that apply to this workspace and all of its apps." />
+        <Section title="Workspace" description="Its name and identifiers.">
           <div className="flex flex-col gap-5">
-            <form onSubmit={submit} className="flex items-end gap-3">
-              <Avatar name={name || workspace.name} seed={workspace.id} size="xl" />
-              <Field label="Workspace name" className="flex-1">
-                <Input value={name} onChange={(e) => setName(e.target.value)} maxLength={80} required />
-              </Field>
-              <Button type="submit" variant="primary" size="md" disabled={!dirty || !name.trim()} loading={rename.isPending}>
-                Save
-              </Button>
-            </form>
+            <DemoLock>
+              <form onSubmit={submit} className="flex items-end gap-3">
+                <Avatar name={name || workspace.name} seed={workspace.id} size="xl" />
+                <Field label="Workspace name" className="flex-1">
+                  <Input value={name} onChange={(e) => setName(e.target.value)} maxLength={80} required />
+                </Field>
+                <Button type="submit" variant="primary" size="md" disabled={!dirty || !name.trim()} loading={rename.isPending}>
+                  Save
+                </Button>
+              </form>
+            </DemoLock>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <Field label="Slug" description="Set when the workspace was created.">
                 <Input value={workspace.slug} readOnly />
@@ -123,45 +126,47 @@ export function WorkspaceSettings() {
             </div>
           </div>
         </Section>
-        <Section title="Danger zone">
-          <Card className="divide-y divide-border">
-            {members.isLoading ? (
-              <div className="p-5">
-                <Skeleton className="h-10" />
-              </div>
-            ) : (
-              <>
-                {!isOwner || owners > 1 ? (
-                  <DangerRow
-                    title="Leave workspace"
-                    description="Remove yourself from this workspace. Everyone else keeps their access."
-                    action={
-                      <Button variant="secondary" onClick={onLeave}>
-                        <DoorOpen />
-                        Leave workspace
-                      </Button>
-                    }
-                  />
-                ) : null}
-                {isOwner ? (
-                  <DangerRow
-                    title="Delete workspace"
-                    description="Permanently delete this workspace and all of its apps, plans, accounts and usage data."
-                    action={
-                      <Button variant="danger" onClick={onDelete}>
-                        <Trash2 />
-                        Delete workspace
-                      </Button>
-                    }
-                  />
-                ) : null}
-              </>
-            )}
-          </Card>
-          {!members.isLoading && !isOwner ? (
-            <p className="mt-2 text-xs text-fg-tertiary">Only owners can delete the workspace.</p>
-          ) : null}
-        </Section>
+        <DemoLock>
+          <Section title="Danger zone">
+            <Card className="divide-y divide-border">
+              {members.isLoading ? (
+                <div className="p-5">
+                  <Skeleton className="h-10" />
+                </div>
+              ) : (
+                <>
+                  {!isOwner || owners > 1 ? (
+                    <DangerRow
+                      title="Leave workspace"
+                      description="Remove yourself from this workspace. Everyone else keeps their access."
+                      action={
+                        <Button variant="secondary" onClick={onLeave}>
+                          <DoorOpen />
+                          Leave workspace
+                        </Button>
+                      }
+                    />
+                  ) : null}
+                  {isOwner ? (
+                    <DangerRow
+                      title="Delete workspace"
+                      description="Permanently delete this workspace and all of its apps, plans, accounts and usage data."
+                      action={
+                        <Button variant="danger" onClick={onDelete}>
+                          <Trash2 />
+                          Delete workspace
+                        </Button>
+                      }
+                    />
+                  ) : null}
+                </>
+              )}
+            </Card>
+            {!members.isLoading && !isOwner ? (
+              <p className="mt-2 text-xs text-fg-tertiary">Only owners can delete the workspace.</p>
+            ) : null}
+          </Section>
+        </DemoLock>
       </PageBody>
     </>
   );

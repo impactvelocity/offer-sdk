@@ -1,0 +1,2203 @@
+[
+  {
+    "name": "list_accounts",
+    "title": "List and search accounts",
+    "description": "List and search accounts. Matches `q` against name and ID. Newest first.",
+    "kind": "read",
+    "method": "GET",
+    "path": "/apps/:appId/namespaces",
+    "query": [
+      "q",
+      "plan",
+      "incentive",
+      "has_incentive",
+      "page",
+      "per_page"
+    ],
+    "body": null,
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "q": {
+          "type": "string",
+          "description": "Search text. `*` matches everything.",
+          "default": "*"
+        },
+        "plan": {
+          "type": "string",
+          "description": "Only accounts on this plan."
+        },
+        "incentive": {
+          "type": "string",
+          "description": "Only accounts with this incentive."
+        },
+        "has_incentive": {
+          "type": "boolean",
+          "description": "`true` for accounts with any incentive."
+        },
+        "page": {
+          "type": "integer",
+          "description": "Page number, from 1.",
+          "default": 1
+        },
+        "per_page": {
+          "type": "integer",
+          "description": "Results per page (max 100).",
+          "default": 20
+        }
+      }
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "count_accounts",
+    "title": "Count accounts",
+    "description": "Count accounts.",
+    "kind": "read",
+    "method": "GET",
+    "path": "/apps/:appId/namespaces/count",
+    "query": [],
+    "body": null,
+    "inputSchema": {
+      "type": "object",
+      "properties": {}
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "list_accounts_with_incentive",
+    "title": "List accounts with an incentive",
+    "description": "List accounts with an incentive.",
+    "kind": "read",
+    "method": "GET",
+    "path": "/apps/:appId/namespaces/with-incentive",
+    "query": [
+      "incentive",
+      "page",
+      "per_page"
+    ],
+    "body": null,
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "incentive": {
+          "type": "string",
+          "description": "Only this incentive. Omit for any."
+        },
+        "page": {
+          "type": "integer",
+          "description": "Page number, from 1.",
+          "default": 1
+        },
+        "per_page": {
+          "type": "integer",
+          "description": "Results per page (max 100).",
+          "default": 20
+        }
+      }
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "create_account",
+    "title": "Create an account",
+    "description": "Create an account. Call this when someone signs up. Treat 409 as success so retries are safe. An unknown `incentive` is silently dropped rather than rejected.",
+    "kind": "write",
+    "method": "POST",
+    "path": "/apps/:appId/namespaces",
+    "query": [],
+    "body": "fields",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Your own ID for this customer (user or workspace). Stored as sent."
+        },
+        "name": {
+          "type": "string",
+          "description": "Display name."
+        },
+        "plan": {
+          "type": "string",
+          "description": "An existing plan ID."
+        },
+        "incentive": {
+          "type": "string",
+          "description": "An incentive ID to apply."
+        }
+      },
+      "required": [
+        "id",
+        "plan"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "get_account",
+    "title": "Get an account",
+    "description": "Get an account.",
+    "kind": "read",
+    "method": "GET",
+    "path": "/apps/:appId/namespaces/:namespaceId",
+    "query": [],
+    "body": null,
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "namespaceId": {
+          "type": "string",
+          "description": "The account ID you chose when creating it (e.g. your user or workspace ID)."
+        }
+      },
+      "required": [
+        "namespaceId"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "update_account",
+    "title": "Update an account",
+    "description": "Update an account. Shallow merge. Change `plan` from your billing webhooks; set `incentive` to apply an offer. Takes effect on the next `/plan` read.",
+    "kind": "write",
+    "method": "PATCH",
+    "path": "/apps/:appId/namespaces/:namespaceId",
+    "query": [],
+    "body": "fields",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "namespaceId": {
+          "type": "string",
+          "description": "The account ID you chose when creating it (e.g. your user or workspace ID)."
+        },
+        "name": {
+          "type": "string",
+          "description": "Display name."
+        },
+        "plan": {
+          "type": "string",
+          "description": "Move the account to this plan."
+        },
+        "incentive": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Apply an incentive, or `null` to remove it."
+        }
+      },
+      "required": [
+        "namespaceId"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "delete_account",
+    "title": "Delete an account",
+    "description": "Delete an account. Also deletes its usage counters. Usage events stay in analytics.",
+    "kind": "destructive",
+    "method": "DELETE",
+    "path": "/apps/:appId/namespaces/:namespaceId",
+    "query": [],
+    "body": null,
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "namespaceId": {
+          "type": "string",
+          "description": "The account ID you chose when creating it (e.g. your user or workspace ID)."
+        }
+      },
+      "required": [
+        "namespaceId"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "remove_account_incentive",
+    "title": "Remove an account's incentive",
+    "description": "Remove an account's incentive.",
+    "kind": "destructive",
+    "method": "DELETE",
+    "path": "/apps/:appId/namespaces/:namespaceId/incentive",
+    "query": [],
+    "body": null,
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "namespaceId": {
+          "type": "string",
+          "description": "The account ID you chose when creating it (e.g. your user or workspace ID)."
+        }
+      },
+      "required": [
+        "namespaceId"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "get_account_access",
+    "title": "Get an account's resolved access",
+    "description": "Get an account's resolved access. The main read path. Gate features on `can`: `usage < max`, or always `true` when `max` is `null` (unlimited, and every boolean entitlement). `left` is `null` when unlimited. Entitlements that aren't listed aren't granted. Incentive overrides are already applied, and private meta keys are stripped.",
+    "kind": "read",
+    "method": "GET",
+    "path": "/apps/:appId/namespaces/:namespaceId/plan",
+    "query": [],
+    "body": null,
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "namespaceId": {
+          "type": "string",
+          "description": "The account ID you chose when creating it (e.g. your user or workspace ID)."
+        }
+      },
+      "required": [
+        "namespaceId"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "get_account_access_private",
+    "title": "Get resolved access including private meta",
+    "description": "Get resolved access including private meta. Same as `/plan`, plus private meta keys and `privateMetaKeys`. Intended for your server. Known issue: the hosted API accepts the public key here, so anyone with it can read private meta. Don't store real secrets in plan meta until this is fixed.",
+    "kind": "read",
+    "method": "GET",
+    "path": "/apps/:appId/namespaces/:namespaceId/full-plan",
+    "query": [],
+    "body": null,
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "namespaceId": {
+          "type": "string",
+          "description": "The account ID you chose when creating it (e.g. your user or workspace ID)."
+        }
+      },
+      "required": [
+        "namespaceId"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "get_account_usage",
+    "title": "Get all usage counts for an account",
+    "description": "Get all usage counts for an account. Counts for the entitlements on the account's plan. Entitlements granted only by an incentive aren't included; read `/plan` for those.",
+    "kind": "read",
+    "method": "GET",
+    "path": "/apps/:appId/namespaces/:namespaceId/usage",
+    "query": [],
+    "body": null,
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "namespaceId": {
+          "type": "string",
+          "description": "The account ID you chose when creating it (e.g. your user or workspace ID)."
+        }
+      },
+      "required": [
+        "namespaceId"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "get_usage_count",
+    "title": "Get one usage count",
+    "description": "Get one usage count.",
+    "kind": "read",
+    "method": "GET",
+    "path": "/apps/:appId/namespaces/:namespaceId/usage/:entitlementId",
+    "query": [],
+    "body": null,
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "namespaceId": {
+          "type": "string",
+          "description": "The account ID you chose when creating it (e.g. your user or workspace ID)."
+        },
+        "entitlementId": {
+          "type": "string",
+          "description": "Entitlement ID."
+        }
+      },
+      "required": [
+        "namespaceId",
+        "entitlementId"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "increment_usage",
+    "title": "Add 1 to a usage count",
+    "description": "Add 1 to a usage count.",
+    "kind": "write",
+    "method": "POST",
+    "path": "/apps/:appId/namespaces/:namespaceId/usage/:entitlementId/add",
+    "query": [],
+    "body": "fields",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "namespaceId": {
+          "type": "string",
+          "description": "The account ID you chose when creating it (e.g. your user or workspace ID)."
+        },
+        "entitlementId": {
+          "type": "string",
+          "description": "Entitlement ID."
+        }
+      },
+      "required": [
+        "namespaceId",
+        "entitlementId"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "decrement_usage",
+    "title": "Subtract 1 from a usage count",
+    "description": "Subtract 1 from a usage count. Counts can go below zero.",
+    "kind": "write",
+    "method": "POST",
+    "path": "/apps/:appId/namespaces/:namespaceId/usage/:entitlementId/remove",
+    "query": [],
+    "body": "fields",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "namespaceId": {
+          "type": "string",
+          "description": "The account ID you chose when creating it (e.g. your user or workspace ID)."
+        },
+        "entitlementId": {
+          "type": "string",
+          "description": "Entitlement ID."
+        }
+      },
+      "required": [
+        "namespaceId",
+        "entitlementId"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "add_usage_amount",
+    "title": "Add an amount to a usage count",
+    "description": "Add an amount to a usage count. Adds `amount` to the count (it doesn't set it). Negative amounts subtract: post the negative of the current count to reset a quota.",
+    "kind": "write",
+    "method": "POST",
+    "path": "/apps/:appId/namespaces/:namespaceId/usage/:entitlementId/amount",
+    "query": [],
+    "body": "fields",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "namespaceId": {
+          "type": "string",
+          "description": "The account ID you chose when creating it (e.g. your user or workspace ID)."
+        },
+        "entitlementId": {
+          "type": "string",
+          "description": "Entitlement ID."
+        },
+        "amount": {
+          "type": "integer",
+          "description": "Amount to add. May be negative."
+        }
+      },
+      "required": [
+        "namespaceId",
+        "entitlementId",
+        "amount"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "list_plans",
+    "title": "List plans",
+    "description": "List plans.",
+    "kind": "read",
+    "method": "GET",
+    "path": "/apps/:appId/plans",
+    "query": [],
+    "body": null,
+    "inputSchema": {
+      "type": "object",
+      "properties": {}
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "create_plan",
+    "title": "Create a plan",
+    "description": "Create a plan. Starts with no entitlements, add-ons or meta. The ID is slugified (lowercase `a-z`, `0-9`, `_`).",
+    "kind": "write",
+    "method": "POST",
+    "path": "/apps/:appId/plans",
+    "query": [],
+    "body": "fields",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Plan ID."
+        },
+        "name": {
+          "type": "string",
+          "description": "Display name."
+        },
+        "description": {
+          "type": "string",
+          "description": "Shown in `/plan` responses."
+        },
+        "note": {
+          "type": "string",
+          "description": "Internal note. Never returned by `/plan`."
+        },
+        "isFree": {
+          "type": "boolean",
+          "description": "Marks the plan as free."
+        },
+        "pricingCard": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "description": "`{ title, description, benefits: [{ id, title }], featured, type: \"subscription\" | \"one_time\", monthlyPrice?, yearlyPrice?, price?, currency }`."
+        }
+      },
+      "required": [
+        "id",
+        "name"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "get_plan",
+    "title": "Get a plan",
+    "description": "Get a plan.",
+    "kind": "read",
+    "method": "GET",
+    "path": "/apps/:appId/plans/:planId",
+    "query": [],
+    "body": null,
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "planId": {
+          "type": "string",
+          "description": "Plan ID."
+        }
+      },
+      "required": [
+        "planId"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "update_plan",
+    "title": "Update a plan",
+    "description": "Update a plan. Shallow merge: top-level fields you send replace the stored ones. `id` and `app_id` are ignored.",
+    "kind": "write",
+    "method": "PATCH",
+    "path": "/apps/:appId/plans/:planId",
+    "query": [],
+    "body": "fields",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "planId": {
+          "type": "string",
+          "description": "Plan ID."
+        },
+        "name": {
+          "type": "string",
+          "description": "Display name."
+        },
+        "description": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Description."
+        },
+        "note": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Internal note."
+        },
+        "isFree": {
+          "type": "boolean",
+          "description": "Marks the plan as free."
+        },
+        "pricingCard": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "description": "`{ title, description, benefits: [{ id, title }], featured, type: \"subscription\" | \"one_time\", monthlyPrice?, yearlyPrice?, price?, currency }`."
+        },
+        "privateMetaKeys": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Meta keys stripped from `/plan` responses."
+        }
+      },
+      "required": [
+        "planId"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "delete_plan",
+    "title": "Delete a plan",
+    "description": "Delete a plan. Accounts on this plan keep its ID, and their `/plan` calls return 404 until you move them to another plan.",
+    "kind": "destructive",
+    "method": "DELETE",
+    "path": "/apps/:appId/plans/:planId",
+    "query": [],
+    "body": null,
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "planId": {
+          "type": "string",
+          "description": "Plan ID."
+        }
+      },
+      "required": [
+        "planId"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "merge_plan_meta",
+    "title": "Merge plan metadata",
+    "description": "Merge plan metadata. Shallow-merges the body into `meta`. Setting a key to `null` stores `null`. Takes the keys to merge under `meta` instead of as the raw body.",
+    "kind": "write",
+    "method": "PATCH",
+    "path": "/apps/:appId/plans/:planId/meta",
+    "query": [],
+    "body": "meta",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "planId": {
+          "type": "string",
+          "description": "Plan ID."
+        },
+        "meta": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Key/value pairs to merge into `meta`."
+        }
+      },
+      "required": [
+        "planId",
+        "meta"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "list_plan_accounts",
+    "title": "List accounts on a plan",
+    "description": "List accounts on a plan.",
+    "kind": "read",
+    "method": "GET",
+    "path": "/apps/:appId/plans/:planId/namespaces",
+    "query": [
+      "page",
+      "per_page"
+    ],
+    "body": null,
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "planId": {
+          "type": "string",
+          "description": "Plan ID."
+        },
+        "page": {
+          "type": "integer",
+          "description": "Page number, from 1.",
+          "default": 1
+        },
+        "per_page": {
+          "type": "integer",
+          "description": "Results per page (max 100).",
+          "default": 20
+        }
+      },
+      "required": [
+        "planId"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "attach_plan_entitlement",
+    "title": "Attach an entitlement to a plan",
+    "description": "Attach an entitlement to a plan. `max` is stored for usage entitlements only; `null` or omitted means unlimited.",
+    "kind": "write",
+    "method": "POST",
+    "path": "/apps/:appId/plans/:planId/entitlements",
+    "query": [],
+    "body": "fields",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "planId": {
+          "type": "string",
+          "description": "Plan ID."
+        },
+        "id": {
+          "type": "string",
+          "description": "An existing entitlement ID."
+        },
+        "max": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "description": "Limit for usage entitlements. `null` = unlimited."
+        }
+      },
+      "required": [
+        "planId",
+        "id"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "set_plan_entitlement_limit",
+    "title": "Change an entitlement's limit on a plan",
+    "description": "Change an entitlement's limit on a plan.",
+    "kind": "write",
+    "method": "PATCH",
+    "path": "/apps/:appId/plans/:planId/entitlements/:entitlementId",
+    "query": [],
+    "body": "fields",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "planId": {
+          "type": "string",
+          "description": "Plan ID."
+        },
+        "entitlementId": {
+          "type": "string",
+          "description": "Entitlement ID."
+        },
+        "max": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "description": "New limit. `null` = unlimited."
+        }
+      },
+      "required": [
+        "planId",
+        "entitlementId",
+        "max"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "detach_plan_entitlement",
+    "title": "Detach an entitlement from a plan",
+    "description": "Detach an entitlement from a plan.",
+    "kind": "destructive",
+    "method": "DELETE",
+    "path": "/apps/:appId/plans/:planId/entitlements/:entitlementId",
+    "query": [],
+    "body": null,
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "planId": {
+          "type": "string",
+          "description": "Plan ID."
+        },
+        "entitlementId": {
+          "type": "string",
+          "description": "Entitlement ID."
+        }
+      },
+      "required": [
+        "planId",
+        "entitlementId"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "attach_plan_addon",
+    "title": "Attach an add-on to a plan",
+    "description": "Attach an add-on to a plan.",
+    "kind": "write",
+    "method": "POST",
+    "path": "/apps/:appId/plans/:planId/addons",
+    "query": [],
+    "body": "fields",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "planId": {
+          "type": "string",
+          "description": "Plan ID."
+        },
+        "id": {
+          "type": "string",
+          "description": "An existing add-on ID."
+        }
+      },
+      "required": [
+        "planId",
+        "id"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "detach_plan_addon",
+    "title": "Detach an add-on from a plan",
+    "description": "Detach an add-on from a plan.",
+    "kind": "destructive",
+    "method": "DELETE",
+    "path": "/apps/:appId/plans/:planId/addons/:addonId",
+    "query": [],
+    "body": null,
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "planId": {
+          "type": "string",
+          "description": "Plan ID."
+        },
+        "addonId": {
+          "type": "string",
+          "description": "Add-on ID."
+        }
+      },
+      "required": [
+        "planId",
+        "addonId"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "list_pricing_cards",
+    "title": "List pricing cards",
+    "description": "List pricing cards. One card per plan that has a pricing card, flattened with `plan_id` and `isFree`.",
+    "kind": "read",
+    "method": "GET",
+    "path": "/apps/:appId/plans/pricing",
+    "query": [],
+    "body": null,
+    "inputSchema": {
+      "type": "object",
+      "properties": {}
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "get_pricing_card",
+    "title": "Get one plan's pricing card",
+    "description": "Get one plan's pricing card.",
+    "kind": "read",
+    "method": "GET",
+    "path": "/apps/:appId/plans/:planId/pricing",
+    "query": [],
+    "body": null,
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "planId": {
+          "type": "string",
+          "description": "Plan ID."
+        }
+      },
+      "required": [
+        "planId"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "list_entitlements",
+    "title": "List entitlements",
+    "description": "List entitlements.",
+    "kind": "read",
+    "method": "GET",
+    "path": "/apps/:appId/entitlements",
+    "query": [],
+    "body": null,
+    "inputSchema": {
+      "type": "object",
+      "properties": {}
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "create_entitlement",
+    "title": "Create an entitlement",
+    "description": "Create an entitlement. The ID is slugified (lowercase `a-z`, `0-9`, `_`).",
+    "kind": "write",
+    "method": "POST",
+    "path": "/apps/:appId/entitlements",
+    "query": [],
+    "body": "fields",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Entitlement ID, e.g. `ai_credits`."
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "usage",
+            "boolean"
+          ],
+          "description": "`usage` is counted against a max; `boolean` is a feature flag."
+        },
+        "name": {
+          "type": "string",
+          "description": "Display name."
+        },
+        "description": {
+          "type": "string",
+          "description": "Description."
+        }
+      },
+      "required": [
+        "id",
+        "type",
+        "name"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "get_entitlement",
+    "title": "Get an entitlement",
+    "description": "Get an entitlement.",
+    "kind": "read",
+    "method": "GET",
+    "path": "/apps/:appId/entitlements/:entitlementId",
+    "query": [],
+    "body": null,
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "entitlementId": {
+          "type": "string",
+          "description": "Entitlement ID."
+        }
+      },
+      "required": [
+        "entitlementId"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "update_entitlement",
+    "title": "Update an entitlement",
+    "description": "Update an entitlement. Shallow merge. `type` is validated when sent.",
+    "kind": "write",
+    "method": "PATCH",
+    "path": "/apps/:appId/entitlements/:entitlementId",
+    "query": [],
+    "body": "fields",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "entitlementId": {
+          "type": "string",
+          "description": "Entitlement ID."
+        },
+        "name": {
+          "type": "string",
+          "description": "Display name."
+        },
+        "description": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Description."
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "usage",
+            "boolean"
+          ],
+          "description": "Changing it leaves existing limits on plans untouched."
+        }
+      },
+      "required": [
+        "entitlementId"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "delete_entitlement",
+    "title": "Delete an entitlement",
+    "description": "Delete an entitlement. Doesn't detach it from plans or incentives. Remove those references first, or `/plan` shows the raw ID.",
+    "kind": "destructive",
+    "method": "DELETE",
+    "path": "/apps/:appId/entitlements/:entitlementId",
+    "query": [],
+    "body": null,
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "entitlementId": {
+          "type": "string",
+          "description": "Entitlement ID."
+        }
+      },
+      "required": [
+        "entitlementId"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "list_addons",
+    "title": "List add-ons",
+    "description": "List add-ons.",
+    "kind": "read",
+    "method": "GET",
+    "path": "/apps/:appId/addons",
+    "query": [],
+    "body": null,
+    "inputSchema": {
+      "type": "object",
+      "properties": {}
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "create_addon",
+    "title": "Create an add-on",
+    "description": "Create an add-on. The ID is slugified (lowercase `a-z`, `0-9`, `_`).",
+    "kind": "write",
+    "method": "POST",
+    "path": "/apps/:appId/addons",
+    "query": [],
+    "body": "fields",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Add-on ID."
+        },
+        "name": {
+          "type": "string",
+          "description": "Display name."
+        },
+        "description": {
+          "type": "string",
+          "description": "Description."
+        }
+      },
+      "required": [
+        "id",
+        "name"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "get_addon",
+    "title": "Get an add-on",
+    "description": "Get an add-on.",
+    "kind": "read",
+    "method": "GET",
+    "path": "/apps/:appId/addons/:addonId",
+    "query": [],
+    "body": null,
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "addonId": {
+          "type": "string",
+          "description": "Add-on ID."
+        }
+      },
+      "required": [
+        "addonId"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "update_addon",
+    "title": "Update an add-on",
+    "description": "Update an add-on. Shallow merge.",
+    "kind": "write",
+    "method": "PATCH",
+    "path": "/apps/:appId/addons/:addonId",
+    "query": [],
+    "body": "fields",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "addonId": {
+          "type": "string",
+          "description": "Add-on ID."
+        },
+        "name": {
+          "type": "string",
+          "description": "Display name."
+        },
+        "description": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Description."
+        }
+      },
+      "required": [
+        "addonId"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "delete_addon",
+    "title": "Delete an add-on",
+    "description": "Delete an add-on. Doesn't detach it from plans or incentives. Remove those references first.",
+    "kind": "destructive",
+    "method": "DELETE",
+    "path": "/apps/:appId/addons/:addonId",
+    "query": [],
+    "body": null,
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "addonId": {
+          "type": "string",
+          "description": "Add-on ID."
+        }
+      },
+      "required": [
+        "addonId"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "list_incentives",
+    "title": "List incentives",
+    "description": "List incentives.",
+    "kind": "read",
+    "method": "GET",
+    "path": "/apps/:appId/incentives",
+    "query": [],
+    "body": null,
+    "inputSchema": {
+      "type": "object",
+      "properties": {}
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "create_incentive",
+    "title": "Create an incentive",
+    "description": "Create an incentive. The ID is slugified. Apply it to an account with `PATCH …/namespaces/:id { incentive }`. Inline `entitlements` and `addons` aren't validated here. Prefer the attach routes below.",
+    "kind": "write",
+    "method": "POST",
+    "path": "/apps/:appId/incentives",
+    "query": [],
+    "body": "fields",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Incentive ID."
+        },
+        "name": {
+          "type": "string",
+          "description": "Display name."
+        },
+        "description": {
+          "type": "string",
+          "description": "Description."
+        },
+        "entitlements": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          },
+          "description": "Entitlement overrides."
+        },
+        "addons": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Add-on IDs."
+        }
+      },
+      "required": [
+        "id",
+        "name"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "get_incentive",
+    "title": "Get an incentive",
+    "description": "Get an incentive.",
+    "kind": "read",
+    "method": "GET",
+    "path": "/apps/:appId/incentives/:incentiveId",
+    "query": [],
+    "body": null,
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "incentiveId": {
+          "type": "string",
+          "description": "Incentive ID."
+        }
+      },
+      "required": [
+        "incentiveId"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "update_incentive",
+    "title": "Update an incentive",
+    "description": "Update an incentive. Shallow merge.",
+    "kind": "write",
+    "method": "PATCH",
+    "path": "/apps/:appId/incentives/:incentiveId",
+    "query": [],
+    "body": "fields",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "incentiveId": {
+          "type": "string",
+          "description": "Incentive ID."
+        },
+        "name": {
+          "type": "string",
+          "description": "Display name."
+        },
+        "description": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Description."
+        }
+      },
+      "required": [
+        "incentiveId"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "delete_incentive",
+    "title": "Delete an incentive",
+    "description": "Delete an incentive. Accounts that have it keep the dangling ID. Remove it from them first.",
+    "kind": "destructive",
+    "method": "DELETE",
+    "path": "/apps/:appId/incentives/:incentiveId",
+    "query": [],
+    "body": null,
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "incentiveId": {
+          "type": "string",
+          "description": "Incentive ID."
+        }
+      },
+      "required": [
+        "incentiveId"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "attach_incentive_entitlement",
+    "title": "Attach an entitlement to an incentive",
+    "description": "Attach an entitlement to an incentive. An incentive's `max` overrides the plan's for the same entitlement; entitlements the plan lacks are added.",
+    "kind": "write",
+    "method": "POST",
+    "path": "/apps/:appId/incentives/:incentiveId/entitlements",
+    "query": [],
+    "body": "fields",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "incentiveId": {
+          "type": "string",
+          "description": "Incentive ID."
+        },
+        "id": {
+          "type": "string",
+          "description": "An existing entitlement ID."
+        },
+        "max": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "description": "Limit for usage entitlements. `null` = unlimited."
+        }
+      },
+      "required": [
+        "incentiveId",
+        "id"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "set_incentive_entitlement_limit",
+    "title": "Change an entitlement's limit on an incentive",
+    "description": "Change an entitlement's limit on an incentive.",
+    "kind": "write",
+    "method": "PATCH",
+    "path": "/apps/:appId/incentives/:incentiveId/entitlements/:entitlementId",
+    "query": [],
+    "body": "fields",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "incentiveId": {
+          "type": "string",
+          "description": "Incentive ID."
+        },
+        "entitlementId": {
+          "type": "string",
+          "description": "Entitlement ID."
+        },
+        "max": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "description": "New limit. `null` = unlimited."
+        }
+      },
+      "required": [
+        "incentiveId",
+        "entitlementId",
+        "max"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "detach_incentive_entitlement",
+    "title": "Detach an entitlement from an incentive",
+    "description": "Detach an entitlement from an incentive.",
+    "kind": "destructive",
+    "method": "DELETE",
+    "path": "/apps/:appId/incentives/:incentiveId/entitlements/:entitlementId",
+    "query": [],
+    "body": null,
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "incentiveId": {
+          "type": "string",
+          "description": "Incentive ID."
+        },
+        "entitlementId": {
+          "type": "string",
+          "description": "Entitlement ID."
+        }
+      },
+      "required": [
+        "incentiveId",
+        "entitlementId"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "attach_incentive_addon",
+    "title": "Attach an add-on to an incentive",
+    "description": "Attach an add-on to an incentive.",
+    "kind": "write",
+    "method": "POST",
+    "path": "/apps/:appId/incentives/:incentiveId/addons",
+    "query": [],
+    "body": "fields",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "incentiveId": {
+          "type": "string",
+          "description": "Incentive ID."
+        },
+        "id": {
+          "type": "string",
+          "description": "An existing add-on ID."
+        }
+      },
+      "required": [
+        "incentiveId",
+        "id"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "detach_incentive_addon",
+    "title": "Detach an add-on from an incentive",
+    "description": "Detach an add-on from an incentive.",
+    "kind": "destructive",
+    "method": "DELETE",
+    "path": "/apps/:appId/incentives/:incentiveId/addons/:addonId",
+    "query": [],
+    "body": null,
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "incentiveId": {
+          "type": "string",
+          "description": "Incentive ID."
+        },
+        "addonId": {
+          "type": "string",
+          "description": "Add-on ID."
+        }
+      },
+      "required": [
+        "incentiveId",
+        "addonId"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "get_usage_summary",
+    "title": "Usage summary by entitlement",
+    "description": "Usage summary by entitlement.",
+    "kind": "read",
+    "method": "GET",
+    "path": "/apps/:appId/analytics",
+    "query": [
+      "interval",
+      "namespace"
+    ],
+    "body": null,
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "interval": {
+          "type": "string",
+          "description": "Time window.",
+          "enum": [
+            "7d",
+            "30d",
+            "60d",
+            "6m",
+            "year",
+            "alltime"
+          ]
+        },
+        "namespace": {
+          "type": "string",
+          "description": "Only this account."
+        }
+      },
+      "required": [
+        "interval"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "top_accounts_by_usage",
+    "title": "Top accounts by usage",
+    "description": "Top accounts by usage.",
+    "kind": "read",
+    "method": "GET",
+    "path": "/apps/:appId/analytics/top-namespaces",
+    "query": [
+      "interval",
+      "limit",
+      "entitlement"
+    ],
+    "body": null,
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "interval": {
+          "type": "string",
+          "description": "Time window.",
+          "enum": [
+            "7d",
+            "30d",
+            "60d",
+            "6m",
+            "year",
+            "alltime"
+          ],
+          "default": "7d"
+        },
+        "limit": {
+          "type": "integer",
+          "description": "1–100.",
+          "default": 10
+        },
+        "entitlement": {
+          "type": "string",
+          "description": "Only this entitlement."
+        }
+      }
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "get_usage_timeseries",
+    "title": "Usage over time",
+    "description": "Usage over time. Daily buckets up to 60 days, weekly beyond.",
+    "kind": "read",
+    "method": "GET",
+    "path": "/apps/:appId/analytics/timeseries",
+    "query": [
+      "interval",
+      "namespace",
+      "entitlement"
+    ],
+    "body": null,
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "interval": {
+          "type": "string",
+          "description": "Time window.",
+          "enum": [
+            "7d",
+            "30d",
+            "60d",
+            "6m",
+            "year",
+            "alltime"
+          ],
+          "default": "30d"
+        },
+        "namespace": {
+          "type": "string",
+          "description": "Only this account."
+        },
+        "entitlement": {
+          "type": "string",
+          "description": "Only this entitlement."
+        }
+      }
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "list_usage_events",
+    "title": "Recent usage events",
+    "description": "Recent usage events.",
+    "kind": "read",
+    "method": "GET",
+    "path": "/apps/:appId/analytics/events",
+    "query": [
+      "namespace",
+      "entitlement",
+      "limit"
+    ],
+    "body": null,
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "namespace": {
+          "type": "string",
+          "description": "Only this account."
+        },
+        "entitlement": {
+          "type": "string",
+          "description": "Only this entitlement."
+        },
+        "limit": {
+          "type": "integer",
+          "description": "1–200.",
+          "default": 50
+        }
+      }
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "list_webhooks",
+    "title": "List webhook endpoints",
+    "description": "List webhook endpoints. Signing secrets are redacted over MCP; copy them from the webhook's page.",
+    "kind": "read",
+    "method": "GET",
+    "path": "/apps/:appId/webhooks",
+    "query": [],
+    "body": null,
+    "inputSchema": {
+      "type": "object",
+      "properties": {}
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "create_webhook",
+    "title": "Create a webhook endpoint",
+    "description": "Create a webhook endpoint. Also the subscribe call for Zapier REST hooks: pass Zapier's `targetUrl` as `url`, one event and `source: \"zapier\"`, and store the returned `id` to unsubscribe. The signing secret is redacted over MCP; copy it from the webhook's page.",
+    "kind": "write",
+    "method": "POST",
+    "path": "/apps/:appId/webhooks",
+    "query": [],
+    "body": "fields",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string",
+          "description": "Public http(s) URL to POST events to."
+        },
+        "events": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Event types, or `[\"*\"]` for all of them (including future ones)."
+        },
+        "description": {
+          "type": "string",
+          "description": "Shown in the dashboard."
+        },
+        "source": {
+          "type": "string",
+          "description": "`custom` (default) or `zapier`."
+        },
+        "enabled": {
+          "type": "boolean",
+          "description": "Defaults to true."
+        }
+      },
+      "required": [
+        "url",
+        "events"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "get_webhook",
+    "title": "Get a webhook endpoint",
+    "description": "Get a webhook endpoint. The signing secret is redacted over MCP; copy it from the webhook's page.",
+    "kind": "read",
+    "method": "GET",
+    "path": "/apps/:appId/webhooks/:webhookId",
+    "query": [],
+    "body": null,
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "webhookId": {
+          "type": "string",
+          "description": "Webhook endpoint ID (`whk_…`)."
+        }
+      },
+      "required": [
+        "webhookId"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "update_webhook",
+    "title": "Update a webhook endpoint",
+    "description": "Update a webhook endpoint. Change the URL, events or description, or pause it with `enabled: false`. Re-enabling clears `disabled_reason`. The signing secret is redacted over MCP.",
+    "kind": "write",
+    "method": "PATCH",
+    "path": "/apps/:appId/webhooks/:webhookId",
+    "query": [],
+    "body": "fields",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "webhookId": {
+          "type": "string",
+          "description": "Webhook endpoint ID (`whk_…`)."
+        },
+        "url": {
+          "type": "string",
+          "description": "New URL."
+        },
+        "events": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Replaces the subscribed events."
+        },
+        "description": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Shown in the dashboard."
+        },
+        "enabled": {
+          "type": "boolean",
+          "description": "Pause or resume deliveries."
+        }
+      },
+      "required": [
+        "webhookId"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "delete_webhook",
+    "title": "Delete a webhook endpoint",
+    "description": "Delete a webhook endpoint. Stops deliveries and deletes the endpoint's delivery log. The unsubscribe call for Zapier REST hooks.",
+    "kind": "destructive",
+    "method": "DELETE",
+    "path": "/apps/:appId/webhooks/:webhookId",
+    "query": [],
+    "body": null,
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "webhookId": {
+          "type": "string",
+          "description": "Webhook endpoint ID (`whk_…`)."
+        }
+      },
+      "required": [
+        "webhookId"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "send_test_event",
+    "title": "Send a test event",
+    "description": "Send a test event. Sends a sample payload (marked `\"test\": true`) right away and returns the finished delivery. Works on paused endpoints too.",
+    "kind": "write",
+    "method": "POST",
+    "path": "/apps/:appId/webhooks/:webhookId/test",
+    "query": [],
+    "body": "fields",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "webhookId": {
+          "type": "string",
+          "description": "Webhook endpoint ID (`whk_…`)."
+        },
+        "type": {
+          "type": "string",
+          "description": "Event type to sample. Defaults to the endpoint's first event."
+        }
+      },
+      "required": [
+        "webhookId"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": true
+    }
+  },
+  {
+    "name": "list_webhook_deliveries",
+    "title": "List deliveries",
+    "description": "List deliveries.",
+    "kind": "read",
+    "method": "GET",
+    "path": "/apps/:appId/webhooks/:webhookId/deliveries",
+    "query": [
+      "status",
+      "limit"
+    ],
+    "body": null,
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "webhookId": {
+          "type": "string",
+          "description": "Webhook endpoint ID (`whk_…`)."
+        },
+        "status": {
+          "type": "string",
+          "description": "Only deliveries with this status.",
+          "enum": [
+            "pending",
+            "succeeded",
+            "failed"
+          ]
+        },
+        "limit": {
+          "type": "integer",
+          "description": "1–100.",
+          "default": 50
+        }
+      },
+      "required": [
+        "webhookId"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "retry_webhook_delivery",
+    "title": "Retry a delivery",
+    "description": "Retry a delivery. Attempts the delivery once more, right away.",
+    "kind": "write",
+    "method": "POST",
+    "path": "/apps/:appId/webhooks/:webhookId/deliveries/:deliveryId/retry",
+    "query": [],
+    "body": "fields",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "webhookId": {
+          "type": "string",
+          "description": "Webhook endpoint ID (`whk_…`)."
+        },
+        "deliveryId": {
+          "type": "string",
+          "description": "Delivery ID (`whd_…`) from the endpoint's delivery log."
+        }
+      },
+      "required": [
+        "webhookId",
+        "deliveryId"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": true
+    }
+  },
+  {
+    "name": "list_events",
+    "title": "List recent events",
+    "description": "List recent events. Every event recorded for the app in the last 30 days, in the same shape that's delivered. Use it as Zapier's `performList` sample.",
+    "kind": "read",
+    "method": "GET",
+    "path": "/apps/:appId/events",
+    "query": [
+      "type",
+      "limit"
+    ],
+    "body": null,
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "Only this event type."
+        },
+        "limit": {
+          "type": "integer",
+          "description": "1–100.",
+          "default": 20
+        }
+      }
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "get_app",
+    "title": "Get the app",
+    "description": "Get the app. `api_key` and `public_key` are redacted over MCP.",
+    "kind": "read",
+    "method": "GET",
+    "path": "/apps/:appId",
+    "query": [],
+    "body": null,
+    "inputSchema": {
+      "type": "object",
+      "properties": {}
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "update_app",
+    "title": "Update the app",
+    "description": "Update the app. Shallow merge. `id`, `api_key`, `public_key` and `created_at` are ignored; use the regenerate routes for keys. Only `name` can change. Keys can't be rotated over MCP.",
+    "kind": "write",
+    "method": "PATCH",
+    "path": "/apps/:appId",
+    "query": [],
+    "body": "fields",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "App name."
+        }
+      }
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  }
+]

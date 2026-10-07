@@ -1,8 +1,7 @@
-import type { Metadata } from "next";
-import { MembersView } from "./members-view";
+import { redirect } from "next/navigation";
 
-export const metadata: Metadata = { title: "Members" };
-
+// One admin account per install for now (see /setup), so the members page is hidden.
+// MembersView stays for when teams come back.
 export default function MembersPage() {
-  return <MembersView />;
+  redirect("/settings/workspace");
 }

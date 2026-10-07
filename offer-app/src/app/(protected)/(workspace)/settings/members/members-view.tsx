@@ -4,6 +4,7 @@ import { Building2, CalendarDays, Clock, Mail, Send, Shield, UserMinus, Users, X
 import { useState, type FormEvent } from "react";
 import { RowMenu } from "@/components/catalog/row-menu";
 import { PageBody, PageHeader, PageTitle } from "@/components/shell/page";
+import { DemoLock } from "@/components/shell/demo";
 import { useWorkspaceContext } from "@/components/shell/workspace-context";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -133,218 +134,220 @@ export function MembersView() {
           title="Members"
           description={`Everyone in ${workspace.name} can access all of its apps. Roles control who can manage the workspace itself.`}
         />
-        <Section title="Members" description={data ? pluralize(members.length, "member") : undefined}>
-          {isLoading ? (
-            <div className="flex flex-col gap-2">
-              {[0, 1, 2].map((i) => (
-                <Skeleton key={i} className="h-10" />
-              ))}
-            </div>
-          ) : error ? (
-            <Card>
-              <EmptyState compact icon={<Users />} title="Couldn't load members" description={error.message} />
-            </Card>
-          ) : (
-            <Card className="overflow-hidden">
-              <TableContainer>
-                <Table className={cardTable}>
-                  <THead>
-                    <tr>
-                      <TH icon={<Users />}>Member</TH>
-                      <TH icon={<Mail />}>Email</TH>
-                      <TH icon={<Shield />} className="w-36">
-                        Role
-                      </TH>
-                      <TH icon={<CalendarDays />} className="w-28">
-                        Joined
-                      </TH>
-                      <TH className="w-10" />
-                    </tr>
-                  </THead>
-                  <TBody>
-                    {members.map((m) => {
-                      const isSelf = m.userId === user.id;
-                      const role = primaryRole(m.role);
-                      const ownerTarget = role === "owner" && myRole !== "owner";
-                      const canEdit = canManage && !isSelf && !ownerTarget;
-                      return (
-                        <TR key={m.id}>
-                          <TD>
-                            <div className="flex min-w-0 items-center gap-2">
-                              <Avatar name={m.user.name || m.user.email} seed={m.userId} shape="circle" size="md" />
-                              <span className="truncate font-medium">{m.user.name || m.user.email}</span>
-                              {isSelf ? <Badge color="blue">You</Badge> : null}
-                            </div>
-                          </TD>
-                          <TD className="max-w-48">
-                            <span className="block truncate text-fg-secondary">{m.user.email}</span>
-                          </TD>
-                          <TD className="py-1">
-                            <Tooltip
-                              content={
-                                isSelf
-                                  ? "You can't change your own role"
-                                  : !canManage
-                                    ? "Only owners and admins can change roles"
-                                    : ownerTarget
-                                      ? "Only owners can change an owner's role"
-                                      : null
-                              }
-                            >
-                              {/* Disabled buttons swallow hover, so let the wrapper receive it for the tooltip. */}
-                              <span className={canEdit ? "block" : "block cursor-not-allowed [&>button]:pointer-events-none"}>
-                                <Select
-                                  size="sm"
-                                  value={role}
-                                  onValueChange={(next) => next !== role && onRoleChange(m, next)}
-                                  options={roleOptions}
-                                  disabled={!canEdit || updateRole.isPending}
-                                  aria-label={`Role for ${m.user.name || m.user.email}`}
-                                />
-                              </span>
-                            </Tooltip>
-                          </TD>
-                          <TD className="whitespace-nowrap text-fg-secondary">
-                            <Tooltip content={formatDate(m.createdAt)}>
-                              <span>{formatRelative(m.createdAt)}</span>
-                            </Tooltip>
-                          </TD>
-                          <TD className="px-1">
-                            {canEdit ? (
-                              <RowMenu label={`Actions for ${m.user.name || m.user.email}`}>
-                                <MenuItem tone="danger" onClick={() => onRemove(m)}>
-                                  <UserMinus />
-                                  Remove from workspace
-                                </MenuItem>
-                              </RowMenu>
-                            ) : null}
-                          </TD>
-                        </TR>
-                      );
-                    })}
-                  </TBody>
-                </Table>
-              </TableContainer>
-            </Card>
-          )}
-        </Section>
-
-        <Section
-          title="Invite people"
-          description={
-            canManage || !myRole
-              ? "New members get access to every app in this workspace."
-              : "Only owners and admins can invite people."
-          }
-        >
-          <Card>
-            <form onSubmit={onInvite} noValidate className="flex flex-col gap-3 p-5">
-              <div className="flex items-start gap-2">
-                <div className="flex-1">
-                  <Input
-                    type="email"
-                    value={email}
-                    onChange={(e) => {
-                      setEmail(e.target.value);
-                      setInviteError(null);
-                    }}
-                    placeholder="teammate@company.com"
-                    aria-label="Email address"
-                    aria-invalid={Boolean(inviteError)}
-                    data-invalid={inviteError ? true : undefined}
-                    disabled={!canManage}
-                  />
-                </div>
-                <Select
-                  value={inviteRole}
-                  onValueChange={setInviteRole}
-                  aria-label="Role"
-                  className="w-32"
-                  disabled={!canManage}
-                  options={(["member", "admin"] as const).map((r) => ({
-                    value: r,
-                    label: ROLE_LABEL[r],
-                    description: ROLE_HELP[r],
-                  }))}
-                />
-                <Button
-                  type="submit"
-                  variant="primary"
-                  size="md"
-                  disabled={!canManage || !email.trim()}
-                  loading={invite.isPending}
-                >
-                  <Send />
-                  Send invite
-                </Button>
+        <DemoLock>
+          <Section title="Members" description={data ? pluralize(members.length, "member") : undefined}>
+            {isLoading ? (
+              <div className="flex flex-col gap-2">
+                {[0, 1, 2].map((i) => (
+                  <Skeleton key={i} className="h-10" />
+                ))}
               </div>
-              {inviteError ? <p className="text-xs text-danger-fg">{inviteError}</p> : null}
-              <p className="flex items-start gap-1.5 text-xs text-fg-tertiary">
-                <Mail className="mt-px size-3 shrink-0" />
-                Email delivery isn&apos;t set up yet: invited people get access as soon as they sign up with this email.
-              </p>
-            </form>
-          </Card>
-        </Section>
+            ) : error ? (
+              <Card>
+                <EmptyState compact icon={<Users />} title="Couldn't load members" description={error.message} />
+              </Card>
+            ) : (
+              <Card className="overflow-hidden">
+                <TableContainer>
+                  <Table className={cardTable}>
+                    <THead>
+                      <tr>
+                        <TH icon={<Users />}>Member</TH>
+                        <TH icon={<Mail />}>Email</TH>
+                        <TH icon={<Shield />} className="w-36">
+                          Role
+                        </TH>
+                        <TH icon={<CalendarDays />} className="w-28">
+                          Joined
+                        </TH>
+                        <TH className="w-10" />
+                      </tr>
+                    </THead>
+                    <TBody>
+                      {members.map((m) => {
+                        const isSelf = m.userId === user.id;
+                        const role = primaryRole(m.role);
+                        const ownerTarget = role === "owner" && myRole !== "owner";
+                        const canEdit = canManage && !isSelf && !ownerTarget;
+                        return (
+                          <TR key={m.id}>
+                            <TD>
+                              <div className="flex min-w-0 items-center gap-2">
+                                <Avatar name={m.user.name || m.user.email} seed={m.userId} shape="circle" size="md" />
+                                <span className="truncate font-medium">{m.user.name || m.user.email}</span>
+                                {isSelf ? <Badge color="blue">You</Badge> : null}
+                              </div>
+                            </TD>
+                            <TD className="max-w-48">
+                              <span className="block truncate text-fg-secondary">{m.user.email}</span>
+                            </TD>
+                            <TD className="py-1">
+                              <Tooltip
+                                content={
+                                  isSelf
+                                    ? "You can't change your own role"
+                                    : !canManage
+                                      ? "Only owners and admins can change roles"
+                                      : ownerTarget
+                                        ? "Only owners can change an owner's role"
+                                        : null
+                                }
+                              >
+                                {/* Disabled buttons swallow hover, so let the wrapper receive it for the tooltip. */}
+                                <span className={canEdit ? "block" : "block cursor-not-allowed [&>button]:pointer-events-none"}>
+                                  <Select
+                                    size="sm"
+                                    value={role}
+                                    onValueChange={(next) => next !== role && onRoleChange(m, next)}
+                                    options={roleOptions}
+                                    disabled={!canEdit || updateRole.isPending}
+                                    aria-label={`Role for ${m.user.name || m.user.email}`}
+                                  />
+                                </span>
+                              </Tooltip>
+                            </TD>
+                            <TD className="whitespace-nowrap text-fg-secondary">
+                              <Tooltip content={formatDate(m.createdAt)}>
+                                <span>{formatRelative(m.createdAt)}</span>
+                              </Tooltip>
+                            </TD>
+                            <TD className="px-1">
+                              {canEdit ? (
+                                <RowMenu label={`Actions for ${m.user.name || m.user.email}`}>
+                                  <MenuItem tone="danger" onClick={() => onRemove(m)}>
+                                    <UserMinus />
+                                    Remove from workspace
+                                  </MenuItem>
+                                </RowMenu>
+                              ) : null}
+                            </TD>
+                          </TR>
+                        );
+                      })}
+                    </TBody>
+                  </Table>
+                </TableContainer>
+              </Card>
+            )}
+          </Section>
 
-        {pending.length ? (
-          <Section title="Pending invitations" description="They join automatically when they sign up with the invited email.">
-            <Card className="overflow-hidden">
-              <TableContainer>
-                <Table className={cardTable}>
-                  <THead>
-                    <tr>
-                      <TH icon={<Mail />}>Email</TH>
-                      <TH icon={<Shield />} className="w-24">
-                        Role
-                      </TH>
-                      <TH icon={<Send />} className="w-28">
-                        Invited
-                      </TH>
-                      <TH icon={<Clock />} className="w-28">
-                        Expires
-                      </TH>
-                      <TH className="w-24" />
-                    </tr>
-                  </THead>
-                  <TBody>
-                    {pending.map((inv) => {
-                      const expired = new Date(inv.expiresAt).getTime() < now;
-                      return (
-                        <TR key={inv.id}>
-                          <TD className="max-w-56">
-                            <span className="block truncate">{inv.email}</span>
-                          </TD>
-                          <TD>
-                            <Badge color={primaryRole(inv.role) === "admin" ? "purple" : "gray"}>
-                              {ROLE_LABEL[primaryRole(inv.role)]}
-                            </Badge>
-                          </TD>
-                          <TD className="whitespace-nowrap text-fg-secondary">{formatRelative(inv.createdAt)}</TD>
-                          <TD className="whitespace-nowrap">
-                            {expired ? (
-                              <Badge color="red">Expired</Badge>
-                            ) : (
-                              <span className="text-fg-secondary">{formatRelative(inv.expiresAt)}</span>
-                            )}
-                          </TD>
-                          <TD align="right" className="px-2">
-                            {canManage ? (
-                              <Button size="xs" variant="ghost" onClick={() => onRevoke(inv)}>
-                                <X />
-                                Revoke
-                              </Button>
-                            ) : null}
-                          </TD>
-                        </TR>
-                      );
-                    })}
-                  </TBody>
-                </Table>
-              </TableContainer>
+          <Section
+            title="Invite people"
+            description={
+              canManage || !myRole
+                ? "New members get access to every app in this workspace."
+                : "Only owners and admins can invite people."
+            }
+          >
+            <Card>
+              <form onSubmit={onInvite} noValidate className="flex flex-col gap-3 p-5">
+                <div className="flex items-start gap-2">
+                  <div className="flex-1">
+                    <Input
+                      type="email"
+                      value={email}
+                      onChange={(e) => {
+                        setEmail(e.target.value);
+                        setInviteError(null);
+                      }}
+                      placeholder="teammate@company.com"
+                      aria-label="Email address"
+                      aria-invalid={Boolean(inviteError)}
+                      data-invalid={inviteError ? true : undefined}
+                      disabled={!canManage}
+                    />
+                  </div>
+                  <Select
+                    value={inviteRole}
+                    onValueChange={setInviteRole}
+                    aria-label="Role"
+                    className="w-32"
+                    disabled={!canManage}
+                    options={(["member", "admin"] as const).map((r) => ({
+                      value: r,
+                      label: ROLE_LABEL[r],
+                      description: ROLE_HELP[r],
+                    }))}
+                  />
+                  <Button
+                    type="submit"
+                    variant="primary"
+                    size="md"
+                    disabled={!canManage || !email.trim()}
+                    loading={invite.isPending}
+                  >
+                    <Send />
+                    Send invite
+                  </Button>
+                </div>
+                {inviteError ? <p className="text-xs text-danger-fg">{inviteError}</p> : null}
+                <p className="flex items-start gap-1.5 text-xs text-fg-tertiary">
+                  <Mail className="mt-px size-3 shrink-0" />
+                  Email delivery isn&apos;t set up yet: invited people get access as soon as they sign up with this email.
+                </p>
+              </form>
             </Card>
           </Section>
-        ) : null}
+
+          {pending.length ? (
+            <Section title="Pending invitations" description="They join automatically when they sign up with the invited email.">
+              <Card className="overflow-hidden">
+                <TableContainer>
+                  <Table className={cardTable}>
+                    <THead>
+                      <tr>
+                        <TH icon={<Mail />}>Email</TH>
+                        <TH icon={<Shield />} className="w-24">
+                          Role
+                        </TH>
+                        <TH icon={<Send />} className="w-28">
+                          Invited
+                        </TH>
+                        <TH icon={<Clock />} className="w-28">
+                          Expires
+                        </TH>
+                        <TH className="w-24" />
+                      </tr>
+                    </THead>
+                    <TBody>
+                      {pending.map((inv) => {
+                        const expired = new Date(inv.expiresAt).getTime() < now;
+                        return (
+                          <TR key={inv.id}>
+                            <TD className="max-w-56">
+                              <span className="block truncate">{inv.email}</span>
+                            </TD>
+                            <TD>
+                              <Badge color={primaryRole(inv.role) === "admin" ? "purple" : "gray"}>
+                                {ROLE_LABEL[primaryRole(inv.role)]}
+                              </Badge>
+                            </TD>
+                            <TD className="whitespace-nowrap text-fg-secondary">{formatRelative(inv.createdAt)}</TD>
+                            <TD className="whitespace-nowrap">
+                              {expired ? (
+                                <Badge color="red">Expired</Badge>
+                              ) : (
+                                <span className="text-fg-secondary">{formatRelative(inv.expiresAt)}</span>
+                              )}
+                            </TD>
+                            <TD align="right" className="px-2">
+                              {canManage ? (
+                                <Button size="xs" variant="ghost" onClick={() => onRevoke(inv)}>
+                                  <X />
+                                  Revoke
+                                </Button>
+                              ) : null}
+                            </TD>
+                          </TR>
+                        );
+                      })}
+                    </TBody>
+                  </Table>
+                </TableContainer>
+              </Card>
+            </Section>
+          ) : null}
+        </DemoLock>
       </PageBody>
     </>
   );

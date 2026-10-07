@@ -4,7 +4,7 @@ import { Callout, Code, DocsHeader, H2, H3, Table, TermList } from "@/components
 
 export const metadata: Metadata = {
   title: "Agent and MCP",
-  description: "Chat with Claude about an app's catalog and accounts, approve every change it proposes, and what the MCP server page does and doesn't do yet.",
+  description: "Chat with Claude about an app's catalog and accounts, approve every change it proposes, and manage the app's MCP server from the dashboard.",
 };
 
 export default function AgentDocsPage() {
@@ -12,7 +12,7 @@ export default function AgentDocsPage() {
     <>
       <DocsHeader
         title="Agent and MCP"
-        lead="The Agent page is a chat with Claude that can look up your catalog, accounts and usage, and change plans, entitlements, add-ons and incentives. Every change waits for your approval. The MCP server page is a preview of a server that doesn't exist yet."
+        lead="The Agent page is a chat with Claude that can look up your catalog, accounts and usage, and change plans, entitlements, add-ons and incentives. Every change waits for your approval. The MCP server page connects outside assistants to the same app."
       />
 
       <H2>Turn on the agent</H2>
@@ -171,36 +171,37 @@ AGENT_APPROVAL_SECRET=...`}
 
       <H2>The MCP server page</H2>
       <p>
-        <strong>Developers → MCP server</strong> (<code>/apps/[appId]/developers/mcp</code>) carries a{" "}
-        <strong>Preview</strong> badge, and that is accurate: it is a design for an MCP server, built as a UI, with no
-        server behind it.
+        The agent lives in the dashboard. To work with an app from an assistant you already use, such as Claude,
+        Claude Code, Cursor or ChatGPT, connect it to the app&apos;s MCP server instead. The server runs in the Offer
+        API at <code>{"<API URL>/apps/<appId>/mcp"}</code> and has a tool for each endpoint in the API reference.
       </p>
-      <Callout tone="warning" title="No MCP server runs yet.">
-        Neither the API nor the dashboard has an MCP endpoint. The <strong>Server URL</strong> the page shows (
-        <code>{"<API URL>/apps/<appId>/mcp"}</code>) doesn&apos;t answer, so clients like Claude or Cursor can&apos;t
-        connect to it.
-      </Callout>
-      <p>What the page does today:</p>
+      <p>
+        <strong>Developers → MCP server</strong> (<code>/apps/[appId]/developers/mcp</code>) is where you manage it:
+      </p>
       <ul>
         <li>
-          The <strong>Enabled</strong> switch, the access level and the per-tool toggles only change state in your
-          browser tab. They reset when you reload.
+          The <strong>Enabled</strong> switch and the server URL to copy.
         </li>
         <li>
-          The <strong>Connections</strong> and <strong>Activity</strong> tabs show sample data built from your
-          app&apos;s real IDs.
+          <strong>Connect</strong>: setup steps for each client, with OAuth or the secret key.
         </li>
         <li>
-          The server card and the <strong>Connect</strong> and <strong>Tools</strong> tabs describe the proposed
-          server: Streamable HTTP transport, one tool per API endpoint scoped to the app in the URL, access levels (<strong>Read only</strong>,{" "}
-          <strong>Read &amp; write</strong>, <strong>Full access</strong>), and a set of resources and prompts.
+          <strong>Tools</strong>: the app&apos;s access level (<strong>Read only</strong>,{" "}
+          <strong>Read &amp; write</strong> or <strong>Full access</strong>) and a switch per tool.
+        </li>
+        <li>
+          <strong>Connections</strong>: who connected which client, at what level, with a button to cut a connection
+          off.
+        </li>
+        <li>
+          <strong>Activity</strong>: every tool call with its arguments and result, kept for 30 days.
         </li>
       </ul>
       <p>
-        To work with an app from an AI assistant today, use the Agent page, or give the assistant the{" "}
-        <strong>AI assistant context</strong> block from <strong>Developers → Integration</strong> and let it call the{" "}
-        <Link href="/docs/api">API</Link> directly. How Claude is used across the product is in{" "}
-        <Link href="/docs/ai">AI features</Link>.
+        Unlike the agent, an MCP client doesn&apos;t show you an approval card for each change. The access level
+        decides what it can do, and most clients ask before running a tool that deletes. Everything about the server,
+        from connecting each client to the OAuth flow, is in <Link href="/docs/api/mcp">MCP server</Link>. How Claude
+        is used across the product is in <Link href="/docs/ai">AI features</Link>.
       </p>
     </>
   );

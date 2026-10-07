@@ -2,7 +2,7 @@
   "info": {
     "_postman_id": "6f2a9c3e-5b1d-4e8f-9a7c-2d4b6e8f0a13",
     "name": "Offer API",
-    "description": "Every route of the Offer API (Offer SDK's Hono service).\n\n1. Start the API locally (`pnpm dev:api`) or point `baseUrl` at a deployed one with the environment file.\n2. Run the **Quickstart** folder top to bottom. It creates an app and saves its keys into the collection variables.\n3. Every other folder then works on that app. You can also run the whole collection in order.\n4. **Clean up** deletes what the run created, ending with the app.\n\nRequests send the app's secret key unless their Auth tab says otherwise: browser routes use the publishable key, cancel sessions use an account token, and the Admin folder uses the admin key.\n\nGenerated from api/postman/requests.ts. Run `bun run postman` in api/ after changing routes.",
+    "description": "Every route of the Offer API (Offer SDK's Hono service).\n\n1. Start the API locally (`pnpm dev:api`) or point `baseUrl` at a deployed one with the environment file.\n2. Run the **Quickstart** folder top to bottom. It creates an app and saves its keys into the collection variables.\n3. Every other folder then works on that app. You can also run the whole collection in order.\n4. **Clean up** deletes what the run created, ending with the app.\n\nRequests send the app's secret key unless their Auth tab says otherwise: browser routes use the publishable key, cancel sessions use an account token, the Admin folder and the dashboard's MCP routes use the admin key, and the OAuth folder's last requests use the MCP access token it obtains.\n\nGenerated from api/postman/requests.ts. Run `bun run postman` in api/ after changing routes.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "auth": {
@@ -176,6 +176,66 @@
       "value": "postman_thread",
       "type": "string",
       "description": "An agent thread id."
+    },
+    {
+      "key": "mcpSessionId",
+      "value": "",
+      "type": "string",
+      "description": "Saved by MCP server → Initialize."
+    },
+    {
+      "key": "mcpConnectionId",
+      "value": "",
+      "type": "string",
+      "description": "Saved by MCP server → List connections."
+    },
+    {
+      "key": "oauthRedirectUri",
+      "value": "http://127.0.0.1:33418/callback",
+      "type": "string",
+      "description": "The redirect URI the Postman OAuth client registers (loopback, like a CLI client)."
+    },
+    {
+      "key": "oauthCodeVerifier",
+      "value": "postman-offer-mcp-pkce-verifier-0123456789abcdef",
+      "type": "string",
+      "description": "A fixed PKCE code verifier."
+    },
+    {
+      "key": "oauthCodeChallenge",
+      "value": "RdVOgjXAeH0vBEfX9mN8CG8lJ3oebD9GJZWsyJ9X3TQ",
+      "type": "string",
+      "description": "base64url(SHA-256(oauthCodeVerifier)), for code_challenge_method S256."
+    },
+    {
+      "key": "oauthClientId",
+      "value": "",
+      "type": "string",
+      "description": "Saved by MCP OAuth → Register a client."
+    },
+    {
+      "key": "oauthRequestId",
+      "value": "",
+      "type": "string",
+      "description": "Saved by MCP OAuth → Start authorization."
+    },
+    {
+      "key": "oauthCode",
+      "value": "",
+      "type": "string",
+      "description": "Saved by MCP OAuth → Approve the request."
+    },
+    {
+      "key": "mcpAccessToken",
+      "value": "",
+      "type": "string",
+      "description": "An mcp_at_… access token. Saved by MCP OAuth → Exchange the code."
+    },
+    {
+      "key": "mcpRefreshToken",
+      "value": "",
+      "type": "string",
+      "description": "An mcp_rt_… refresh token. Saved by MCP OAuth → Exchange the code."
     }
   ],
   "item": [
@@ -4703,9 +4763,1225 @@
       ]
     },
     {
+      "name": "MCP server",
+      "description": "Each app's MCP server at /apps/:appId/mcp: Streamable HTTP, stateless, JSON-RPC over POST. These requests call it with the secret key, which skips the access level and tool switches (the OAuth folder covers what MCP clients do). The settings, connections and call log routes are the dashboard's: admin key only.",
+      "item": [
+        {
+          "name": "Get MCP settings",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminKey}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/mcp/settings",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "mcp",
+                "settings"
+              ]
+            },
+            "description": "enabled, access_level (read, write or full) and tool_overrides. Admin key only. App keys get 401."
+          },
+          "response": []
+        },
+        {
+          "name": "Update MCP settings",
+          "request": {
+            "method": "PATCH",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminKey}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"enabled\": true,\n  \"access_level\": \"write\",\n  \"tool_overrides\": {\n    \"delete_app\": false\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/mcp/settings",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "mcp",
+                "settings"
+              ]
+            },
+            "description": "Merges enabled and access_level. tool_overrides replaces the whole map of tool name → on/off; tools without an override follow access_level. These apply to OAuth connections only. Admin key only. App keys get 401."
+          },
+          "response": []
+        },
+        {
+          "name": "Initialize",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const session = pm.response.headers.get(\"Mcp-Session-Id\");",
+                  "if (session) pm.collectionVariables.set(\"mcpSessionId\", session);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"jsonrpc\": \"2.0\",\n  \"id\": 1,\n  \"method\": \"initialize\",\n  \"params\": {\n    \"protocolVersion\": \"2025-06-18\",\n    \"capabilities\": {},\n    \"clientInfo\": {\n      \"name\": \"Postman\",\n      \"version\": \"1.0.0\"\n    }\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/mcp",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "mcp"
+              ]
+            },
+            "description": "The first message a client sends. Key callers get a connection per clientInfo.name and an Mcp-Session-Id header, which this saves; later calls that send it are logged against that connection. 401 without a key carries WWW-Authenticate with the resource metadata URL. 403 when the server is turned off."
+          },
+          "response": []
+        },
+        {
+          "name": "Initialized notification",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Mcp-Session-Id",
+                "value": "{{mcpSessionId}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"jsonrpc\": \"2.0\",\n  \"method\": \"notifications/initialized\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/mcp",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "mcp"
+              ]
+            },
+            "description": "A notification has no id, so the response is an empty 202."
+          },
+          "response": []
+        },
+        {
+          "name": "List tools",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Mcp-Session-Id",
+                "value": "{{mcpSessionId}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"jsonrpc\": \"2.0\",\n  \"id\": 2,\n  \"method\": \"tools/list\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/mcp",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "mcp"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Call a tool: list_plans",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Mcp-Session-Id",
+                "value": "{{mcpSessionId}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"jsonrpc\": \"2.0\",\n  \"id\": 3,\n  \"method\": \"tools/call\",\n  \"params\": {\n    \"name\": \"list_plans\",\n    \"arguments\": {}\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/mcp",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "mcp"
+              ]
+            },
+            "description": "The result is the API's JSON as text in content[0].text. API errors come back with isError: true and the status in the text."
+          },
+          "response": []
+        },
+        {
+          "name": "Call a tool: get_account_access",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Mcp-Session-Id",
+                "value": "{{mcpSessionId}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"jsonrpc\": \"2.0\",\n  \"id\": 4,\n  \"method\": \"tools/call\",\n  \"params\": {\n    \"name\": \"get_account_access\",\n    \"arguments\": {\n      \"namespaceId\": \"{{accountId}}\"\n    }\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/mcp",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "mcp"
+              ]
+            },
+            "description": "Path parameters are tool arguments."
+          },
+          "response": []
+        },
+        {
+          "name": "List resources",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Mcp-Session-Id",
+                "value": "{{mcpSessionId}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"jsonrpc\": \"2.0\",\n  \"id\": 5,\n  \"method\": \"resources/list\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/mcp",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "mcp"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Read the catalog resource",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Mcp-Session-Id",
+                "value": "{{mcpSessionId}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"jsonrpc\": \"2.0\",\n  \"id\": 6,\n  \"method\": \"resources/read\",\n  \"params\": {\n    \"uri\": \"offer://catalog\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/mcp",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "mcp"
+              ]
+            },
+            "description": "Plans, entitlements, add-ons and incentives in one document. Also: offer://app, offer://pricing, offer://events and offer://accounts/{namespaceId}."
+          },
+          "response": []
+        },
+        {
+          "name": "List prompts",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Mcp-Session-Id",
+                "value": "{{mcpSessionId}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"jsonrpc\": \"2.0\",\n  \"id\": 7,\n  \"method\": \"prompts/list\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/mcp",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "mcp"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get a prompt",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Mcp-Session-Id",
+                "value": "{{mcpSessionId}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"jsonrpc\": \"2.0\",\n  \"id\": 8,\n  \"method\": \"prompts/get\",\n  \"params\": {\n    \"name\": \"investigate_account\",\n    \"arguments\": {\n      \"namespaceId\": \"{{accountId}}\"\n    }\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/mcp",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "mcp"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET the server (405)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/mcp",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "mcp"
+              ]
+            },
+            "description": "The server is stateless and never streams to the client, so GET returns 405 with Allow: POST."
+          },
+          "response": []
+        },
+        {
+          "name": "DELETE the server (405)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/mcp",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "mcp"
+              ]
+            },
+            "description": "There is no session to end, so DELETE returns 405 with Allow: POST."
+          },
+          "response": []
+        },
+        {
+          "name": "List connections",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code < 300) {",
+                  "  let body = null;",
+                  "  try { body = pm.response.json(); } catch (e) {}",
+                  "  const pick = (path) => path.split(\".\").reduce((value, key) => (value == null ? value : value[key]), body);",
+                  "  if (pick(\"0.id\") != null) pm.collectionVariables.set(\"mcpConnectionId\", String(pick(\"0.id\")));",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminKey}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/mcp/connections",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "mcp",
+                "connections"
+              ]
+            },
+            "description": "Most recently used first, with each one's tool calls in the last 7 days. Saves the first connection's id (the Postman one, after Initialize). Admin key only. App keys get 401."
+          },
+          "response": []
+        },
+        {
+          "name": "Tool call log",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminKey}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/mcp/calls?connection_id={{mcpConnectionId}}&limit=50",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "mcp",
+                "calls"
+              ],
+              "query": [
+                {
+                  "key": "connection_id",
+                  "value": "{{mcpConnectionId}}",
+                  "description": "Optional"
+                },
+                {
+                  "key": "limit",
+                  "value": "50"
+                }
+              ]
+            },
+            "description": "Newest first, kept 30 days. Admin key only. App keys get 401."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "MCP OAuth",
+      "description": "How MCP clients such as Claude connect without a key: discovery, dynamic client registration, authorization code with PKCE, refresh and revoke. In real use the person approves on the dashboard's consent page; here the admin-key requests stand in for it, so the folder runs top to bottom. The PKCE pair is fixed in the collection variables (oauthCodeVerifier, oauthCodeChallenge).",
+      "item": [
+        {
+          "name": "Protected resource metadata",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/.well-known/oauth-protected-resource/apps/{{appId}}/mcp",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                ".well-known",
+                "oauth-protected-resource",
+                "apps",
+                "{{appId}}",
+                "mcp"
+              ]
+            },
+            "description": "RFC 9728. The URL the MCP server's 401 points to. Names the server URL and its authorization server (this API)."
+          },
+          "response": []
+        },
+        {
+          "name": "Protected resource metadata (no path)",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/.well-known/oauth-protected-resource",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                ".well-known",
+                "oauth-protected-resource"
+              ]
+            },
+            "description": "For clients that drop the resource path."
+          },
+          "response": []
+        },
+        {
+          "name": "Authorization server metadata",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/.well-known/oauth-authorization-server",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                ".well-known",
+                "oauth-authorization-server"
+              ]
+            },
+            "description": "RFC 8414. Endpoints, mcp:read / mcp:write / mcp:full scopes, S256 only. Origins come from PUBLIC_API_URL when it's set."
+          },
+          "response": []
+        },
+        {
+          "name": "Authorization server metadata (path suffix)",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/.well-known/oauth-authorization-server/apps/{{appId}}/mcp",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                ".well-known",
+                "oauth-authorization-server",
+                "apps",
+                "{{appId}}",
+                "mcp"
+              ]
+            },
+            "description": "The same document, for clients that append the resource path."
+          },
+          "response": []
+        },
+        {
+          "name": "OpenID configuration",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/.well-known/openid-configuration",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                ".well-known",
+                "openid-configuration"
+              ]
+            },
+            "description": "The same document again, for clients that look here first."
+          },
+          "response": []
+        },
+        {
+          "name": "Register a client",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code < 300) {",
+                  "  let body = null;",
+                  "  try { body = pm.response.json(); } catch (e) {}",
+                  "  const pick = (path) => path.split(\".\").reduce((value, key) => (value == null ? value : value[key]), body);",
+                  "  if (pick(\"client_id\") != null) pm.collectionVariables.set(\"oauthClientId\", String(pick(\"client_id\")));",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"client_name\": \"Postman\",\n  \"redirect_uris\": [\n    \"{{oauthRedirectUri}}\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/oauth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "oauth",
+                "register"
+              ]
+            },
+            "description": "RFC 7591 dynamic client registration. redirect_uris must be https, http on a loopback host, or an app scheme. token_endpoint_auth_method none (the default) makes a public client; client_secret_post or client_secret_basic also returns client_secret. Saves client_id."
+          },
+          "response": []
+        },
+        {
+          "name": "Start authorization",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "{",
+                  "  let url = null;",
+                  "  try { url = pm.response.headers.get(\"Location\"); } catch (e) {}",
+                  "  const match = url && String(url).match(/[?&]request=([^&]+)/);",
+                  "  if (match) pm.collectionVariables.set(\"oauthRequestId\", decodeURIComponent(match[1]));",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "followRedirects": false
+          },
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/oauth/authorize?response_type=code&client_id={{oauthClientId}}&redirect_uri={{oauthRedirectUri}}&code_challenge={{oauthCodeChallenge}}&code_challenge_method=S256&state=postman&scope=mcp:read",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "oauth",
+                "authorize"
+              ],
+              "query": [
+                {
+                  "key": "response_type",
+                  "value": "code"
+                },
+                {
+                  "key": "client_id",
+                  "value": "{{oauthClientId}}"
+                },
+                {
+                  "key": "redirect_uri",
+                  "value": "{{oauthRedirectUri}}"
+                },
+                {
+                  "key": "code_challenge",
+                  "value": "{{oauthCodeChallenge}}"
+                },
+                {
+                  "key": "code_challenge_method",
+                  "value": "S256"
+                },
+                {
+                  "key": "state",
+                  "value": "postman"
+                },
+                {
+                  "key": "scope",
+                  "value": "mcp:read",
+                  "description": "Preselects an access level on the consent page"
+                },
+                {
+                  "key": "resource",
+                  "value": "{{baseUrl}}/apps/{{appId}}/mcp",
+                  "description": "Must match the API's public origin",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Saves the request and redirects (302) to the dashboard's consent page, APP_URL/oauth/consent?request=…. Redirects aren't followed here; the script saves the request id from Location. With resource, the request is tied to that app; without it, the person picks an app on the consent page."
+          },
+          "response": []
+        },
+        {
+          "name": "Get the sign-in request",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminKey}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/oauth/requests/{{oauthRequestId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "oauth",
+                "requests",
+                "{{oauthRequestId}}"
+              ]
+            },
+            "description": "What the consent page shows: the client, the app (null when the client sent no resource), the requested level and the server's settings. 404 once approved, denied or expired (15 minutes). Admin key only. App keys get 401."
+          },
+          "response": []
+        },
+        {
+          "name": "Approve the request",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "{",
+                  "  let url = null;",
+                  "  try { url = pm.response.json().redirect_url; } catch (e) {}",
+                  "  const match = url && String(url).match(/[?&]code=([^&]+)/);",
+                  "  if (match) pm.collectionVariables.set(\"oauthCode\", decodeURIComponent(match[1]));",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminKey}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"user\": {\n    \"id\": \"{{userId}}\",\n    \"name\": \"Postman\",\n    \"email\": \"postman@example.com\"\n  },\n  \"access_level\": \"read\",\n  \"app_id\": \"{{appId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/oauth/requests/{{oauthRequestId}}/approve",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "oauth",
+                "requests",
+                "{{oauthRequestId}}",
+                "approve"
+              ]
+            },
+            "description": "What the consent page sends after checking the person belongs to the app's workspace. app_id is required when the client sent no resource. Returns redirect_url with the code (valid 5 minutes); the script saves it. 409 when the app's MCP server is off. Admin key only. App keys get 401."
+          },
+          "response": []
+        },
+        {
+          "name": "Exchange the code",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code < 300) {",
+                  "  let body = null;",
+                  "  try { body = pm.response.json(); } catch (e) {}",
+                  "  const pick = (path) => path.split(\".\").reduce((value, key) => (value == null ? value : value[key]), body);",
+                  "  if (pick(\"access_token\") != null) pm.collectionVariables.set(\"mcpAccessToken\", String(pick(\"access_token\")));",
+                  "  if (pick(\"refresh_token\") != null) pm.collectionVariables.set(\"mcpRefreshToken\", String(pick(\"refresh_token\")));",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"grant_type\": \"authorization_code\",\n  \"code\": \"{{oauthCode}}\",\n  \"code_verifier\": \"{{oauthCodeVerifier}}\",\n  \"client_id\": \"{{oauthClientId}}\",\n  \"redirect_uri\": \"{{oauthRedirectUri}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/oauth/token",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "oauth",
+                "token"
+              ]
+            },
+            "description": "grant_type authorization_code with the PKCE verifier. Takes form-encoded or JSON bodies. Returns a 1-hour access token (mcp_at_…) and a 30-day refresh token (mcp_rt_…), and saves both. A code works once, even when the exchange fails."
+          },
+          "response": []
+        },
+        {
+          "name": "List tools with the access token",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{mcpAccessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"jsonrpc\": \"2.0\",\n  \"id\": 9,\n  \"method\": \"tools/list\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/mcp",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "mcp"
+              ]
+            },
+            "description": "Read only access: write and destructive tools are left out, and calling one returns isError with the reason."
+          },
+          "response": []
+        },
+        {
+          "name": "Refresh the tokens",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code < 300) {",
+                  "  let body = null;",
+                  "  try { body = pm.response.json(); } catch (e) {}",
+                  "  const pick = (path) => path.split(\".\").reduce((value, key) => (value == null ? value : value[key]), body);",
+                  "  if (pick(\"access_token\") != null) pm.collectionVariables.set(\"mcpAccessToken\", String(pick(\"access_token\")));",
+                  "  if (pick(\"refresh_token\") != null) pm.collectionVariables.set(\"mcpRefreshToken\", String(pick(\"refresh_token\")));",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"grant_type\": \"refresh_token\",\n  \"refresh_token\": \"{{mcpRefreshToken}}\",\n  \"client_id\": \"{{oauthClientId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/oauth/token",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "oauth",
+                "token"
+              ]
+            },
+            "description": "grant_type refresh_token. Rotates both tokens: the old pair stops working. Saves the new ones."
+          },
+          "response": []
+        },
+        {
+          "name": "Start another authorization",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "{",
+                  "  let url = null;",
+                  "  try { url = pm.response.headers.get(\"Location\"); } catch (e) {}",
+                  "  const match = url && String(url).match(/[?&]request=([^&]+)/);",
+                  "  if (match) pm.collectionVariables.set(\"oauthRequestId\", decodeURIComponent(match[1]));",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "followRedirects": false
+          },
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/oauth/authorize?response_type=code&client_id={{oauthClientId}}&redirect_uri={{oauthRedirectUri}}&code_challenge={{oauthCodeChallenge}}&code_challenge_method=S256&state=postman",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "oauth",
+                "authorize"
+              ],
+              "query": [
+                {
+                  "key": "response_type",
+                  "value": "code"
+                },
+                {
+                  "key": "client_id",
+                  "value": "{{oauthClientId}}"
+                },
+                {
+                  "key": "redirect_uri",
+                  "value": "{{oauthRedirectUri}}"
+                },
+                {
+                  "key": "code_challenge",
+                  "value": "{{oauthCodeChallenge}}"
+                },
+                {
+                  "key": "code_challenge_method",
+                  "value": "S256"
+                },
+                {
+                  "key": "state",
+                  "value": "postman"
+                }
+              ]
+            },
+            "description": "A second request, to deny."
+          },
+          "response": []
+        },
+        {
+          "name": "Deny the request",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminKey}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/oauth/requests/{{oauthRequestId}}/deny",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "oauth",
+                "requests",
+                "{{oauthRequestId}}",
+                "deny"
+              ]
+            },
+            "description": "Returns redirect_url carrying error=access_denied and the client's state. Admin key only. App keys get 401."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
       "name": "Clean up",
       "description": "Deletes what the other folders created, in an order that works, ending with the app itself. Run it last, or skip it to keep the data.",
       "item": [
+        {
+          "name": "Revoke the OAuth tokens",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"{{mcpRefreshToken}}\",\n  \"client_id\": \"{{oauthClientId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/oauth/revoke",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "oauth",
+                "revoke"
+              ]
+            },
+            "description": "RFC 7009. Revoking either token ends the OAuth connection. Always 200 for a known client."
+          },
+          "response": []
+        },
+        {
+          "name": "Remove the MCP connection",
+          "request": {
+            "method": "DELETE",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminKey}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/apps/{{appId}}/mcp/connections/{{mcpConnectionId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "apps",
+                "{{appId}}",
+                "mcp",
+                "connections",
+                "{{mcpConnectionId}}"
+              ]
+            },
+            "description": "What Revoke does in the dashboard. An OAuth connection loses access on its next call; a key connection only leaves the list, since the secret key keeps working. Admin key only. App keys get 401."
+          },
+          "response": []
+        },
         {
           "name": "Delete the agent thread",
           "request": {

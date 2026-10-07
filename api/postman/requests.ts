@@ -10,7 +10,7 @@
 export type Method = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
 /** Which key the request sends. Requests with "secret" inherit the collection's auth. */
-export type Auth = "none" | "secret" | "public" | "token" | "admin";
+export type Auth = "none" | "secret" | "public" | "token" | "admin" | "mcp";
 
 export type RequestDef = {
   name: string;
@@ -23,12 +23,39 @@ export type RequestDef = {
   body?: unknown;
   /** Collection variable → dotted path in the JSON response, e.g. { appId: "id" }. */
   save?: Record<string, string>;
+  /** Extra request headers. */
+  headers?: { key: string; value: string }[];
+  /** Extra lines for the request's test script, for values save can't reach (headers, URLs). */
+  script?: string[];
+  /** false keeps Postman from following a redirect, so the script can read Location. */
+  followRedirects?: false;
 };
 
 export type Folder = { name: string; description: string; requests: RequestDef[] };
 
 const app = "/apps/:appId";
 const account = `${app}/namespaces/:namespaceId`;
+const mcp = `${app}/mcp`;
+
+let rpcId = 0;
+/** A JSON-RPC message for the MCP server. Notifications (no id) get a 202. */
+const rpc = (method: string, params?: unknown, notification = false) => ({
+  jsonrpc: "2.0",
+  ...(notification ? {} : { id: ++rpcId }),
+  method,
+  ...(params === undefined ? {} : { params }),
+});
+const SESSION = [{ key: "Mcp-Session-Id", value: "{{mcpSessionId}}" }];
+
+/** Saves a query parameter from a URL (a Location header or a JSON field) into a collection variable. */
+const saveFromUrl = (variable: string, param: string, source: string) => [
+  "{",
+  `  let url = null;`,
+  `  try { url = ${source}; } catch (e) {}`,
+  `  const match = url && String(url).match(/[?&]${param}=([^&]+)/);`,
+  `  if (match) pm.collectionVariables.set(${JSON.stringify(variable)}, decodeURIComponent(match[1]));`,
+  "}",
+];
 
 const KEYS = {
   secret: "Works with the secret key or the admin key.",
@@ -868,10 +895,284 @@ export const FOLDERS: Folder[] = [
     ],
   },
   {
+    name: "MCP server",
+    description:
+      "Each app's MCP server at /apps/:appId/mcp: Streamable HTTP, stateless, JSON-RPC over POST. These requests call it with the secret key, which skips the access level and tool switches (the OAuth folder covers what MCP clients do). The settings, connections and call log routes are the dashboard's: admin key only.",
+    requests: [
+      { name: "Get MCP settings", method: "GET", path: `${mcp}/settings`, auth: "admin", description: `enabled, access_level (read, write or full) and tool_overrides. ${KEYS.admin}` },
+      {
+        name: "Update MCP settings",
+        method: "PATCH",
+        path: `${mcp}/settings`,
+        auth: "admin",
+        description: `Merges enabled and access_level. tool_overrides replaces the whole map of tool name → on/off; tools without an override follow access_level. These apply to OAuth connections only. ${KEYS.admin}`,
+        body: { enabled: true, access_level: "write", tool_overrides: { delete_app: false } },
+      },
+      {
+        name: "Initialize",
+        method: "POST",
+        path: mcp,
+        auth: "secret",
+        description:
+          "The first message a client sends. Key callers get a connection per clientInfo.name and an Mcp-Session-Id header, which this saves; later calls that send it are logged against that connection. 401 without a key carries WWW-Authenticate with the resource metadata URL. 403 when the server is turned off.",
+        body: rpc("initialize", { protocolVersion: "2025-06-18", capabilities: {}, clientInfo: { name: "Postman", version: "1.0.0" } }),
+        script: [
+          'const session = pm.response.headers.get("Mcp-Session-Id");',
+          'if (session) pm.collectionVariables.set("mcpSessionId", session);',
+        ],
+      },
+      {
+        name: "Initialized notification",
+        method: "POST",
+        path: mcp,
+        auth: "secret",
+        description: "A notification has no id, so the response is an empty 202.",
+        headers: SESSION,
+        body: rpc("notifications/initialized", undefined, true),
+      },
+      { name: "List tools", method: "POST", path: mcp, auth: "secret", headers: SESSION, body: rpc("tools/list") },
+      {
+        name: "Call a tool: list_plans",
+        method: "POST",
+        path: mcp,
+        auth: "secret",
+        description: "The result is the API's JSON as text in content[0].text. API errors come back with isError: true and the status in the text.",
+        headers: SESSION,
+        body: rpc("tools/call", { name: "list_plans", arguments: {} }),
+      },
+      {
+        name: "Call a tool: get_account_access",
+        method: "POST",
+        path: mcp,
+        auth: "secret",
+        description: "Path parameters are tool arguments.",
+        headers: SESSION,
+        body: rpc("tools/call", { name: "get_account_access", arguments: { namespaceId: "{{accountId}}" } }),
+      },
+      { name: "List resources", method: "POST", path: mcp, auth: "secret", headers: SESSION, body: rpc("resources/list") },
+      {
+        name: "Read the catalog resource",
+        method: "POST",
+        path: mcp,
+        auth: "secret",
+        description: "Plans, entitlements, add-ons and incentives in one document. Also: offer://app, offer://pricing, offer://events and offer://accounts/{namespaceId}.",
+        headers: SESSION,
+        body: rpc("resources/read", { uri: "offer://catalog" }),
+      },
+      { name: "List prompts", method: "POST", path: mcp, auth: "secret", headers: SESSION, body: rpc("prompts/list") },
+      {
+        name: "Get a prompt",
+        method: "POST",
+        path: mcp,
+        auth: "secret",
+        headers: SESSION,
+        body: rpc("prompts/get", { name: "investigate_account", arguments: { namespaceId: "{{accountId}}" } }),
+      },
+      {
+        name: "GET the server (405)",
+        method: "GET",
+        path: mcp,
+        auth: "secret",
+        description: "The server is stateless and never streams to the client, so GET returns 405 with Allow: POST.",
+      },
+      {
+        name: "DELETE the server (405)",
+        method: "DELETE",
+        path: mcp,
+        auth: "secret",
+        description: "There is no session to end, so DELETE returns 405 with Allow: POST.",
+      },
+      {
+        name: "List connections",
+        method: "GET",
+        path: `${mcp}/connections`,
+        auth: "admin",
+        description: `Most recently used first, with each one's tool calls in the last 7 days. Saves the first connection's id (the Postman one, after Initialize). ${KEYS.admin}`,
+        save: { mcpConnectionId: "0.id" },
+      },
+      {
+        name: "Tool call log",
+        method: "GET",
+        path: `${mcp}/calls`,
+        auth: "admin",
+        description: `Newest first, kept 30 days. ${KEYS.admin}`,
+        query: [
+          { key: "connection_id", value: "{{mcpConnectionId}}", description: "Optional" },
+          { key: "limit", value: "50" },
+        ],
+      },
+    ],
+  },
+  {
+    name: "MCP OAuth",
+    description:
+      "How MCP clients such as Claude connect without a key: discovery, dynamic client registration, authorization code with PKCE, refresh and revoke. In real use the person approves on the dashboard's consent page; here the admin-key requests stand in for it, so the folder runs top to bottom. The PKCE pair is fixed in the collection variables (oauthCodeVerifier, oauthCodeChallenge).",
+    requests: [
+      {
+        name: "Protected resource metadata",
+        method: "GET",
+        path: "/.well-known/oauth-protected-resource/apps/:appId/mcp",
+        auth: "none",
+        description: "RFC 9728. The URL the MCP server's 401 points to. Names the server URL and its authorization server (this API).",
+      },
+      {
+        name: "Protected resource metadata (no path)",
+        method: "GET",
+        path: "/.well-known/oauth-protected-resource",
+        auth: "none",
+        description: "For clients that drop the resource path.",
+      },
+      {
+        name: "Authorization server metadata",
+        method: "GET",
+        path: "/.well-known/oauth-authorization-server",
+        auth: "none",
+        description: "RFC 8414. Endpoints, mcp:read / mcp:write / mcp:full scopes, S256 only. Origins come from PUBLIC_API_URL when it's set.",
+      },
+      {
+        name: "Authorization server metadata (path suffix)",
+        method: "GET",
+        path: "/.well-known/oauth-authorization-server/*",
+        auth: "none",
+        description: "The same document, for clients that append the resource path.",
+        params: { "*": "apps/{{appId}}/mcp" },
+      },
+      {
+        name: "OpenID configuration",
+        method: "GET",
+        path: "/.well-known/openid-configuration",
+        auth: "none",
+        description: "The same document again, for clients that look here first.",
+      },
+      {
+        name: "Register a client",
+        method: "POST",
+        path: "/oauth/register",
+        auth: "none",
+        description:
+          "RFC 7591 dynamic client registration. redirect_uris must be https, http on a loopback host, or an app scheme. token_endpoint_auth_method none (the default) makes a public client; client_secret_post or client_secret_basic also returns client_secret. Saves client_id.",
+        body: { client_name: "Postman", redirect_uris: ["{{oauthRedirectUri}}"] },
+        save: { oauthClientId: "client_id" },
+      },
+      {
+        name: "Start authorization",
+        method: "GET",
+        path: "/oauth/authorize",
+        auth: "none",
+        description:
+          "Saves the request and redirects (302) to the dashboard's consent page, APP_URL/oauth/consent?request=…. Redirects aren't followed here; the script saves the request id from Location. With resource, the request is tied to that app; without it, the person picks an app on the consent page.",
+        followRedirects: false,
+        query: [
+          { key: "response_type", value: "code" },
+          { key: "client_id", value: "{{oauthClientId}}" },
+          { key: "redirect_uri", value: "{{oauthRedirectUri}}" },
+          { key: "code_challenge", value: "{{oauthCodeChallenge}}" },
+          { key: "code_challenge_method", value: "S256" },
+          { key: "state", value: "postman" },
+          { key: "scope", value: "mcp:read", description: "Preselects an access level on the consent page" },
+          { key: "resource", value: "{{baseUrl}}/apps/{{appId}}/mcp", description: "Must match the API's public origin", disabled: true },
+        ],
+        script: saveFromUrl("oauthRequestId", "request", 'pm.response.headers.get("Location")'),
+      },
+      {
+        name: "Get the sign-in request",
+        method: "GET",
+        path: "/oauth/requests/:requestId",
+        auth: "admin",
+        description: `What the consent page shows: the client, the app (null when the client sent no resource), the requested level and the server's settings. 404 once approved, denied or expired (15 minutes). ${KEYS.admin}`,
+      },
+      {
+        name: "Approve the request",
+        method: "POST",
+        path: "/oauth/requests/:requestId/approve",
+        auth: "admin",
+        description: `What the consent page sends after checking the person belongs to the app's workspace. app_id is required when the client sent no resource. Returns redirect_url with the code (valid 5 minutes); the script saves it. 409 when the app's MCP server is off. ${KEYS.admin}`,
+        body: {
+          user: { id: "{{userId}}", name: "Postman", email: "postman@example.com" },
+          access_level: "read",
+          app_id: "{{appId}}",
+        },
+        script: saveFromUrl("oauthCode", "code", "pm.response.json().redirect_url"),
+      },
+      {
+        name: "Exchange the code",
+        method: "POST",
+        path: "/oauth/token",
+        auth: "none",
+        description:
+          "grant_type authorization_code with the PKCE verifier. Takes form-encoded or JSON bodies. Returns a 1-hour access token (mcp_at_…) and a 30-day refresh token (mcp_rt_…), and saves both. A code works once, even when the exchange fails.",
+        body: {
+          grant_type: "authorization_code",
+          code: "{{oauthCode}}",
+          code_verifier: "{{oauthCodeVerifier}}",
+          client_id: "{{oauthClientId}}",
+          redirect_uri: "{{oauthRedirectUri}}",
+        },
+        save: { mcpAccessToken: "access_token", mcpRefreshToken: "refresh_token" },
+      },
+      {
+        name: "List tools with the access token",
+        method: "POST",
+        path: mcp,
+        auth: "mcp",
+        description: "Read only access: write and destructive tools are left out, and calling one returns isError with the reason.",
+        body: rpc("tools/list"),
+      },
+      {
+        name: "Refresh the tokens",
+        method: "POST",
+        path: "/oauth/token",
+        auth: "none",
+        description: "grant_type refresh_token. Rotates both tokens: the old pair stops working. Saves the new ones.",
+        body: { grant_type: "refresh_token", refresh_token: "{{mcpRefreshToken}}", client_id: "{{oauthClientId}}" },
+        save: { mcpAccessToken: "access_token", mcpRefreshToken: "refresh_token" },
+      },
+      {
+        name: "Start another authorization",
+        method: "GET",
+        path: "/oauth/authorize",
+        auth: "none",
+        description: "A second request, to deny.",
+        followRedirects: false,
+        query: [
+          { key: "response_type", value: "code" },
+          { key: "client_id", value: "{{oauthClientId}}" },
+          { key: "redirect_uri", value: "{{oauthRedirectUri}}" },
+          { key: "code_challenge", value: "{{oauthCodeChallenge}}" },
+          { key: "code_challenge_method", value: "S256" },
+          { key: "state", value: "postman" },
+        ],
+        script: saveFromUrl("oauthRequestId", "request", 'pm.response.headers.get("Location")'),
+      },
+      {
+        name: "Deny the request",
+        method: "POST",
+        path: "/oauth/requests/:requestId/deny",
+        auth: "admin",
+        description: `Returns redirect_url carrying error=access_denied and the client's state. ${KEYS.admin}`,
+      },
+    ],
+  },
+  {
     name: "Clean up",
     description:
       "Deletes what the other folders created, in an order that works, ending with the app itself. Run it last, or skip it to keep the data.",
     requests: [
+      {
+        name: "Revoke the OAuth tokens",
+        method: "POST",
+        path: "/oauth/revoke",
+        auth: "none",
+        description: "RFC 7009. Revoking either token ends the OAuth connection. Always 200 for a known client.",
+        body: { token: "{{mcpRefreshToken}}", client_id: "{{oauthClientId}}" },
+      },
+      {
+        name: "Remove the MCP connection",
+        method: "DELETE",
+        path: `${mcp}/connections/:connectionId`,
+        auth: "admin",
+        description: `What Revoke does in the dashboard. An OAuth connection loses access on its next call; a key connection only leaves the list, since the secret key keeps working. ${KEYS.admin}`,
+      },
       { name: "Delete the agent thread", method: "DELETE", path: `${app}/agent/threads/:threadId`, auth: "admin" },
       { name: "Delete the workspace record", method: "DELETE", path: "/orgs/:orgId", auth: "admin", description: "Its apps stay." },
       { name: "Delete the webhook endpoint", method: "DELETE", path: `${app}/webhooks/:webhookId`, auth: "secret", description: "Also deletes its deliveries." },
@@ -923,4 +1224,14 @@ export const VARIABLES: { key: string; value: string; description: string }[] = 
   { key: "orgId", value: "postman_workspace", description: "A dashboard workspace id." },
   { key: "userId", value: "postman_user", description: "A dashboard user id, for agent threads." },
   { key: "threadId", value: "postman_thread", description: "An agent thread id." },
+  { key: "mcpSessionId", value: "", description: "Saved by MCP server → Initialize." },
+  { key: "mcpConnectionId", value: "", description: "Saved by MCP server → List connections." },
+  { key: "oauthRedirectUri", value: "http://127.0.0.1:33418/callback", description: "The redirect URI the Postman OAuth client registers (loopback, like a CLI client)." },
+  { key: "oauthCodeVerifier", value: "postman-offer-mcp-pkce-verifier-0123456789abcdef", description: "A fixed PKCE code verifier." },
+  { key: "oauthCodeChallenge", value: "RdVOgjXAeH0vBEfX9mN8CG8lJ3oebD9GJZWsyJ9X3TQ", description: "base64url(SHA-256(oauthCodeVerifier)), for code_challenge_method S256." },
+  { key: "oauthClientId", value: "", description: "Saved by MCP OAuth → Register a client." },
+  { key: "oauthRequestId", value: "", description: "Saved by MCP OAuth → Start authorization." },
+  { key: "oauthCode", value: "", description: "Saved by MCP OAuth → Approve the request." },
+  { key: "mcpAccessToken", value: "", description: "An mcp_at_… access token. Saved by MCP OAuth → Exchange the code." },
+  { key: "mcpRefreshToken", value: "", description: "An mcp_rt_… refresh token. Saved by MCP OAuth → Exchange the code." },
 ];

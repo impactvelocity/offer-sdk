@@ -15,8 +15,81 @@ const ACCOUNT_READ = "Secret key, publishable key, or the account's own token";
 const ACCOUNT_TOKEN = "Secret key or the account's own token";
 const ADMIN = "Admin key only";
 
+const MCP_AUTH = "Secret key, or an OAuth access token for this app";
+
 const app = "/apps/:appId";
 const account = `${app}/namespaces/:accountId`;
+
+/** The MCP server and the OAuth routes its clients call. Also listed on /docs/api/mcp. */
+export const MCP_ENDPOINTS: EndpointDoc[] = [
+  {
+    method: "POST",
+    path: `${app}/mcp`,
+    summary: "The app's MCP server: one JSON-RPC message (or a batch) per request, answered with JSON. 401 points to the resource metadata; 403 when the server is turned off.",
+    auth: MCP_AUTH,
+  },
+  { method: "GET", path: `${app}/mcp`, summary: "405. The server is stateless and never streams to the client.", auth: MCP_AUTH },
+  { method: "DELETE", path: `${app}/mcp`, summary: "405. There is no session to end.", auth: MCP_AUTH },
+  {
+    method: "GET",
+    path: "/.well-known/oauth-protected-resource/apps/:appId/mcp",
+    summary: "Protected resource metadata (RFC 9728): the server URL, its authorization server and scopes.",
+    auth: NONE,
+  },
+  { method: "GET", path: "/.well-known/oauth-protected-resource", summary: "The same, for clients that drop the path. The resource is the API's origin.", auth: NONE },
+  {
+    method: "GET",
+    path: "/.well-known/oauth-authorization-server",
+    summary: "Authorization server metadata (RFC 8414). Also served under /.well-known/oauth-authorization-server/* and /.well-known/openid-configuration.",
+    auth: NONE,
+  },
+  {
+    method: "POST",
+    path: "/oauth/register",
+    summary: "Dynamic client registration (RFC 7591). Body: { redirect_uris, client_name?, token_endpoint_auth_method?, client_uri?, logo_uri? }.",
+    auth: NONE,
+  },
+  {
+    method: "GET",
+    path: "/oauth/authorize",
+    summary: "Starts an authorization code request with PKCE (S256) and redirects to the dashboard's consent page.",
+    auth: NONE,
+  },
+  {
+    method: "POST",
+    path: "/oauth/token",
+    summary: "grant_type authorization_code (with code_verifier) or refresh_token. Refresh tokens rotate on every use.",
+    auth: "Client id, plus its secret for confidential clients",
+  },
+  { method: "POST", path: "/oauth/revoke", summary: "Revokes an access or refresh token (RFC 7009), which ends the connection.", auth: "Client id, plus its secret for confidential clients" },
+];
+
+/** The dashboard's routes for the MCP page and the consent page. */
+export const MCP_ADMIN_ENDPOINTS: EndpointDoc[] = [
+  { method: "GET", path: `${app}/mcp/settings`, summary: "The server's settings: enabled, access_level and tool_overrides.", auth: ADMIN },
+  {
+    method: "PATCH",
+    path: `${app}/mcp/settings`,
+    summary: "Updates enabled, access_level (read, write or full) or tool_overrides, a map of tool name to true or false that replaces the old one.",
+    auth: ADMIN,
+  },
+  { method: "GET", path: `${app}/mcp/connections`, summary: "Connected clients, most recently used first, with tool calls in the last 7 days.", auth: ADMIN },
+  {
+    method: "DELETE",
+    path: `${app}/mcp/connections/:connectionId`,
+    summary: "Removes a connection. An OAuth connection loses access on its next call.",
+    auth: ADMIN,
+  },
+  { method: "GET", path: `${app}/mcp/calls`, summary: "Tool calls, newest first, kept 30 days. Query: connection_id, limit.", auth: ADMIN },
+  { method: "GET", path: "/oauth/requests/:requestId", summary: "A pending authorization request, for the consent page. 404 once used or expired.", auth: ADMIN },
+  {
+    method: "POST",
+    path: "/oauth/requests/:requestId/approve",
+    summary: "Approves a request. Body: { user: { id, name?, email? }, access_level, app_id? }. Returns redirect_url with the code.",
+    auth: ADMIN,
+  },
+  { method: "POST", path: "/oauth/requests/:requestId/deny", summary: "Denies a request. Returns redirect_url with error=access_denied.", auth: ADMIN },
+];
 
 export const ENDPOINT_GROUPS: EndpointGroup[] = [
   {
@@ -306,6 +379,11 @@ export const ENDPOINT_GROUPS: EndpointGroup[] = [
     ],
   },
   {
+    title: "MCP server",
+    intro: "Each app's MCP server, and the OAuth 2.1 routes MCP clients use to connect without a key. The MCP server docs page covers the protocol and the tools.",
+    endpoints: MCP_ENDPOINTS,
+  },
+  {
     title: "Admin only",
     intro: "Routes the dashboard and the Render Workflow call with the admin key. App keys get 401.",
     endpoints: [
@@ -329,6 +407,7 @@ export const ENDPOINT_GROUPS: EndpointGroup[] = [
       { method: "PUT", path: `${app}/agent/threads/:threadId`, summary: "Creates a thread or replaces its messages. Body: { user_id, messages, title? }.", auth: ADMIN },
       { method: "PATCH", path: `${app}/agent/threads/:threadId`, summary: "Renames a thread. Body: { title }.", auth: ADMIN },
       { method: "DELETE", path: `${app}/agent/threads/:threadId`, summary: "Deletes a thread.", auth: ADMIN },
+      ...MCP_ADMIN_ENDPOINTS,
       { method: "GET", path: "/api/auth/*", summary: "Dashboard sign-in (better-auth), proxied by the dashboard.", auth: ADMIN },
       { method: "POST", path: "/api/auth/*", summary: "Dashboard sign-in (better-auth), proxied by the dashboard.", auth: ADMIN },
     ],

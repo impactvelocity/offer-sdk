@@ -27,6 +27,8 @@ export const PARAM_VARIABLES: Record<string, string> = {
   id: "reportId",
   orgId: "orgId",
   threadId: "threadId",
+  connectionId: "mcpConnectionId",
+  requestId: "oauthRequestId",
 };
 
 /** Dashboard sign-in, which only the dashboard calls (proxied, with the admin key). */
@@ -56,13 +58,20 @@ const AUTH: Record<Exclude<Auth, "secret">, object> = {
   public: bearer("publicKey"),
   token: bearer("accountToken"),
   admin: bearer("adminKey"),
+  mcp: bearer("mcpAccessToken"),
 };
 
 function url(def: RequestDef) {
   const path = def.path
     .split("/")
     .filter(Boolean)
-    .map((segment) => {
+    .flatMap((segment) => {
+      // A wildcard takes its value from params["*"], which may span several segments.
+      if (segment === "*") {
+        const value = def.params?.["*"];
+        if (!value) throw new Error(`${def.method} ${def.path}: no value for *`);
+        return value.split("/");
+      }
       if (!segment.startsWith(":")) return segment;
       const param = segment.slice(1);
       const value = def.params?.[param] ?? (PARAM_VARIABLES[param] ? `{{${PARAM_VARIABLES[param]}}}` : undefined);
@@ -101,15 +110,15 @@ function saveScript(save: Record<string, string>) {
 
 function item(def: RequestDef) {
   const hasBody = def.body !== undefined;
+  const exec = [...(def.save ? saveScript(def.save) : []), ...(def.script ?? [])];
   return {
     name: def.name,
-    ...(def.save
-      ? { event: [{ listen: "test", script: { type: "text/javascript", exec: saveScript(def.save) } }] }
-      : {}),
+    ...(exec.length ? { event: [{ listen: "test", script: { type: "text/javascript", exec } }] } : {}),
+    ...(def.followRedirects === false ? { protocolProfileBehavior: { followRedirects: false } } : {}),
     request: {
       method: def.method,
       ...(def.auth === "secret" ? {} : { auth: AUTH[def.auth] }),
-      header: hasBody ? [{ key: "Content-Type", value: "application/json" }] : [],
+      header: [...(hasBody ? [{ key: "Content-Type", value: "application/json" }] : []), ...(def.headers ?? [])],
       ...(hasBody
         ? { body: { mode: "raw", raw: JSON.stringify(def.body, null, 2), options: { raw: { language: "json" } } } }
         : {}),
@@ -127,7 +136,7 @@ const DESCRIPTION = `Every route of the Offer API (Offer SDK's Hono service).
 3. Every other folder then works on that app. You can also run the whole collection in order.
 4. **Clean up** deletes what the run created, ending with the app.
 
-Requests send the app's secret key unless their Auth tab says otherwise: browser routes use the publishable key, cancel sessions use an account token, and the Admin folder uses the admin key.
+Requests send the app's secret key unless their Auth tab says otherwise: browser routes use the publishable key, cancel sessions use an account token, the Admin folder and the dashboard's MCP routes use the admin key, and the OAuth folder's last requests use the MCP access token it obtains.
 
 Generated from api/postman/requests.ts. Run \`bun run postman\` in api/ after changing routes.`;
 

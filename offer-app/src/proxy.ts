@@ -30,7 +30,7 @@ function cors(request: NextRequest) {
 }
 
 // /demo is a sample tenant storefront for the checkout SDK.
-const PUBLIC_PAGES = ["/sign-in", "/sign-up", "/demo"];
+const PUBLIC_PAGES = ["/sign-in", "/sign-up", "/setup", "/demo"];
 
 export function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;

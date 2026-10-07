@@ -8,7 +8,7 @@ import { levelAllows, MCP_PROMPTS, MCP_RESOURCES, MCP_TOOLS, type AccessLevel } 
 import { useDevContext } from "@/components/developers/use-dev-context";
 import { ConnectTab } from "@/components/mcp/connect-tab";
 import { ActivityTab, ConnectionsTab } from "@/components/mcp/connections-tab";
-import { sampleActivity, sampleConnections } from "@/components/mcp/sample-data";
+import { sampleActivity, sampleConnections, toCall, toConnection } from "@/components/mcp/sample-data";
 import { ToolsTab } from "@/components/mcp/tools-tab";
 import { PageBody, PageHeader } from "@/components/shell/page";
 import { Badge, StatusDot } from "@/components/ui/badge";
@@ -18,60 +18,103 @@ import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 import { Tab, Tabs, TabsList, TabsPanel } from "@/components/ui/tabs";
+import { api } from "@/lib/api/client";
+import { keys, useApiMutation, useMcpCalls, useMcpConnections, useMcpSettings, useUpdateMcpSettings } from "@/lib/api/hooks";
 import { useSession } from "@/lib/auth-client";
 import { cn, pluralize } from "@/lib/utils";
 
 type TabId = "connect" | "tools" | "connections" | "activity";
 
-// Mock UI: server state lives in this component until the MCP server and its endpoints exist.
+interface ServerState {
+  enabled: boolean;
+  level: AccessLevel;
+  overrides: Record<string, boolean>;
+}
+
+// With the hosted API the page drives the real server (settings, connections and call log in
+// the API). Against the in-memory mock there is no server, so it previews with local state
+// and sample connections.
 export function McpView() {
   const ctx = useDevContext();
   const session = useSession();
+  const live = ctx.mode === "remote";
   const [tab, setTab] = useState<TabId>("connect");
-  const [enabled, setEnabled] = useState(true);
-  const [level, setLevel] = useState<AccessLevel>("write");
-  const [overrides, setOverrides] = useState<Record<string, boolean>>({});
+
+  const settingsQuery = useMcpSettings(ctx.appId, live);
+  const connectionsQuery = useMcpConnections(ctx.appId, live);
+  const callsQuery = useMcpCalls(ctx.appId, live && tab === "activity");
+  const updateSettings = useUpdateMcpSettings(ctx.appId);
+  const revokeConnection = useApiMutation((id: string) => api.mcp.revoke(ctx.appId, id), {
+    invalidate: [keys.mcp(ctx.appId)],
+  });
+
+  // Preview state (mock only).
+  const [preview, setPreview] = useState<ServerState>({ enabled: true, level: "write", overrides: {} });
   const [revoked, setRevoked] = useState<Set<string>>(() => new Set());
   const [now] = useState(() => Date.now());
+
+  const server: ServerState = useMemo(() => {
+    if (!live) return preview;
+    const s = settingsQuery.data;
+    return { enabled: s?.enabled ?? true, level: s?.access_level ?? "write", overrides: s?.tool_overrides ?? {} };
+  }, [live, preview, settingsQuery.data]);
+
+  const save = (patch: Partial<ServerState>) => {
+    if (!live) return setPreview((prev) => ({ ...prev, ...patch }));
+    updateSettings.mutate({
+      ...(patch.enabled !== undefined ? { enabled: patch.enabled } : {}),
+      ...(patch.level !== undefined ? { access_level: patch.level } : {}),
+      ...(patch.overrides !== undefined ? { tool_overrides: patch.overrides } : {}),
+    });
+  };
 
   const isToolOn = useCallback(
     (name: string) => {
       const tool = MCP_TOOLS.find((t) => t.name === name);
-      return Boolean(enabled && tool && (overrides[name] ?? levelAllows(level, tool.kind)));
+      return Boolean(server.enabled && tool && (server.overrides[name] ?? levelAllows(server.level, tool.kind)));
     },
-    [enabled, level, overrides],
+    [server],
   );
 
   const toggleTool = (name: string, on: boolean) => {
     const tool = MCP_TOOLS.find((t) => t.name === name);
-    setOverrides((prev) => {
-      const next = { ...prev };
-      // Back to matching the access level: drop the override instead of storing it.
-      if (tool && levelAllows(level, tool.kind) === on) delete next[name];
-      else next[name] = on;
-      return next;
-    });
+    const next = { ...server.overrides };
+    // Back to matching the access level: drop the override instead of storing it.
+    if (tool && levelAllows(server.level, tool.kind) === on) delete next[name];
+    else next[name] = on;
+    save({ overrides: next });
   };
 
   const user = session.data?.user;
-  const allConnections = useMemo(
+  const sample = useMemo(
     () => sampleConnections(now, user ? { name: user.name || user.email, email: user.email } : undefined),
     [now, user],
   );
-  const connections = allConnections.filter((c) => !revoked.has(c.id));
-  const activity = useMemo(() => sampleActivity(now, ctx.examples), [now, ctx.examples]);
+  const allConnections = useMemo(
+    () => (live ? (connectionsQuery.data ?? []).map(toConnection) : sample),
+    [live, connectionsQuery.data, sample],
+  );
+  const connections = live ? allConnections : allConnections.filter((c) => !revoked.has(c.id));
+  const sampleCalls = useMemo(() => sampleActivity(now, ctx.examples), [now, ctx.examples]);
+  const activity = useMemo(() => (live ? (callsQuery.data ?? []).map(toCall) : sampleCalls), [live, callsQuery.data, sampleCalls]);
+
+  const revoke = (id: string) => {
+    if (live) revokeConnection.mutate(id);
+    else setRevoked((prev) => new Set(prev).add(id));
+  };
 
   const url = ctx.baseUrl ? `${ctx.baseUrl}/apps/${ctx.appId}/mcp` : "";
   const toolsOn = MCP_TOOLS.filter((t) => isToolOn(t.name)).length;
   const usageName = ctx.entitlements.find((e) => e.id === ctx.examples.usageEntitlement)?.name ?? "AI credits";
-  const ready = !ctx.isLoading && Boolean(ctx.app);
+  const ready = !ctx.isLoading && Boolean(ctx.app) && (!live || Boolean(settingsQuery.data));
+  const error = ctx.error ?? (live ? settingsQuery.error : null);
 
   return (
     <>
       <PageHeader
         icon={<Plug />}
         title="MCP server"
-        badge={<Badge color="brand">Preview</Badge>}
+        badge={ctx.mode === "mock" ? <Badge color="brand">Preview</Badge> : undefined}
         actions={
           <Link href={`/apps/${ctx.appId}/developers/api`} className={buttonVariants()}>
             <Braces />
@@ -81,9 +124,9 @@ export function McpView() {
       />
       <PageBody width="wide">
         {!ready ? (
-          ctx.error ? (
-            <Callout tone="danger" title="Couldn't load this app">
-              {ctx.error.message}
+          error ? (
+            <Callout tone="danger" title="Couldn't load the MCP server">
+              {error.message}
             </Callout>
           ) : (
             <div className="flex flex-col gap-6">
@@ -97,9 +140,9 @@ export function McpView() {
             <ServerCard
               appName={ctx.app?.name ?? "this app"}
               url={url}
-              mock={ctx.mode === "mock"}
-              enabled={enabled}
-              onEnabledChange={setEnabled}
+              mock={!live}
+              enabled={server.enabled}
+              onEnabledChange={(enabled) => save({ enabled })}
               toolsOn={toolsOn}
               connections={connections.length}
             />
@@ -126,23 +169,20 @@ export function McpView() {
                 <ToolsTab
                   appId={ctx.appId}
                   examples={ctx.examples}
-                  enabled={enabled}
-                  level={level}
-                  onLevelChange={setLevel}
-                  overrides={overrides}
+                  enabled={server.enabled}
+                  level={server.level}
+                  onLevelChange={(level) => save({ level })}
+                  overrides={server.overrides}
                   onToggle={toggleTool}
-                  onResetOverrides={() => setOverrides({})}
+                  onResetOverrides={() => save({ overrides: {} })}
                   isToolOn={isToolOn}
                 />
               </TabsPanel>
               <TabsPanel value="connections" className="pt-6">
-                <ConnectionsTab
-                  connections={connections}
-                  onRevoke={(id) => setRevoked((prev) => new Set(prev).add(id))}
-                />
+                <ConnectionsTab connections={connections} onRevoke={revoke} />
               </TabsPanel>
               <TabsPanel value="activity" className="pt-6">
-                <ActivityTab calls={activity} connections={allConnections} />
+                <ActivityTab calls={activity} connections={allConnections} loading={live && callsQuery.isLoading} />
               </TabsPanel>
             </Tabs>
           </>
@@ -207,6 +247,14 @@ function ServerCard({
           {pluralize(connections, "connection")}
         </Fact>
       </div>
+      {mock ? (
+        <div className="border-t border-border px-5 py-3">
+          <Callout tone="info" title="Preview with sample data">
+            The MCP server runs in the hosted Offer API. Point the dashboard at it (OFFER_API_URL) to connect real clients;
+            until then, switches, connections and activity here are samples.
+          </Callout>
+        </div>
+      ) : null}
       {!enabled ? (
         <div className="border-t border-border px-5 py-3">
           <Callout tone="warning" title="The server is off">

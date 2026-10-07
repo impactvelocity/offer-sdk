@@ -92,8 +92,10 @@ export default function DeployPage() {
           <p>
             The Blueprint sets <code>DEMO_ENABLED=true</code>, so the sign-in page offers{" "}
             <strong>Explore the demo workspace</strong>. The first click builds it in your database, which takes a few
-            seconds. To undo visitors&apos; changes later, rebuild it from your machine. The script signs in through the
-            dashboard like a browser, so it only needs the dashboard&apos;s URL:
+            seconds. The demo login is shared and read-only, so visitors can look around but can&apos;t change or delete
+            anything. Send people to <code>/demo-account</code> to open sign-in with the login filled in. To rebuild the
+            demo from scratch, run this from your machine. The script signs in through the dashboard like a browser, so it
+            only needs the dashboard&apos;s URL:
           </p>
           <Code lang="bash" code="APP_URL=https://offer-app.onrender.com pnpm seed:demo --reset" />
           <p>
@@ -142,6 +144,15 @@ export default function DeployPage() {
                 When an app connects PayPal, the API registers a webhook at its own address. On Render that&apos;s the
                 service&apos;s <code>onrender.com</code> URL, which Render provides as <code>RENDER_EXTERNAL_URL</code>,
                 so webhooks work from the first deploy. Set <code>PUBLIC_API_URL</code> to register a different address.
+              </>
+            ),
+          },
+          {
+            term: "MCP sign-in",
+            children: (
+              <>
+                The <Link href="/docs/api/mcp">MCP server</Link>&apos;s OAuth metadata uses the same address. If you give
+                clients a server URL on a custom domain, set <code>PUBLIC_API_URL</code> to that domain, or sign-in fails.
               </>
             ),
           },

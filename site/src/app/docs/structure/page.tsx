@@ -26,6 +26,7 @@ export default function StructurePage() {
           { path: "api/", note: "Offer API: Hono on Bun, Postgres. Not in the pnpm workspace." },
           { path: "src/routes/", depth: 1, note: "One file per resource" },
           { path: "src/lib/", depth: 1, note: "Auth, plan resolution, PayPal, webhooks, cancel flows, Claude" },
+          { path: "src/mcp/", depth: 1, note: "Each app's MCP server: protocol, tools, resources and prompts" },
           { path: "migrations/", depth: 1, note: "SQL migrations, run on boot" },
           { path: "test/", depth: 1, note: "End-to-end tests against a real database" },
           { path: "offer-app/", note: "The dashboard (Next.js), plus the React SDK source" },

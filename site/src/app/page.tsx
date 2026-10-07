@@ -3,6 +3,7 @@ import Image from "next/image";
 import heroBg from "@/assets/hero-bg.webp";
 import { buttonVariants } from "@/components/ui/button-variants";
 import { CodeBlock } from "@/components/ui/code-block";
+import { CreatorCard } from "@/components/creator-card";
 import { DashboardSlider } from "@/components/dashboard-slider";
 import { ProductTabs } from "@/components/feature-tabs/product-tabs";
 import { PlatformPrimitives } from "@/components/platform-primitives";
@@ -98,6 +99,7 @@ export default function LandingPage() {
               </a>
             ))}
           </nav>
+          <CreatorCard className="mt-10" />
           <WalkthroughVideo className="mt-16 sm:mt-20" />
         </div>
       </section>

@@ -10,7 +10,7 @@ import {
 import { useParams } from "next/navigation";
 import { toast } from "@/components/ui/toast";
 import { api, type AccountFilters } from "./client";
-import type { AnalyticsInterval, TopAccountUsage, WebhookDeliveryStatus } from "./types";
+import type { AnalyticsInterval, McpSettings, TopAccountUsage, WebhookDeliveryStatus } from "./types";
 
 /** The app id from the current /apps/[appId] route. */
 export function useAppId(): string {
@@ -39,6 +39,7 @@ export const keys = {
   reports: (appId: string) => ["app", appId, "reports"] as const,
   webhooks: (appId: string) => ["app", appId, "webhooks"] as const,
   webhook: (appId: string, id: string) => ["app", appId, "webhooks", id] as const,
+  mcp: (appId: string) => ["app", appId, "mcp"] as const,
 };
 
 export function useWorkspace() {
@@ -267,6 +268,50 @@ export function useWebhookEvents(appId: string, type?: string) {
     queryFn: () => api.webhooks.events(appId, { type, limit: 100 }),
     placeholderData: keepPreviousData,
     refetchInterval: 10_000,
+  });
+}
+
+// MCP server: hosted API only, so these stay idle (enabled: false) against the mock.
+
+export function useMcpSettings(appId: string, enabled = true) {
+  return useQuery({ queryKey: [...keys.mcp(appId), "settings"], queryFn: () => api.mcp.settings(appId), enabled: Boolean(appId) && enabled });
+}
+
+export function useMcpConnections(appId: string, enabled = true) {
+  return useQuery({
+    queryKey: [...keys.mcp(appId), "connections"],
+    queryFn: () => api.mcp.connections(appId),
+    enabled: Boolean(appId) && enabled,
+    refetchInterval: 30_000,
+  });
+}
+
+export function useMcpCalls(appId: string, enabled = true) {
+  return useQuery({
+    queryKey: [...keys.mcp(appId), "calls"],
+    queryFn: () => api.mcp.calls(appId, { limit: 100 }),
+    enabled: Boolean(appId) && enabled,
+    refetchInterval: 10_000,
+  });
+}
+
+/** Saves MCP settings optimistically: switches flip at once and roll back if the save fails. */
+export function useUpdateMcpSettings(appId: string) {
+  const queryClient = useQueryClient();
+  const key = [...keys.mcp(appId), "settings"];
+  return useMutation({
+    mutationFn: (patch: Partial<Omit<McpSettings, "updated_at">>) => api.mcp.updateSettings(appId, patch),
+    onMutate: async (patch) => {
+      await queryClient.cancelQueries({ queryKey: key });
+      const previous = queryClient.getQueryData<McpSettings>(key);
+      if (previous) queryClient.setQueryData<McpSettings>(key, { ...previous, ...patch });
+      return { previous };
+    },
+    onError: (error, _patch, context) => {
+      if (context?.previous) queryClient.setQueryData(key, context.previous);
+      toast.error(error instanceof Error ? error.message : "Couldn't save the MCP settings");
+    },
+    onSuccess: (data) => queryClient.setQueryData(key, data),
   });
 }
 

@@ -74,8 +74,8 @@ pnpm install`}
           <p>
             Press <strong>Explore the demo workspace</strong> on the sign-in page. The first time, the dashboard builds
             two sample apps with six months of usage, which takes a few seconds. After that you can also sign in with{" "}
-            <code>demo@offersdk.dev</code> and <code>demo-password</code>. Run <code>pnpm seed:demo --reset</code> to
-            start the demo over.
+            <code>demo@offersdk.dev</code> and <code>demo-password</code>. The demo login is read-only, so sign up for
+            your own workspace to make changes. Run <code>pnpm seed:demo --reset</code> to start the demo over.
           </p>
         </Step>
       </Steps>

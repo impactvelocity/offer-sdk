@@ -4,6 +4,7 @@ import { LogOut, UserRound } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { PageBody, PageHeader, PageTitle } from "@/components/shell/page";
+import { DemoLock } from "@/components/shell/demo";
 import { ThemePicker } from "@/components/shell/theme-picker";
 import { useWorkspaceContext } from "@/components/shell/workspace-context";
 import { Avatar } from "@/components/ui/avatar";
@@ -57,45 +58,49 @@ export function ProfileSettings() {
           title="Profile"
           description="Your personal details and sign-in settings, shared across every workspace you're in."
         />
-        <Section title="Personal details">
-          <div className="flex flex-col gap-5">
-            <form onSubmit={submitName} className="flex items-end gap-3">
-              <Avatar name={name || user.name || user.email} seed={user.id} shape="circle" size="xl" />
-              <Field label="Name" className="flex-1">
-                <Input value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" maxLength={80} required />
+        <DemoLock>
+          <Section title="Personal details">
+            <div className="flex flex-col gap-5">
+              <form onSubmit={submitName} className="flex items-end gap-3">
+                <Avatar name={name || user.name || user.email} seed={user.id} shape="circle" size="xl" />
+                <Field label="Name" className="flex-1">
+                  <Input value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" maxLength={80} required />
+                </Field>
+                <Button type="submit" variant="primary" size="md" disabled={!dirty || !name.trim()} loading={rename.isPending}>
+                  Save
+                </Button>
+              </form>
+              <Field label="Email" description="Email changes aren't available yet.">
+                <Input value={user.email} readOnly />
               </Field>
-              <Button type="submit" variant="primary" size="md" disabled={!dirty || !name.trim()} loading={rename.isPending}>
-                Save
-              </Button>
-            </form>
-            <Field label="Email" description="Email changes aren't available yet.">
-              <Input value={user.email} readOnly />
-            </Field>
-          </div>
-        </Section>
+            </div>
+          </Section>
+        </DemoLock>
         <Section title="Appearance" description="Choose light or dark, or follow your system setting. Saved for this browser.">
           <ThemePicker />
         </Section>
-        <Section
-          title="Password"
-          description={`Use at least ${MIN_PASSWORD} characters. Changing it signs you out everywhere else.`}
-        >
-          <PasswordForm />
-        </Section>
-        <Section title="Sessions">
-          <Card className="flex items-center justify-between gap-4 px-5 py-4">
-            <div className="min-w-0">
-              <div className="text-sm font-medium text-fg">Sign out of other devices</div>
-              <p className="mt-0.5 text-sm text-fg-tertiary">
-                Lost a laptop or signed in somewhere shared? End every session except this one.
-              </p>
-            </div>
-            <Button onClick={onRevoke} loading={revokeOthers.isPending}>
-              <LogOut />
-              Sign out others
-            </Button>
-          </Card>
-        </Section>
+        <DemoLock>
+          <Section
+            title="Password"
+            description={`Use at least ${MIN_PASSWORD} characters. Changing it signs you out everywhere else.`}
+          >
+            <PasswordForm />
+          </Section>
+          <Section title="Sessions">
+            <Card className="flex items-center justify-between gap-4 px-5 py-4">
+              <div className="min-w-0">
+                <div className="text-sm font-medium text-fg">Sign out of other devices</div>
+                <p className="mt-0.5 text-sm text-fg-tertiary">
+                  Lost a laptop or signed in somewhere shared? End every session except this one.
+                </p>
+              </div>
+              <Button onClick={onRevoke} loading={revokeOthers.isPending}>
+                <LogOut />
+                Sign out others
+              </Button>
+            </Card>
+          </Section>
+        </DemoLock>
       </PageBody>
     </>
   );

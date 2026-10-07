@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { WorkspaceProvider } from "@/components/shell/workspace-context";
-import { getSession, listWorkspaces } from "@/server/auth";
+import { getSession, isDemoUser, listWorkspaces } from "@/server/auth";
 
 export default async function WorkspaceLayout({ children }: LayoutProps<"/">) {
   const session = await getSession();
@@ -15,6 +15,7 @@ export default async function WorkspaceLayout({ children }: LayoutProps<"/">) {
       user={{ id: session.user.id, name: session.user.name, email: session.user.email, image: session.user.image }}
       workspace={{ id: active.id, name: active.name, slug: active.slug, logo: active.logo }}
       workspaces={orgs.map((o) => ({ id: o.id, name: o.name, slug: o.slug, logo: o.logo }))}
+      demo={isDemoUser(session.user)}
     >
       {children}
     </WorkspaceProvider>

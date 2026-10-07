@@ -12,7 +12,6 @@ import {
   Plus,
   Settings,
   User,
-  UserPlus,
   Users,
 } from "lucide-react";
 import Link from "next/link";
@@ -76,7 +75,7 @@ function RailMenu({
 export function AppRail({ appId }: { appId?: string }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { user, workspace, workspaces, switchWorkspace, signOut } = useWorkspaceContext();
+  const { user, workspace, workspaces, demo, switchWorkspace, signOut } = useWorkspaceContext();
   const { data: apps } = useApps();
   const theme = useTheme();
 
@@ -105,10 +104,6 @@ export function AppRail({ appId }: { appId?: string }) {
           <Settings />
           Workspace settings
         </MenuItem>
-        <MenuItem onClick={() => router.push("/settings/members")}>
-          <UserPlus />
-          Invite members
-        </MenuItem>
         <BaseMenu.SubmenuRoot>
           <BaseMenu.SubmenuTrigger className={popupItem}>
             <Users />
@@ -126,11 +121,15 @@ export function AppRail({ appId }: { appId?: string }) {
                     {w.id === workspace.id ? <Check className="ml-auto !text-accent-fg" /> : null}
                   </MenuItem>
                 ))}
-                <MenuSeparator />
-                <MenuItem onClick={() => router.push("/onboarding?new=1")}>
-                  <Plus />
-                  Create workspace
-                </MenuItem>
+                {demo ? null : (
+                  <>
+                    <MenuSeparator />
+                    <MenuItem onClick={() => router.push("/onboarding?new=1")}>
+                      <Plus />
+                      Create workspace
+                    </MenuItem>
+                  </>
+                )}
               </BaseMenu.Popup>
             </BaseMenu.Positioner>
           </BaseMenu.Portal>

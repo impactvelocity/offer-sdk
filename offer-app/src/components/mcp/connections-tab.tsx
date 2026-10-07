@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronRight, Unplug } from "lucide-react";
+import { ChevronRight, KeyRound, Unplug } from "lucide-react";
 import { Fragment, useMemo, useState } from "react";
 import { MCP_TOOLS } from "@/components/developers/mcp-tools";
 import { Avatar } from "@/components/ui/avatar";
@@ -11,6 +11,7 @@ import { CodeBlock } from "@/components/ui/code-block";
 import { useConfirm } from "@/components/ui/confirm";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Segmented } from "@/components/ui/segmented";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableContainer, TBody, TD, TH, THead } from "@/components/ui/table";
 import { toast } from "@/components/ui/toast";
 import { cn, formatDateTime, formatNumber, formatRelative } from "@/lib/utils";
@@ -32,7 +33,7 @@ export function ConnectionsTab({
       description:
         c.auth === "key"
           ? `${c.label} is removed from this list, but the secret key it uses keeps working until you rotate it in API keys.`
-          : `${c.user.name}'s ${c.label} loses access on its next call. They can reconnect by signing in again.`,
+          : `${c.user?.name ?? "This"}'s ${c.label} loses access on its next call. They can reconnect by signing in again.`,
       confirmLabel: "Disconnect",
       tone: "danger",
       onConfirm: () => {
@@ -80,20 +81,32 @@ export function ConnectionsTab({
                       <span className="min-w-0">
                         <span className="block truncate text-fg">{c.label}</span>
                         <span className="block text-xs text-fg-tertiary">
-                          <span className="xl:hidden">{c.user.name} · </span>
+                          {c.user ? <span className="xl:hidden">{c.user.name} · </span> : null}
                           {c.auth === "oauth" ? "OAuth" : "Secret key"} · used {formatRelative(c.lastUsedAt)}
                         </span>
                       </span>
                     </span>
                   </TD>
                   <TD className="hidden xl:table-cell">
-                    <span className="flex min-w-0 items-center gap-2">
-                      <Avatar name={c.user.name} seed={c.user.email} size="md" shape="circle" />
-                      <span className="min-w-0">
-                        <span className="block truncate text-fg">{c.user.name}</span>
-                        <span className="block truncate text-xs text-fg-tertiary">{c.user.email}</span>
+                    {c.user ? (
+                      <span className="flex min-w-0 items-center gap-2">
+                        <Avatar name={c.user.name} seed={c.user.email} size="md" shape="circle" />
+                        <span className="min-w-0">
+                          <span className="block truncate text-fg">{c.user.name}</span>
+                          <span className="block truncate text-xs text-fg-tertiary">{c.user.email}</span>
+                        </span>
                       </span>
-                    </span>
+                    ) : (
+                      <span className="flex min-w-0 items-center gap-2">
+                        <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-bg-muted text-fg-icon [&_svg]:size-4">
+                          <KeyRound />
+                        </span>
+                        <span className="min-w-0">
+                          <span className="block truncate text-fg">Secret key</span>
+                          <span className="block truncate text-xs text-fg-tertiary">Anyone with the app&apos;s key</span>
+                        </span>
+                      </span>
+                    )}
                   </TD>
                   <TD>
                     <AccessBadge access={c.access} />
@@ -119,7 +132,15 @@ export function ConnectionsTab({
 
 type Filter = "all" | "writes" | "errors";
 
-export function ActivityTab({ calls, connections }: { calls: McpCall[]; connections: McpConnection[] }) {
+export function ActivityTab({
+  calls,
+  connections,
+  loading,
+}: {
+  calls: McpCall[];
+  connections: McpConnection[];
+  loading?: boolean;
+}) {
   const [filter, setFilter] = useState<Filter>("all");
   const [open, setOpen] = useState<string | null>(null);
   const kindOf = (tool: string) => MCP_TOOLS.find((t) => t.name === tool)?.kind ?? "read";
@@ -146,8 +167,19 @@ export function ActivityTab({ calls, connections }: { calls: McpCall[]; connecti
           />
         }
       />
-      {!rows.length ? (
-        <EmptyState compact icon={<Unplug />} title="No calls" description="Nothing matches this filter yet." />
+      {loading ? (
+        <div className="flex flex-col gap-2 p-4">
+          <Skeleton className="h-9" />
+          <Skeleton className="h-9" />
+          <Skeleton className="h-9" />
+        </div>
+      ) : !rows.length ? (
+        <EmptyState
+          compact
+          icon={<Unplug />}
+          title="No calls"
+          description={calls.length ? "Nothing matches this filter." : "Tool calls from connected clients show up here, kept for 30 days."}
+        />
       ) : (
         <TableContainer className="[&_tbody_tr:last-child>td]:border-b-0">
           <Table>
@@ -164,7 +196,7 @@ export function ActivityTab({ calls, connections }: { calls: McpCall[]; connecti
             </THead>
             <TBody>
               {rows.map((c) => {
-                const conn = byId.get(c.connectionId);
+                const conn = c.connectionId ? byId.get(c.connectionId) : undefined;
                 const expanded = open === c.id;
                 return (
                   <Fragment key={c.id}>
@@ -190,10 +222,10 @@ export function ActivityTab({ calls, connections }: { calls: McpCall[]; connecti
                         {conn ? (
                           <span className="flex min-w-0 items-center gap-2">
                             <ClientIcon client={conn.client} size="sm" />
-                            <span className="truncate text-fg-secondary">{conn.user.name.split(" ")[0]}</span>
+                            <span className="truncate text-fg-secondary">{conn.user ? conn.user.name.split(" ")[0] : conn.label}</span>
                           </span>
                         ) : (
-                          <span className="text-fg-tertiary">Disconnected</span>
+                          <span className="text-fg-tertiary">{c.connectionId ? "Disconnected" : "Secret key"}</span>
                         )}
                       </TD>
                       <TD>
@@ -212,7 +244,8 @@ export function ActivityTab({ calls, connections }: { calls: McpCall[]; connecti
                       <tr>
                         <TD colSpan={5} className="h-auto bg-bg-subtle py-4">
                           <p className="mb-3 text-xs text-fg-tertiary">
-                            {conn ? `${conn.user.name} via ${conn.label}` : "A disconnected client"} · {formatDateTime(c.at)} ·{" "}
+                            {conn ? `${conn.user?.name ?? "Secret key"} via ${conn.label}` : c.connectionId ? "A disconnected client" : "Secret key"} ·{" "}
+                            {formatDateTime(c.at)} ·{" "}
                             {c.durationMs} ms
                           </p>
                           <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">

@@ -44,6 +44,7 @@ export const DOCS_NAV: DocsGroup[] = [
       { title: "Authentication", href: "/docs/api", description: "Base URL, keys, account tokens and errors." },
       { title: "Endpoint reference", href: "/docs/api/reference", description: "Every route, grouped by resource." },
       { title: "Webhooks", href: "/docs/api/webhooks", description: "Events, signatures and retries." },
+      { title: "MCP server", href: "/docs/api/mcp", description: "Connect Claude, Cursor and other assistants with OAuth or a key." },
     ],
   },
   {
@@ -53,7 +54,7 @@ export const DOCS_NAV: DocsGroup[] = [
       { title: "Catalog", href: "/docs/admin/catalog", description: "Plans, entitlements, add-ons and incentives." },
       { title: "Offers", href: "/docs/admin/offers", description: "Build offers, preview checkout and share links." },
       { title: "Cancel flows", href: "/docs/admin/cancel-flows", description: "Steps, questions and save offers, with a live preview." },
-      { title: "Agent and MCP", href: "/docs/admin/agent", description: "Change the catalog by chatting, with approval on every write." },
+      { title: "Agent and MCP", href: "/docs/admin/agent", description: "Change the catalog by chatting, and manage the app's MCP server." },
       { title: "Keys and webhooks", href: "/docs/admin/developers", description: "API keys, webhook endpoints and delivery logs." },
     ],
   },

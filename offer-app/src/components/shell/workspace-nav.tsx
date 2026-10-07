@@ -1,6 +1,6 @@
 "use client";
 
-import { LayoutGrid, Settings, User, Users } from "lucide-react";
+import { LayoutGrid, Settings, User } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useApps } from "@/lib/api/hooks";
 import { QuickActionsButton } from "./quick-actions";
@@ -27,9 +27,6 @@ export function WorkspaceNav({ className }: { className?: string }) {
         <NavGroup label="Settings">
           <NavItem href="/settings/workspace" icon={<Settings />} active={pathname === "/settings/workspace"}>
             General
-          </NavItem>
-          <NavItem href="/settings/members" icon={<Users />} active={pathname === "/settings/members"}>
-            Members
           </NavItem>
         </NavGroup>
         <NavGroup label="Account">

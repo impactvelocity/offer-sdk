@@ -500,3 +500,42 @@ export interface CancelOfferPreview {
   dynamic: { used: boolean; skipped: string | null } | null;
   static_offer: PresentedSaveOffer | null;
 }
+
+// MCP server (admin-only routes under /apps/:appId/mcp in the hosted API; the mock has none)
+
+export type McpAccessLevel = "read" | "write" | "full";
+
+export interface McpSettings {
+  enabled: boolean;
+  access_level: McpAccessLevel;
+  /** Tool name → on/off, where it differs from what access_level allows. */
+  tool_overrides: Record<string, boolean>;
+  updated_at: string | null;
+}
+
+export interface McpConnectionRecord {
+  id: string;
+  auth: "oauth" | "key";
+  client_id: string | null;
+  client_name: string;
+  user_id: string | null;
+  user_name: string | null;
+  user_email: string | null;
+  access_level: McpAccessLevel;
+  client_uri: string | null;
+  logo_uri: string | null;
+  calls_7d: number;
+  created_at: string;
+  last_used_at: string | null;
+}
+
+export interface McpCallRecord {
+  id: string;
+  connection_id: string | null;
+  tool: string;
+  args: Record<string, unknown>;
+  status: number;
+  duration_ms: number;
+  result: unknown;
+  created_at: string;
+}

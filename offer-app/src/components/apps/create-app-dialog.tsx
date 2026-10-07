@@ -5,6 +5,7 @@ import { RadioGroup } from "@base-ui/react/radio-group";
 import { Box, GraduationCap, LayoutGrid, Sparkles } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent, type ReactNode } from "react";
+import { useIsDemo } from "@/components/shell/workspace-context";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogBody, DialogContent, DialogFooter, DialogHeader } from "@/components/ui/dialog";
 import { Field } from "@/components/ui/field";
@@ -33,6 +34,7 @@ const starts: { value: Start; title: string; description: string; icon: ReactNod
 
 export function CreateAppDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
   const router = useRouter();
+  const demo = useIsDemo();
   const [name, setName] = useState("");
   const [start, setStart] = useState<Start>("blank");
 
@@ -61,6 +63,7 @@ export function CreateAppDialog({ open, onOpenChange }: { open: boolean; onOpenC
           <DialogBody>
             <p className="-mt-1 text-sm text-fg-tertiary">
               An app is one product you control access for. It gets its own plans, accounts and API keys.
+              {demo ? " The demo workspace is read-only." : null}
             </p>
             <Field label="App name">
               <Input autoFocus value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Notebook AI" />
@@ -96,7 +99,7 @@ export function CreateAppDialog({ open, onOpenChange }: { open: boolean; onOpenC
             <Button onClick={() => onOpenChange(false)} kbd="Esc">
               Cancel
             </Button>
-            <Button type="submit" variant="primary" loading={create.isPending} disabled={!name.trim()} kbd="↵">
+            <Button type="submit" variant="primary" loading={create.isPending} disabled={demo || !name.trim()} kbd="↵">
               Create app
             </Button>
           </DialogFooter>

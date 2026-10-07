@@ -71,7 +71,7 @@ export function ToolsTab({
       <Card>
         <div className="flex flex-col gap-4 p-5 md:flex-row md:items-center">
           <div className="min-w-0 flex-1">
-            <h3 className="text-sm font-semibold text-fg">Default access for new connections</h3>
+            <h3 className="text-sm font-semibold text-fg">App-wide access level</h3>
             <p className="mt-0.5 text-sm text-fg-tertiary">{levelInfo?.description}</p>
           </div>
           <Segmented<AccessLevel>

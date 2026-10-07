@@ -125,7 +125,7 @@ const screens: Screen[] = [
     path: "/developers/mcp",
     image: mcp,
     title: "Connect AI assistants to your app.",
-    body: "A preview of the MCP server that gives Claude, Cursor and ChatGPT the same tools as the API.",
+    body: "Give Claude, Cursor and ChatGPT the same tools as the API, with OAuth, access levels and an activity log.",
   },
   {
     label: "Webhooks",

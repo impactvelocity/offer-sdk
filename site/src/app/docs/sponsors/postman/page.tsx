@@ -114,6 +114,16 @@ export default function PostmanDocsPage() {
             children: "Create a flow from the template, preview its save offer, and walk a session through it with an account token.",
           },
           { term: "Analytics, Webhooks and events", children: "Usage reports, webhook endpoints, test sends, delivery logs and the event log." },
+          {
+            term: "MCP server",
+            children:
+              "Calls the app's MCP server with the secret key: initialize, list and call tools, read a resource, get a prompt. Also the dashboard's settings, connections and call log routes, with the admin key.",
+          },
+          {
+            term: "MCP OAuth",
+            children:
+              "The sign-in an MCP client goes through: discovery, client registration, authorize, approval, the PKCE code exchange, a tool list with the access token, refresh and deny. The admin-key approval stands in for the dashboard's consent page.",
+          },
           { term: "Admin", children: "Workspaces, history import, pauses and agent threads. These use the admin key." },
           { term: "Clean up", children: "Deletes what the other folders created, ending with the app. Run it last, or skip it to keep the data." },
         ]}
@@ -136,7 +146,14 @@ export default function PostmanDocsPage() {
               Cancel sessions. Send <strong>Accounts → Mint an account token</strong> first; tokens last an hour.
             </>,
           ],
-          ["adminKey", <code key="k">ADMIN_API_KEY</code>, "The Admin folder and some of Clean up."],
+          ["adminKey", <code key="k">ADMIN_API_KEY</code>, "The Admin folder, the MCP dashboard and approval routes, and some of Clean up."],
+          [
+            "mcpAccessToken",
+            <code key="k">mcp_at_…</code>,
+            <>
+              The MCP server, as an OAuth client. Saved by <strong>MCP OAuth → Exchange the code</strong>; lasts an hour.
+            </>,
+          ],
         ]}
       />
       <p>
@@ -144,7 +161,8 @@ export default function PostmanDocsPage() {
         explains what each key can do.
       </p>
       <Callout tone="warning" title="The variables hold real keys after a run.">
-        Clear <code>secretKey</code>, <code>publicKey</code>, <code>accountToken</code> and <code>adminKey</code> before
+        Clear <code>secretKey</code>, <code>publicKey</code>, <code>accountToken</code>, <code>mcpAccessToken</code>,{" "}
+        <code>mcpRefreshToken</code> and <code>adminKey</code> before
         you export or share the collection.
       </Callout>
 

@@ -1082,8 +1082,13 @@ describe("dashboard auth", () => {
   });
 
   test("sign up, workspaces, invitations and deleting a workspace", async () => {
+    expect((await auth("GET", "/setup-status")).json).toEqual({ needs_setup: true });
     const owner = await auth("POST", "/sign-up/email", { body: { name: "Owner", email: "owner@example.com", password } });
     expect(owner.status).toBe(200);
+    // The first account is the install's admin; after that, sign-up is closed to uninvited emails.
+    expect((await auth("GET", "/setup-status")).json).toEqual({ needs_setup: false });
+    const stranger = await auth("POST", "/sign-up/email", { body: { name: "Stranger", email: "stranger@example.com", password } });
+    expect(stranger.status).toBe(403);
     const session = await auth("GET", "/get-session", { cookie: owner.cookie });
     expect(session.json.user.email).toBe("owner@example.com");
     expect(session.json.session.activeOrganizationId).toBeNull();

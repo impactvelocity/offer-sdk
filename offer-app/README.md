@@ -12,11 +12,11 @@ pnpm test    # vitest: API routes, SDK client, mock Offer API
 
 ### Demo workspace
 
-With `DEMO_ENABLED=true` (the default under `next dev`, and set in `render.yaml`), the sign-in page shows **Explore the demo workspace**. The first click builds the shared demo login (`demo@offersdk.dev` / `demo-password`) and its Acme Labs workspace (`POST /api/demo-workspace`, `src/server/demo.ts`), which takes a few seconds. The workspace holds two sample apps, Notebook AI (SaaS) and Course Hub (course), with catalogs, accounts that signed up over six months, months of usage, saved reports, and on Notebook AI a draft offer and a live cancel flow. The catalog is the dashboard's "Start with sample data", which also imports the generated history through the API's admin-only `POST /apps/:appId/import`.
+With `DEMO_ENABLED=true` (the default under `next dev`, and set in `render.yaml`), the sign-in page shows the demo login with a **Fill in** button, and **Explore the demo workspace**. `/demo-account` opens sign-in with the login already filled in, which makes a good link for judges and visitors. The first sign-in builds the shared demo login (`demo@offersdk.dev` / `demo-password`) and its Acme Labs workspace (`POST /api/demo-workspace`, `src/server/demo.ts`), which takes a few seconds. The workspace holds two sample apps, Notebook AI (SaaS) and Course Hub (course), with catalogs, accounts that signed up over six months, months of usage, saved reports, and on Notebook AI a draft offer and a live cancel flow. The catalog is the dashboard's "Start with sample data", which also imports the generated history through the API's admin-only `POST /apps/:appId/import`.
 
-- The demo is built again whenever its workspace has no apps. `pnpm seed:demo --reset` (from the root or here) deletes them and rebuilds them after visitors have changed things. `pnpm seed:demo` alone builds the demo ahead of the first click. The script drives the dashboard like a browser, so it only needs `APP_URL` (default `http://localhost:6768`).
+- The demo is built again whenever its workspace has no apps. `pnpm seed:demo --reset` (from the root or here) deletes them and rebuilds them. `pnpm seed:demo` alone builds the demo ahead of the first click. The script drives the dashboard like a browser, so it only needs `APP_URL` (default `http://localhost:6768`).
 - The mock always has its own in-memory demo (no offers or cancel flow, which the mock doesn't have).
-- The API stops the shared account from changing its profile, password or sessions, and from managing the workspace or its members. Everything inside the apps stays editable.
+- The shared login is read-only (`src/lib/demo.ts`), and every page shows a banner saying so. The BFF refuses its changes, apart from the offer and cancel-flow previews. The Agent page and `/api/agent` are off for it, so visitors can't spend your `ANTHROPIC_API_KEY`. `/api/auth` and the API both stop it from changing its profile, password or sessions, and from creating or managing workspaces and members. The API also refuses writes made with the demo apps' secret keys, since the dashboard shows those keys. Public keys and account tokens keep working, so checkouts and cancel flows run as usual.
 
 To work without the API, set `OFFER_API_URL=mock` in `.env.local`. The app then runs on an in-memory mock. Sign in with **Explore the demo workspace** (`demo@offersdk.dev` / `demo-password`), which is seeded with two sample apps (a SaaS and an online course) and three months of usage history. Builds and tests always use the mock unless `OFFER_API_URL` is set.
 
@@ -37,6 +37,10 @@ browser ──► /api/admin/*  (BFF: session + workspace check)  ──►  Off
 
 The usage charts, activity feeds and saved reports use `GET /apps/:appId/analytics/timeseries`, `GET /apps/:appId/analytics/events` and `/apps/:appId/analytics/reports`. Both the mock and the hosted API serve them. Against an older API without them, the UI hides those parts (the client returns `null` on a 404).
 
+### MCP server
+
+The MCP server runs in the API (`../api/src/mcp`, one per app at `/apps/:appId/mcp`); this app only configures it. Developers → MCP server reads and writes its settings, connections and call log through the BFF (admin-only `/apps/:appId/mcp/*` routes). OAuth clients like Claude and Cursor are sent to `/oauth/consent` here to sign in and approve; the form posts to `/oauth/consent/decide`, which checks the person belongs to the app's workspace before the API issues a code. The tools come from the API reference (`src/components/developers/mcp-tools.ts`): after changing `endpoints.ts` or the tool names, run `pnpm mcp:tools` to rewrite `../api/src/mcp/tools.json` (`test/mcp-tools.test.ts` fails while it's stale). Against the mock there is no server, so the page previews with sample data.
+
 ## Deploy
 
 The root [`render.yaml`](../render.yaml) deploys this app and the API as two Render services that share `ADMIN_API_KEY`. See the [root README](../README.md#deploy-on-render).
@@ -46,13 +50,13 @@ The root [`render.yaml`](../render.yaml) deploys this app and the API as two Ren
 ```
 src/
 ├── app/
-│   ├── (auth)/                     sign-in, sign-up
+│   ├── (auth)/                     sign-in, sign-up, MCP OAuth consent
 │   ├── (protected)/
 │   │   ├── onboarding/             create a workspace
 │   │   └── (workspace)/
 │   │       ├── apps/               apps in the workspace
 │   │       │   └── [appId]/        overview, analytics, plans, entitlements, add-ons, incentives,
-│   │       │                       accounts, developers (integration, API reference, keys), settings
+│   │       │                       accounts, developers (integration, API reference, MCP, keys), settings
 │   │       └── settings/           workspace, members, profile
 │   └── api/
 │       ├── admin/[...path]/        BFF for the dashboard

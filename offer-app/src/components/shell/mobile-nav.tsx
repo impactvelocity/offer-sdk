@@ -5,6 +5,7 @@ import { Menu as MenuIcon } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { createContext, useContext, useState, type ReactNode } from "react";
 import { backdropClass } from "@/components/ui/dialog";
+import { DemoBanner } from "./demo";
 
 const MobileNavContext = createContext<{ setOpen: (open: boolean) => void } | null>(null);
 
@@ -28,6 +29,7 @@ export function ShellLayout({ rail, panel, children }: { rail: ReactNode; panel:
         <div className="flex min-w-0 flex-1 md:gap-2 md:py-2 md:pr-2">
           <div className="hidden h-full md:flex">{panel}</div>
           <main className="flex min-w-0 flex-1 flex-col overflow-hidden bg-bg md:rounded-xl md:shadow-soft md:ring-1 md:ring-border/70">
+            <DemoBanner />
             {children}
           </main>
         </div>

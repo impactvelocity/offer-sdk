@@ -285,6 +285,7 @@ const PRICING_FIELDS: BodyField[] = [
 function attachmentEndpoints(owner: "plans" | "incentives"): Endpoint[] {
   const param = owner === "plans" ? "planId" : "incentiveId";
   const label = owner === "plans" ? "plan" : "incentive";
+  const aLabel = owner === "plans" ? "a plan" : "an incentive";
   const Label = owner === "plans" ? "Plan" : "Incentive";
   const base = `/apps/:appId/${owner}/:${param}`;
   const attachedEntitlement: ExampleKey = owner === "plans" ? "planEntitlement" : "incentiveEntitlement";
@@ -294,7 +295,7 @@ function attachmentEndpoints(owner: "plans" | "incentives"): Endpoint[] {
       group: owner,
       method: "POST",
       path: `${base}/entitlements`,
-      summary: `Attach an entitlement to a ${label}`,
+      summary: `Attach an entitlement to ${aLabel}`,
       description:
         owner === "plans"
           ? "`max` is stored for usage entitlements only; `null` or omitted means unlimited."
@@ -312,7 +313,7 @@ function attachmentEndpoints(owner: "plans" | "incentives"): Endpoint[] {
       group: owner,
       method: "PATCH",
       path: `${base}/entitlements/:entitlementId`,
-      summary: `Change an entitlement's limit on a ${label}`,
+      summary: `Change an entitlement's limit on ${aLabel}`,
       auth: "secret",
       examples: { entitlementId: attachedEntitlement },
       body: [{ name: "max", type: "number | null", required: true, description: "New limit. `null` = unlimited." }],
@@ -324,7 +325,7 @@ function attachmentEndpoints(owner: "plans" | "incentives"): Endpoint[] {
       group: owner,
       method: "DELETE",
       path: `${base}/entitlements/:entitlementId`,
-      summary: `Detach an entitlement from a ${label}`,
+      summary: `Detach an entitlement from ${aLabel}`,
       auth: "secret",
       examples: { entitlementId: attachedEntitlement },
       response: { description: `The updated ${label}.`, example },
@@ -334,7 +335,7 @@ function attachmentEndpoints(owner: "plans" | "incentives"): Endpoint[] {
       group: owner,
       method: "POST",
       path: `${base}/addons`,
-      summary: `Attach an add-on to a ${label}`,
+      summary: `Attach an add-on to ${aLabel}`,
       auth: "secret",
       body: [{ name: "id", type: "string", required: true, description: "An existing add-on ID." }],
       exampleBody: { id: "{{unattachedAddon}}" },
@@ -345,7 +346,7 @@ function attachmentEndpoints(owner: "plans" | "incentives"): Endpoint[] {
       group: owner,
       method: "DELETE",
       path: `${base}/addons/:addonId`,
-      summary: `Detach an add-on from a ${label}`,
+      summary: `Detach an add-on from ${aLabel}`,
       auth: "secret",
       examples: owner === "plans" ? { addonId: "planAddon" } : undefined,
       response: { description: `The updated ${label}.`, example },

@@ -5,11 +5,13 @@ import { usePathname } from "next/navigation";
 import { useAccountCount, useAddons, useApp, useCancelFlows, useEntitlements, useIncentives, useOffers, usePlans, useWebhooks } from "@/lib/api/hooks";
 import { Skeleton } from "@/components/ui/skeleton";
 import { QuickActionsButton } from "./quick-actions";
+import { useIsDemo } from "./workspace-context";
 import { NavGroup, NavItem, NavPanel, NavPanelBody, NavPanelFooter, NavPanelHeader } from "./sidebar";
 
 /** Nav panel for one app: its catalog, customers and developer tools. */
 export function AppNav({ appId, className }: { appId: string; className?: string }) {
   const pathname = usePathname();
+  const demo = useIsDemo();
   const base = `/apps/${appId}`;
   const is = (path: string, exact = false) =>
     exact ? pathname === `${base}${path}` : pathname === `${base}${path}` || pathname.startsWith(`${base}${path}/`);
@@ -38,9 +40,12 @@ export function AppNav({ appId, className }: { appId: string; className?: string
           <NavItem href={`${base}/analytics`} icon={<ChartColumn />} active={is("/analytics")}>
             Analytics
           </NavItem>
-          <NavItem href={`${base}/agent`} icon={<Sparkles />} active={is("/agent")}>
-            Agent
-          </NavItem>
+          {/* Off on the shared demo login (see @/lib/demo). */}
+          {demo ? null : (
+            <NavItem href={`${base}/agent`} icon={<Sparkles />} active={is("/agent")}>
+              Agent
+            </NavItem>
+          )}
           {/* Hidden on API versions without offers (the in-memory mock). */}
           {offers.data !== null ? (
             <NavItem href={`${base}/offers`} icon={<BadgePercent />} active={is("/offers")} count={offers.data?.length}>

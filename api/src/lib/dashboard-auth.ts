@@ -4,6 +4,7 @@ import { organization } from "better-auth/plugins";
 import { Pool } from "pg";
 import sql from "../db/client.ts";
 import { isLocalDev } from "../dev-env.ts";
+import { DEMO_EMAIL, DEMO_READ_ONLY_MESSAGE } from "./demo.ts";
 
 // Sign-in for the dashboard (offer-app): better-auth with email/password and the
 // organization plugin (workspaces, members, invitations), stored in the auth_* tables.
@@ -46,6 +47,23 @@ async function acceptInvitations(userId: string) {
     )`;
 }
 
+/** Whether this install has its admin: any account besides the shared demo login. */
+export async function hasAdmin(): Promise<boolean> {
+  const [row] = await sql`select exists (select 1 from auth_user where lower(email) <> ${DEMO_EMAIL}) as found`;
+  return row.found;
+}
+
+// One admin per install for now: sign-up creates it (the dashboard's /setup page) and
+// then closes, except for the demo login and emails with a pending invitation.
+async function guardSignUp(email: string) {
+  if (email.toLowerCase() === DEMO_EMAIL || !(await hasAdmin())) return;
+  const [invited] = await sql`
+    select 1 from auth_invitation
+    where lower(email) = lower(${email}) and status = 'pending' and "expiresAt" > now()
+    limit 1`;
+  if (!invited) throw new APIError("FORBIDDEN", { message: "Sign-up is closed: this install already has its admin account." });
+}
+
 // The workspace a new session starts in: the one the user had active most
 // recently (sessions are recreated on password change), else their first.
 async function initialWorkspace(userId: string): Promise<string | null> {
@@ -60,10 +78,9 @@ async function initialWorkspace(userId: string): Promise<string | null> {
   return row?.id ?? null;
 }
 
-// The shared demo account (offer-app's DEMO_USER, created by `pnpm seed:demo`) is used by
-// many visitors at once, so it can't change its profile or credentials, sign others out,
-// or manage its workspace and members. Everything inside the apps stays editable.
-const DEMO_EMAIL = "demo@offersdk.dev";
+// The shared demo account (./demo.ts) is used by many visitors at once, so it can't change
+// its profile or credentials, sign others out, or create or manage workspaces and members.
+// The dashboard also keeps it out of changes inside the apps.
 const DEMO_BLOCKED_PATHS = new Set([
   "/update-user",
   "/change-password",
@@ -72,6 +89,7 @@ const DEMO_BLOCKED_PATHS = new Set([
   "/revoke-session",
   "/revoke-sessions",
   "/revoke-other-sessions",
+  "/organization/create",
   "/organization/update",
   "/organization/delete",
   "/organization/leave",
@@ -84,7 +102,7 @@ const guardDemoAccount = createAuthMiddleware(async (ctx) => {
   if (!DEMO_BLOCKED_PATHS.has(ctx.path)) return;
   const session = await getSessionFromCtx(ctx);
   if (session?.user.email === DEMO_EMAIL) {
-    throw new APIError("FORBIDDEN", { message: "The demo account can't do that. Sign up to get a workspace of your own." });
+    throw new APIError("FORBIDDEN", { message: DEMO_READ_ONLY_MESSAGE });
   }
 });
 
@@ -106,6 +124,9 @@ function createDashboardAuth() {
     databaseHooks: {
       user: {
         create: {
+          before: async (user) => {
+            await guardSignUp(user.email);
+          },
           // Sign-up runs in a transaction, so the session above was created before the
           // user row was visible here. Once it commits, join invited workspaces and
           // start the new session in one.

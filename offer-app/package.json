@@ -10,6 +10,7 @@
     "typecheck": "next typegen && tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
+    "mcp:tools": "UPDATE_MCP_MANIFEST=1 vitest run test/mcp-tools.test.ts",
     "seed:demo": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/seed-demo.mts"
   },
   "dependencies": {

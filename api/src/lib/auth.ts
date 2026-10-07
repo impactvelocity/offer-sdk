@@ -1,6 +1,7 @@
 import type { Context, Next } from "hono";
 import sql from "../db/client.ts";
 import { ACCOUNT_TOKEN_PREFIX, verifyAccountToken } from "./account-tokens.ts";
+import { DEMO_READ_ONLY_MESSAGE, isDemoApp } from "./demo.ts";
 
 const unauthorized = (c: Context) => c.json({ error: "Unauthorized" }, 401);
 
@@ -68,7 +69,13 @@ export async function appAuth(c: Context, next: Next) {
     from apps
     where id = ${appId} and (api_key = ${key} or public_key = ${key})`;
 
-  if (row?.secret) return next();
+  if (row?.secret) {
+    // The demo workspace's secret keys are on show in the dashboard, so they only read.
+    if (c.req.method !== "GET" && c.req.method !== "HEAD" && appId && (await isDemoApp(appId))) {
+      return c.json({ error: DEMO_READ_ONLY_MESSAGE }, 403);
+    }
+    return next();
+  }
   if (row && publicKeyAllowed(c)) return next();
   return unauthorized(c);
 }

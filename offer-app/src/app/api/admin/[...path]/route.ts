@@ -1,6 +1,7 @@
 import type { NextRequest } from "next/server";
 import { z } from "zod";
-import { getSession } from "@/server/auth";
+import { DEMO_READ_ONLY_MESSAGE, demoAllows } from "@/lib/demo";
+import { getSession, isDemoUser } from "@/server/auth";
 import {
   backendOrg,
   createWorkspaceApp,
@@ -21,6 +22,8 @@ export const dynamic = "force-dynamic";
 //   GET  /api/admin/workspace/apps       apps in the active workspace
 //   POST /api/admin/workspace/apps       create an app (optionally with sample data)
 //   *    /api/admin/apps/:appId/...      passthrough to the Offer API
+//
+// The shared demo login only reads (plus a couple of previews): see @/lib/demo.
 
 const err = (status: number, error: string) => Response.json({ error }, { status });
 
@@ -48,6 +51,7 @@ async function handle(req: NextRequest, ctx: RouteContext<"/api/admin/[...path]"
   const segments = (await ctx.params).path;
   const path = `/${segments.map(encodeURIComponent).join("/")}`;
   const method = req.method;
+  if (isDemoUser(session.user) && !demoAllows(method, segments)) return err(403, DEMO_READ_ONLY_MESSAGE);
 
   try {
     if (path === "/workspace" && method === "GET") {
