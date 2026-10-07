@@ -1,13 +1,14 @@
 import { DEMO_USER, ensureDemoData } from "@/server/auth";
 import { remoteAuthCallAs } from "@/server/auth/remote";
-import { backendOrg, createWorkspaceApp, offerApiMode } from "@/server/offer-api";
+import { backendOrg, createWorkspaceApp, offerApi, OfferApiError, offerApiMode } from "@/server/offer-api";
 import { DEMO_APPS } from "@/server/offer-api/sample-data";
 
 // The shared workspace behind "Explore the demo workspace" (DEMO_ENABLED): the demo
 // login, its Acme Labs workspace and the sample apps, with catalogs, accounts, months
 // of usage history, saved reports, an offer and a cancel flow. The mock builds it in
 // memory. With the hosted API it's built the first time someone opens the demo, and
-// again whenever its workspace has no apps left (`pnpm seed:demo --reset` deletes them).
+// again whenever its workspace has no apps left. `pnpm seed:demo --reset` rebuilds them with
+// the admin key (resetDemoWorkspace), since the demo login itself is read-only.
 
 const WORKSPACE_SLUG = "offer-sdk-demo";
 
@@ -19,6 +20,21 @@ export function ensureDemoWorkspace(): Promise<void> {
   if (offerApiMode === "mock") return ensureDemoData();
   // Concurrent visitors share one run, so the apps are only created once.
   return (running ??= seedDemoWorkspace().finally(() => (running = undefined)));
+}
+
+/** Deletes the demo apps and builds them again, undoing everything since. Hosted API only. */
+export async function resetDemoWorkspace(): Promise<void> {
+  await running;
+  workspaceId ??= await demoWorkspaceId();
+  const enc = encodeURIComponent;
+  for (const id of (await backendOrg(workspaceId)).app_ids) {
+    await offerApi("DELETE", `/apps/${enc(id)}`).catch((e) => {
+      if (!(e instanceof OfferApiError && e.status === 404)) throw e;
+    });
+  }
+  await offerApi("PATCH", `/orgs/${enc(workspaceId)}`, { app_ids: [] });
+  console.info(`[demo] Reset the ${DEMO_USER.workspace} workspace`);
+  await ensureDemoWorkspace();
 }
 
 async function seedDemoWorkspace() {

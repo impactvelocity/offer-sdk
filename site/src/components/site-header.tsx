@@ -24,8 +24,8 @@ export function SiteHeader() {
             </Link>
           ))}
         </div>
-        <a href={`${APP_URL}/demo-account`} className={buttonVariants({ variant: "primary", size: "sm", className: "ml-auto" })}>
-          Try demo account
+        <a href={`${APP_URL}/demo-account`} target="_blank" rel="noopener noreferrer" className={buttonVariants({ variant: "primary", size: "sm", className: "ml-auto" })}>
+          Try Demo Account
         </a>
       </nav>
     </header>

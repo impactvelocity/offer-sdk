@@ -82,10 +82,13 @@ export default function DeployPage() {
             builds with pnpm and starts once the API is healthy.
           </p>
         </Step>
-        <Step title="Create your account">
+        <Step title="Create the admin account">
           <p>
-            Open the dashboard, sign up, and create a workspace and your first app. The app&apos;s keys are under{" "}
-            <strong>Developers → API keys</strong>.
+            Open the dashboard. A fresh install has no accounts, so it shows <code>/setup</code>: the first person to
+            fill it in becomes the install&apos;s admin, and sign-up closes after that. Do this as soon as the deploy
+            finishes. Then name your workspace and create your first app. The app&apos;s keys are under{" "}
+            <strong>Developers → API keys</strong>. See{" "}
+            <Link href="/docs/admin#first-user-the-admin">Dashboard tour → First user: the admin</Link>.
           </p>
         </Step>
         <Step title="Try the demo workspace (optional)">
@@ -94,10 +97,10 @@ export default function DeployPage() {
             <strong>Explore the demo workspace</strong>. The first click builds it in your database, which takes a few
             seconds. The demo login is shared and read-only, so visitors can look around but can&apos;t change or delete
             anything. Send people to <code>/demo-account</code> to open sign-in with the login filled in. To rebuild the
-            demo from scratch, run this from your machine. The script signs in through the dashboard like a browser, so it
-            only needs the dashboard&apos;s URL:
+            demo from scratch, run this from your machine with the API&apos;s <code>ADMIN_API_KEY</code> (in the
+            Render dashboard under <strong>offersdk-api</strong> → Environment):
           </p>
-          <Code lang="bash" code="APP_URL=https://offer-app.onrender.com pnpm seed:demo --reset" />
+          <Code lang="bash" code="APP_URL=https://offer-app.onrender.com ADMIN_API_KEY=… pnpm seed:demo --reset" />
           <p>
             Set <code>DEMO_ENABLED=false</code> on <strong>offer-app</strong> if you don&apos;t want a public demo.
           </p>
@@ -217,6 +220,16 @@ export default function DeployPage() {
               <>
                 Check that <code>APP_URL</code> on the API matches the dashboard address in your browser exactly,
                 including <code>https://</code>. Fix it and redeploy the API.
+              </>
+            ),
+          },
+          {
+            term: "Setup sends me to sign-in",
+            children: (
+              <>
+                The install already has its admin, so <code>/setup</code> is closed. Sign in with that account. If
+                nobody has it, deleting that row from <code>auth_user</code> in Postgres reopens <code>/setup</code>,
+                but the new admin starts without the old workspaces.
               </>
             ),
           },

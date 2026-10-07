@@ -188,10 +188,10 @@ PayPal ────────────────────────�
 - **Shared key.** `ADMIN_API_KEY` is set once on the API and copied to the dashboard as `OFFER_API_ADMIN_KEY`. The API rejects dashboard calls (`/orgs`, `/api/auth/*`, and any app as admin) without it.
 - **Auth.** Users, sessions and workspaces are stored in Postgres by the API (`auth_*` tables). The dashboard forwards `/api/auth/*` to the API, so cookies are set on the dashboard's own domain. (`onrender.com` is a public suffix, so the two services can't share cookies any other way.)
 - **URLs.** If you add custom domains later, update `APP_URL` and `OFFER_API_URL`. The dashboard reaches the API over Render's private network (`OFFER_API_INTERNAL_URL`, wired automatically).
-- **Demo workspace.** The sign-in page offers **Explore the demo workspace** (`DEMO_ENABLED=true` in the blueprint). The first click builds the shared demo in the database. To undo visitors' changes, rebuild it from your machine. The script signs in through the dashboard like a browser, so it needs only the dashboard's URL.
+- **Demo workspace.** The sign-in page offers **Explore the demo workspace** (`DEMO_ENABLED=true` in the blueprint). The first click builds the shared demo in the database, and `/demo-account` opens sign-in with the demo login filled in. The demo login is read-only. To build the demo ahead of time, run `pnpm seed:demo` with `APP_URL`. To rebuild it from scratch, add `--reset` and the API's `ADMIN_API_KEY` from Render.
 
   ```bash
-  APP_URL=https://offer-app.onrender.com pnpm seed:demo --reset
+  APP_URL=https://offer-app.onrender.com ADMIN_API_KEY=… pnpm seed:demo --reset
   ```
 
 - **PayPal webhooks.** Each app connects its own PayPal account in the dashboard, and the API registers PayPal's webhook at that moment. On Render it uses the API's `onrender.com` address (`RENDER_EXTERNAL_URL`), so there's nothing to set. Set `PUBLIC_API_URL` on the API to register a custom domain instead, or when hosting elsewhere.

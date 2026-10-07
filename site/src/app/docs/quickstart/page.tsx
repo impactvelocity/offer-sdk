@@ -67,15 +67,16 @@ pnpm install`}
           <Code lang="bash" code="pnpm dev:app" />
           <p>
             Open <code>http://localhost:6768</code>. In development the dashboard already points at the local API with
-            its development admin key, so neither side needs a <code>.env</code> file.
+            its development admin key, so neither side needs a <code>.env</code> file. On a fresh database it opens on{" "}
+            <code>/setup</code>: the first account you create is the admin, and sign-up closes after that.
           </p>
         </Step>
         <Step title="Open the demo workspace">
           <p>
-            Press <strong>Explore the demo workspace</strong> on the sign-in page. The first time, the dashboard builds
+            Press <strong>Explore the demo workspace</strong> on the setup or sign-in page. The first time, the dashboard builds
             two sample apps with six months of usage, which takes a few seconds. After that you can also sign in with{" "}
-            <code>demo@offersdk.dev</code> and <code>demo-password</code>. The demo login is read-only, so sign up for
-            your own workspace to make changes. Run <code>pnpm seed:demo --reset</code> to start the demo over.
+            <code>demo@offersdk.dev</code> and <code>demo-password</code>. The demo login is read-only, so sign in as
+            your admin to make changes. Run <code>pnpm seed:demo --reset</code> to start the demo over.
           </p>
         </Step>
       </Steps>

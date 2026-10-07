@@ -85,8 +85,8 @@ export function OrderSummary({
           Deploy on Render
           <ArrowRight />
         </a>
-        <a href={`${APP_URL}/demo-account`} className={buttonVariants({ variant: "secondary", size: "lg", className: "w-full" })}>
-          Try the demo account
+        <a href={`${APP_URL}/demo-account`} target="_blank" rel="noopener noreferrer" className={buttonVariants({ variant: "secondary", size: "lg", className: "w-full" })}>
+          Try the Demo Account
         </a>
         <p className="pt-1 text-center text-xs text-fg-muted">
           No card, and no account with us.{" "}

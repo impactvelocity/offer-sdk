@@ -4,7 +4,7 @@ import { Callout, Code, DocsHeader, H2, H3, Step, Steps, Table, TermList } from 
 
 export const metadata: Metadata = {
   title: "Dashboard tour",
-  description: "Sign-in, workspaces, apps, the dashboard layout, every page in the app nav, the demo workspace and mock mode.",
+  description: "First-run admin setup, sign-in, workspaces, apps, the dashboard layout, every page in the app nav, the demo workspace and mock mode.",
 };
 
 export default function DashboardTourPage() {
@@ -21,16 +21,47 @@ export default function DashboardTourPage() {
         the admin key. It only forwards <code>/apps/:appId/*</code> when that app belongs to your active workspace.
       </p>
 
-      <H2>Setup and sign in</H2>
+      <H2>First user: the admin</H2>
       <p>
-        Each install has one admin account, using email and password through{" "}
-        <a href="https://better-auth.com">better-auth</a>. The first time you open a fresh install, every page sends
-        you to <code>/setup</code> to create it, then to <code>/onboarding</code> to name your first workspace. Once the
-        admin exists, sign-up closes (the API returns 403 for any other email) and <code>/setup</code> redirects to{" "}
-        <code>/sign-in</code>. The shared demo login doesn&apos;t count as the admin.
+        Each install has a single dashboard account, the admin. There&apos;s no open sign-up: the first person to
+        open a fresh install creates the admin account, and after that the dashboard only offers sign-in. Accounts use
+        email and password through <a href="https://better-auth.com">better-auth</a>.
       </p>
+      <Steps>
+        <Step title="Open the dashboard">
+          <p>
+            On a fresh install no account exists yet, so every page sends you to <code>/setup</code>.
+          </p>
+        </Step>
+        <Step title="Create the admin account">
+          <p>
+            Enter your name, email and a password of at least 8 characters, then click{" "}
+            <strong>Create admin account</strong>. You&apos;re signed in straight away. There&apos;s no password reset
+            email yet, so keep the password somewhere safe.
+          </p>
+        </Step>
+        <Step title="Name your first workspace">
+          <p>
+            <code>/onboarding</code> asks for a workspace name, then takes you to <code>/apps</code> to create your
+            first app.
+          </p>
+        </Step>
+      </Steps>
       <p>
-        With the hosted API, better-auth runs inside the API on Postgres and the dashboard proxies{" "}
+        From then on, <code>/setup</code> and the old <code>/sign-up</code> address redirect to{" "}
+        <code>/sign-in</code>, and the API refuses any new sign-up with a 403, so another account can&apos;t be
+        created by calling it directly either. The shared demo login (when <code>DEMO_ENABLED</code> is on) doesn&apos;t
+        count as the admin, and opening the demo before setup doesn&apos;t close it.
+      </p>
+      <Callout title="Create the admin right after you deploy.">
+        Until the admin exists, anyone who can reach the dashboard&apos;s URL can open <code>/setup</code> and become
+        the admin. To check from a script, <code>GET /api/auth/setup-status</code> on the API (with the admin key)
+        returns <code>{"{ \"needs_setup\": true }"}</code> until then.
+      </Callout>
+
+      <H3>Signing in</H3>
+      <p>
+        After setup, sign in at <code>/sign-in</code> with the admin&apos;s email and password. With the hosted API, better-auth runs inside the API on Postgres and the dashboard proxies{" "}
         <code>/api/auth/*</code> to it, so session cookies stay on the dashboard&apos;s domain. In mock mode it runs
         inside the dashboard process with an in-memory store.
       </p>
@@ -250,15 +281,16 @@ export default function DashboardTourPage() {
         <Step title="Reset it">
           <Code
             lang="bash"
-            code={`# rebuild the demo apps after visitors have changed them
+            code={`# rebuild the demo apps from scratch
 pnpm seed:demo --reset
-# against a deployed dashboard
-APP_URL=https://your-dashboard.example.com pnpm seed:demo --reset`}
+# against a deployed dashboard, with the API's admin key
+APP_URL=https://your-dashboard.example.com ADMIN_API_KEY=… pnpm seed:demo --reset`}
           />
           <p>
-            The script signs in and calls the dashboard like a browser would, so it only needs the dashboard&apos;s URL
-            (<code>APP_URL</code>, default <code>http://localhost:6768</code>). Without <code>--reset</code>, it builds
-            the demo ahead of the first click and leaves an existing one alone.
+            The script calls the dashboard, so it needs the dashboard&apos;s URL (<code>APP_URL</code>, default{" "}
+            <code>http://localhost:6768</code>). The demo login is read-only, so <code>--reset</code> also needs the
+            API&apos;s <code>ADMIN_API_KEY</code>. Locally it defaults to <code>dev-admin-key</code>. Without{" "}
+            <code>--reset</code>, it builds the demo ahead of the first click and leaves an existing one alone.
           </p>
         </Step>
       </Steps>

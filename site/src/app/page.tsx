@@ -80,8 +80,8 @@ export default function LandingPage() {
               Deploy on Render
               <ArrowRight />
             </a>
-            <a href={`${APP_URL}/demo-account`} className={buttonVariants({ variant: "secondary", size: "xl" })}>
-              Try the demo account
+            <a href={`${APP_URL}/demo-account`} target="_blank" rel="noopener noreferrer" className={buttonVariants({ variant: "secondary", size: "xl" })}>
+              Try the Demo Account
             </a>
             <a href="#product" className={buttonVariants({ variant: "ghost", size: "xl" })}>
               How it works

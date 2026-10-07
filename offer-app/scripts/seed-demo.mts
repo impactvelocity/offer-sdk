@@ -6,15 +6,19 @@
 //
 //   pnpm seed:demo                                          # local dashboard (http://localhost:6768)
 //   APP_URL=https://offer-app.onrender.com pnpm seed:demo   # a deployed dashboard
-//   pnpm seed:demo --reset                                  # rebuild the apps, undoing visitors' changes
+//   pnpm seed:demo --reset                                  # rebuild the apps from scratch
+//   APP_URL=https://… ADMIN_API_KEY=… pnpm seed:demo --reset   # the same on a deployed dashboard
 //
-// It goes through the dashboard like a browser (POST /api/demo-workspace; --reset signs in
-// and deletes the apps through the /api/admin BFF first), so it only needs the dashboard's URL.
+// It calls the dashboard's POST /api/demo-workspace, so it only needs the dashboard's URL
+// (plus the admin key for --reset, since the demo login is read-only).
 
 import { DEMO_USER } from "../src/server/offer-api/sample-data.ts";
 
 const APP_URL = (process.env.APP_URL ?? "http://localhost:6768").replace(/\/+$/, "");
 const RESET = process.argv.includes("--reset");
+// --reset only: the API's ADMIN_API_KEY (the dashboard's OFFER_API_ADMIN_KEY). Local default: dev-admin-key.
+const ADMIN_KEY = process.env.ADMIN_API_KEY ?? (/^http:\/\/(localhost|127\.0\.0\.1)[:/]/.test(`${APP_URL}/`) ? "dev-admin-key" : undefined);
+if (RESET && !ADMIN_KEY) throw new Error("--reset needs ADMIN_API_KEY (the API's admin key, from Render) for a deployed dashboard.");
 
 const cookies = new Map<string, string>();
 
@@ -26,6 +30,7 @@ async function call<T = unknown>(method: string, path: string, body?: unknown, o
       headers: {
         origin: APP_URL,
         cookie: [...cookies].map(([k, v]) => `${k}=${v}`).join("; "),
+        ...(RESET && { authorization: `Bearer ${ADMIN_KEY}` }),
         ...(body !== undefined && { "content-type": "application/json" }),
       },
       body: body !== undefined ? JSON.stringify(body) : undefined,
@@ -48,20 +53,10 @@ async function call<T = unknown>(method: string, path: string, body?: unknown, o
 
 const { email, password } = DEMO_USER;
 
-// --reset: delete the demo apps (if the demo exists yet); the dashboard then builds them again.
-if (RESET) {
-  const signIn = await call("POST", "/api/auth/sign-in/email", { email, password }, [401]);
-  if (signIn.status === 200) {
-    const { mode } = (await call<{ mode: string }>("GET", "/api/admin/workspace")).data;
-    if (mode === "mock") throw new Error("This dashboard runs on the in-memory mock (OFFER_API_URL=mock). Restart it to reset the demo.");
-    for (const app of (await call<{ id: string; name: string }[]>("GET", "/api/admin/workspace/apps")).data) {
-      await call("DELETE", `/api/admin/apps/${app.id}`);
-      console.log(`Deleted ${app.name}`);
-    }
-  }
-}
-
-const ready = await call("POST", "/api/demo-workspace", undefined, [404]);
+// --reset: the dashboard deletes the demo apps with the admin key and builds them again
+// (the demo login itself is read-only).
+const ready = await call("POST", "/api/demo-workspace", RESET ? { reset: true } : undefined, [404]);
+if (RESET) console.log("Rebuilt the demo apps");
 if (ready.status === 404) throw new Error("This dashboard has the demo turned off. Set DEMO_ENABLED=true on it.");
 
 console.log(`
