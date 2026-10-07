@@ -21,11 +21,13 @@ export default function DashboardTourPage() {
         the admin key. It only forwards <code>/apps/:appId/*</code> when that app belongs to your active workspace.
       </p>
 
-      <H2>Sign in</H2>
+      <H2>Setup and sign in</H2>
       <p>
-        Accounts use email and password through <a href="https://better-auth.com">better-auth</a>. Create one at{" "}
-        <code>/sign-up</code> and sign in at <code>/sign-in</code>. After signing in you land on <code>/apps</code>. If
-        you don&apos;t belong to a workspace yet, you go to <code>/onboarding</code> first to create one.
+        Each install has one admin account, using email and password through{" "}
+        <a href="https://better-auth.com">better-auth</a>. The first time you open a fresh install, every page sends
+        you to <code>/setup</code> to create it, then to <code>/onboarding</code> to name your first workspace. Once the
+        admin exists, sign-up closes (the API returns 403 for any other email) and <code>/setup</code> redirects to{" "}
+        <code>/sign-in</code>. The shared demo login doesn&apos;t count as the admin.
       </p>
       <p>
         With the hosted API, better-auth runs inside the API on Postgres and the dashboard proxies{" "}
@@ -33,31 +35,14 @@ export default function DashboardTourPage() {
         inside the dashboard process with an in-memory store.
       </p>
 
-      <H2>Workspaces and members</H2>
+      <H2>Workspaces</H2>
       <p>
-        A workspace holds your apps and your team. Everyone in a workspace can open all of its apps. Roles decide who
-        can manage the workspace itself:
+        A workspace holds your apps, and the admin owns every workspace they create. Team members aren&apos;t
+        available yet, so there&apos;s no members page or invitations.
       </p>
-      <TermList
-        items={[
-          { term: "Owner", children: "Everything, including deleting the workspace. Only owners can make someone else an owner." },
-          { term: "Admin", children: "Manage members, apps and workspace settings." },
-          { term: "Member", children: "Work in every app: catalog, accounts and analytics." },
-        ]}
-      />
       <p>
-        Invite people at <strong>Settings → Members</strong> (<code>/settings/members</code>): enter an email, pick{" "}
-        <strong>Member</strong> or <strong>Admin</strong>, and click <strong>Send invite</strong>. The same page lists
-        pending invitations, which you can revoke, and lets owners and admins change roles or remove members.
-      </p>
-      <Callout title="Invitations aren't emailed yet.">
-        The invitation is recorded, and the invited person gets access when they sign up with that email (or, with the
-        hosted API, signs in).
-      </Callout>
-      <p>
-        Workspace settings live under <code>/settings</code>: <strong>General</strong> (name, slug, ID, leave or delete
-        the workspace), <strong>Members</strong> and <strong>Profile</strong> (your name, appearance, password and
-        sessions). To switch workspaces or create another one, open the logo menu at the top of the rail and choose{" "}
+        Workspace settings live under <code>/settings</code>: <strong>General</strong> (name, slug, ID, delete the
+        workspace) and <strong>Profile</strong> (your name, appearance, password and sessions). To switch workspaces or create another one, open the logo menu at the top of the rail and choose{" "}
         <strong>Switch workspace</strong>.
       </p>
 
@@ -89,7 +74,7 @@ export default function DashboardTourPage() {
             children: (
               <>
                 The narrow column on the left. The logo opens the workspace menu (<strong>All apps</strong>,{" "}
-                <strong>New app</strong>, <strong>Workspace settings</strong>, <strong>Invite members</strong>,{" "}
+                <strong>New app</strong>, <strong>Workspace settings</strong>,{" "}
                 <strong>Switch workspace</strong>). Below it is one tile per app, then a light/dark toggle, settings
                 and your account menu (<strong>Profile</strong>, <strong>Theme</strong>, <strong>Sign out</strong>).
               </>
@@ -231,7 +216,7 @@ export default function DashboardTourPage() {
         </li>
         <li>
           <strong>Workspace</strong>: <strong>All apps</strong>, <strong>New app</strong>,{" "}
-          <strong>Invite members</strong>, <strong>Workspace settings</strong> and the theme.
+          <strong>Workspace settings</strong> and the theme.
         </li>
       </ul>
       <p>
@@ -281,8 +266,8 @@ APP_URL=https://your-dashboard.example.com pnpm seed:demo --reset`}
       <p>
         Many visitors share the demo login, so the API stops it from changing its profile, email or password,
         deleting itself, signing out other sessions, editing, deleting or leaving the workspace, and inviting,
-        removing or changing the role of members. Those calls fail with “The demo account can&apos;t do that. Sign up to get a
-        workspace of your own.” Everything inside the apps stays editable, which is why <code>--reset</code> exists.
+        removing or changing the role of members. Those calls fail with “The demo workspace is read-only. Sign in with your admin
+        account to make changes.” Everything inside the apps stays editable, which is why <code>--reset</code> exists.
       </p>
       <Callout title="The guard lives in the hosted API.">
         It is part of the API&apos;s better-auth setup. In mock mode the dashboard runs its own in-memory auth, which

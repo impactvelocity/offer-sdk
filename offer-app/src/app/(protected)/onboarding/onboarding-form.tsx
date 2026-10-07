@@ -46,7 +46,7 @@ export function OnboardingForm({ userName, canCancel }: { userName: string; canC
         <p className="text-sm text-fg-tertiary">Welcome, {userName.split(" ")[0]}</p>
         <h1 className="mt-1 font-display text-xl font-semibold text-fg">Create your workspace</h1>
         <p className="mt-1 text-sm text-fg-tertiary">
-          A workspace holds your apps and team. Each app gets its own catalog, accounts and API keys.
+          A workspace holds your apps. Each app gets its own catalog, accounts and API keys.
         </p>
         <form onSubmit={submit} className="mt-6 flex flex-col gap-4">
           <Field label="Workspace name" error={error}>
