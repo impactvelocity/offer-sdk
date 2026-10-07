@@ -1,6 +1,5 @@
 packages:
   - offer-app
-  - web
   - site
-  - blog
+  - demo-app-testing
   - workflows

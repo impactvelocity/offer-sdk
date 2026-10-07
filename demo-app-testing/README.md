@@ -1,10 +1,10 @@
-# blog
+# demo-app-testing
 
 The Rails blog tutorial, rebuilt on Next.js as a test bed for the Offer API and SDK. Posts and comments are scaffolded and styled like Rails 3 (`scaffold.css`, the red `error_explanation`, "Welcome aboard"), and every feature runs through the API: each user is an Offer account, posts are a metered entitlement with a hard limit, and the pricing page is the checkout SDK.
 
 ```bash
 pnpm dev:api          # from the repo root: Postgres + the Offer API on :6767
-pnpm dev:blog         # http://localhost:6770
+pnpm dev:demo         # http://localhost:6770
 ```
 
 Then open **/setup** and press *rails generate offer:install*. It creates the app (`POST /apps`) and its catalog through the API, and saves the keys in the blog's database. Sign up, write posts, and run **/console** (`rake test`).

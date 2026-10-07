@@ -86,7 +86,7 @@ pnpm install`}
           ["API", "http://localhost:6767", <code key="c">pnpm dev:api</code>],
           ["Dashboard", "http://localhost:6768", <code key="c">pnpm dev:app</code>],
           ["Marketing site", "http://localhost:6769", <code key="c">pnpm dev:site</code>],
-          ["Blog test bed", "http://localhost:6770", <code key="c">pnpm dev:blog</code>],
+          ["Blog test bed", "http://localhost:6770", <code key="c">pnpm dev:demo</code>],
         ]}
       />
 

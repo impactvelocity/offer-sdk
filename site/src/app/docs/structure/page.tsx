@@ -34,8 +34,7 @@ export default function StructurePage() {
           { path: "src/server/", depth: 1, note: "API client, auth, the agent's tools and the mock API" },
           { path: "workflows/", note: "Render Workflow tasks for subscription pauses" },
           { path: "site/", note: "This site: landing page and docs" },
-          { path: "blog/", note: "Test bed that exercises every API route and SDK component" },
-          { path: "web/", note: "Older marketing site" },
+          { path: "demo-app-testing/", note: "Test bed that exercises every API route and SDK component" },
           { path: "render.yaml", note: "Render Blueprint for the whole stack" },
           { path: "docker-compose.yml", note: "Local Postgres and API" },
         ]}
