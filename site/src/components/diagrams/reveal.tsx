@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
 
 // Diagrams that scroll in together (a row of cards) queue up and start this far apart, in page order.
-const STAGGER = 0.28;
+const STAGGER = 0.15;
 let queueEnd = 0;
 
 function nextDelay() {
