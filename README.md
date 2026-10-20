@@ -10,6 +10,10 @@
 </p>
 
 <p align="center">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-34D599?style=for-the-badge" alt="Open source: MIT License"></a>
+</p>
+
+<p align="center">
   <a href="https://offersdk.com"><b>Website</b></a> ·
   <a href="https://app.offersdk.com/sign-in"><b>Demo workspace</b></a> ·
   <a href="https://offersdk.com/docs"><b>Docs</b></a> ·
@@ -22,6 +26,7 @@
 </p>
 
 <p align="center">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-34D599" alt="MIT License"></a>
   <img src="https://img.shields.io/badge/PayPal-checkout%20%26%20subscriptions-003087?logo=paypal&logoColor=white" alt="PayPal">
   <img src="https://img.shields.io/badge/Render-one--click%20Blueprint-34D599?logo=render&logoColor=white" alt="Render">
   <img src="https://img.shields.io/badge/API-Hono%20on%20Bun-E36002?logo=hono&logoColor=white" alt="Hono on Bun">
